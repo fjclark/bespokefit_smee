@@ -18,7 +18,7 @@ import copy
 def prediction_loss(
     dataset: datasets.Dataset,
     force_field: smee.TensorForceField,
-    topology_in: smee.TensorTopology
+    topology: smee.TensorTopology
 ):
     """Predict the loss function for a guess forcefield against a dataset.
 
@@ -30,7 +30,6 @@ def prediction_loss(
         Loss value.
     """
     energy_loss, forces_loss = [], []
-    topology = copy.deepcopy(topology_in)
     for entry in dataset:
         energy_ref   = entry["energy"]
         forces_ref   = entry["forces"].reshape(len(energy_ref), -1, 3)

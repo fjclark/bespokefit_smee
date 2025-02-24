@@ -25,7 +25,6 @@ from openmm import *
 from openmm.unit import *
 from openmmml import MLPotential
 from openff.units import unit as off_unit
-import descent.targets.energy
 from parameterizer import convert_to_smirnoff
 from rdkit import Chem
 from rdkit.Chem import rdMolAlign
@@ -33,15 +32,15 @@ from rdkit.ML.Cluster import Butina
 ###############################################################################
 ############################### FUNCTIONS #####################################
 ###############################################################################
-N_WORKERS = 32
-DATA_SCHEMA = pyarrow.schema(
-    [
-        ("coords", pyarrow.list_(pyarrow.float64())),
-        ("energy", pyarrow.list_(pyarrow.float64())),
-        ("forces", pyarrow.list_(pyarrow.float64())),
-        ("weight", pyarrow.list_(pyarrow.float64())),
-    ]
-)
+
+_ANGSTROM           = off_unit.angstrom
+
+_OMM_KELVIN            = openmm.unit.kelvin
+_OMM_PS                = openmm.unit.picosecond 
+_OMM_ANGS              = openmm.unit.angstrom
+_OMM_KCAL_PER_MOL      = openmm.unit.kilocalorie_per_mole
+_OMM_KCAL_PER_MOL_ANGS = openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom
+
 class Entry(typing.TypedDict):
     """Contains:
     - The coordinates [Å] of the conformers
@@ -64,14 +63,21 @@ def create_dataset(entries: list[Entry]) -> datasets.Dataset:
     table = pyarrow.Table.from_pylist(
         [
             {
-                "coords": torch.tensor(entry["coords"]).flatten().tolist(),
-                "energy": torch.tensor(entry["energy"]).flatten().tolist(),
-                "forces": torch.tensor(entry["forces"]).flatten().tolist(),
-                "weight": torch.tensor(entry["weight"]).flatten().tolist(),
+                "coords": entry["coords"].clone().detach().flatten().tolist(),
+                "energy": entry["energy"].clone().detach().flatten().tolist(),
+                "forces": entry["forces"].clone().detach().flatten().tolist(),
+                "weight": entry["weight"].clone().detach().flatten().tolist(),
             }
             for entry in entries
         ],
-        schema=DATA_SCHEMA,
+        schema = pyarrow.schema(
+            [
+                ("coords", pyarrow.list_(pyarrow.float64())),
+                ("energy", pyarrow.list_(pyarrow.float64())),
+                ("forces", pyarrow.list_(pyarrow.float64())),
+                ("weight", pyarrow.list_(pyarrow.float64())),
+            ]
+        ),
     )
     dataset = datasets.Dataset(datasets.table.InMemoryTable(table))
     dataset.set_format("torch")
@@ -85,31 +91,20 @@ def get_data_MMMD(
     dt: float = 0.001,
     N: int = 1000,
     Nc: int = 1,
-    Ng: int = 10,
-    Ni: int = 100
+    MD_stepsize: int = 10,
+    MD_startup: int = 100,
+    MD_energy_upper_cutoff: float = 10.0,
+    MD_energy_lower_cutoff: float = 1.0
 ) -> datasets.Dataset:
     """generate a dataset from an openmm run using the input FF.
-
-    Args:
-        mol: molecule object
-        force_field: The force field to use
-        ML_path: ML potential used to calculate energies and forces
-        temperature: Temperature of the MD run
-        dt: Time step in the MD run
-        N: Number of samples to take
-        Nc: Number of conformers to generate at start
-        Ng: Number of steps to take between snapshops
-        Ni: Number of steps to take before begining to take snapshots
-
     Returns:
         A dataset full of MD snapshops with their energies and forces
     """
 # set up an openmm simulation
     molecule        = copy.deepcopy(mol)
-    molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * off_unit.angstrom)
-    off_topology    = openff.toolkit.Topology.from_molecules(molecule)
-    interchange     = openff.interchange.Interchange.from_smirnoff(off,off_topology)
-    integrator      = LangevinMiddleIntegrator(temperature*kelvin,1/picosecond,dt*picoseconds)
+    molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * _ANGSTROM)
+    interchange     = openff.interchange.Interchange.from_smirnoff(off,openff.toolkit.Topology.from_molecules(molecule))
+    integrator      = LangevinMiddleIntegrator(temperature*_OMM_KELVIN,1/_OMM_PS,dt*_OMM_PS)
     simulation_ff   = interchange.to_openmm_simulation(integrator)
 # minimize the system energy and take a snapshot for the ground-state reference
     coords, energy, forces, weight = [], [], [], []
@@ -118,17 +113,15 @@ def get_data_MMMD(
         position              = interchange.positions.to_openmm()
         simulation_ff.context.setPositions(interchange.positions.to_openmm())
         simulation_ff.minimizeEnergy(maxIterations=100)
-        state                 = simulation_ff.context.getState(getPositions=True)
-        coords.append(state.getPositions().value_in_unit(openmm.unit.angstrom))
-        simulation_ff.step(Ni)
+        coords.append(simulation_ff.context.getState(getPositions=True).getPositions().value_in_unit(_OMM_ANGS))
+        simulation_ff.step(MD_startup)
 # run the MD and take snapshots
         for _ in tqdm(range(N-1),leave=False,colour='red',desc="Running MD"):
-            simulation_ff.step(Ng)
-            state  = simulation_ff.context.getState(getPositions=True)
-            coords.append(state.getPositions().value_in_unit(openmm.unit.angstrom))
+            simulation_ff.step(MD_stepsize)
+            coords.append(simulation_ff.context.getState(getPositions=True).getPositions().value_in_unit(_OMM_ANGS))
     coords_out    = torch.tensor(coords) 
 # Generate energy and force for the snapshots using a ML potential
-    potential     = MLPotential(*ML_path)
+    potential     = MLPotential(ML_path)
     with open("/dev/null", 'w') as f:
         with redirect_stdout(f):
             system = potential.createSystem(interchange.to_openmm_topology())   
@@ -138,12 +131,12 @@ def get_data_MMMD(
         my_pos =  Quantity(numpy.array(coords_out[i]), angstrom)
         simulation_ml.context.setPositions(my_pos)
         state  = simulation_ml.context.getState(getEnergy=True, getForces=True)
-        energy.append(state.getPotentialEnergy().value_in_unit(openmm.unit.kilocalorie_per_mole))
-        forces.append(state.getForces(asNumpy=True).value_in_unit(openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom))
+        energy.append(state.getPotentialEnergy().value_in_unit(_OMM_KCAL_PER_MOL))
+        forces.append(state.getForces(asNumpy=True).value_in_unit(_OMM_KCAL_PER_MOL_ANGS))
         delE = energy[i] - energy[0]
-        if delE < 1.0:
+        if delE < MD_energy_lower_cutoff:
             weight.append(1.0)
-        elif delE > 30.0:
+        elif delE > MD_energy_upper_cutoff:
             weight.append(0.0)
         else:
             weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))       
@@ -162,33 +155,22 @@ def get_data_MLMD(
     dt: float = 0.001,
     N: int = 1000,
     Nc: int = 1,
-    Ng: int = 10,
-    Ni: int = 100
+    MD_stepsize: int = 10,
+    MD_startup: int = 100,
+    MD_energy_upper_cutoff: float = 10.0,
+    MD_energy_lower_cutoff: float = 1.0
 ) -> datasets.Dataset:
     """generate a dataset from an openmm run using the input ML Potential.
-
-    Args:
-        mol: molecule object
-        force_field: Forcefield to setup up the md. This is ignored in the actual calculation
-        ML_path: ML potential used
-        temperature: Temperature of the MD run
-        dt: Time step in the MD run
-        N: Number of samples to take
-        Nc: Number of conformers to generate at start
-        Ng: Number of steps to take between snapshops
-        Ni: Number of steps to take before begining to take snapshots
-
     Returns:
         A dataset full of MD snapshops with their energies and forces
     """
 # set up an openmm simulation
     molecule        = copy.deepcopy(mol)
-    molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * off_unit.angstrom)
-    off_topology    = openff.toolkit.Topology.from_molecules(molecule)
+    molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * _ANGSTROM)
     force_field     = copy.deepcopy(off)
-    interchange     = openff.interchange.Interchange.from_smirnoff(force_field,off_topology)
-    integrator      = LangevinMiddleIntegrator(temperature*kelvin,1/picosecond,dt*picoseconds)
-    potential       = MLPotential(*ML_path)
+    interchange     = openff.interchange.Interchange.from_smirnoff(force_field,openff.toolkit.Topology.from_molecules(molecule))
+    integrator      = LangevinMiddleIntegrator(temperature*_OMM_KELVIN,1/_OMM_PS,dt*_OMM_PS)
+    potential       = MLPotential(ML_path)
     with open("/dev/null", 'w') as f:
         with redirect_stdout(f):
             system  = potential.createSystem(interchange.to_openmm_topology())
@@ -201,21 +183,21 @@ def get_data_MLMD(
         simulation.context.setPositions(position)
         simulation.minimizeEnergy(maxIterations=100)
         state  = simulation.context.getState(getPositions=True, getEnergy=True, getForces=True)
-        coords.append(state.getPositions().value_in_unit(openmm.unit.angstrom))
-        energy.append(state.getPotentialEnergy().value_in_unit(openmm.unit.kilocalorie_per_mole))
-        forces.append(state.getForces(asNumpy=True).value_in_unit(openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom))
+        coords.append(state.getPositions().value_in_unit(_OMM_ANGS))
+        energy.append(state.getPotentialEnergy().value_in_unit(_OMM_KCAL_PER_MOL))
+        forces.append(state.getForces(asNumpy=True).value_in_unit(_OMM_KCAL_PER_MOL_ANGS))
         weight.append(1.0)
-        simulation.step(Ni)
+        simulation.step(MD_startup)
         for _ in tqdm(range(N-1),leave=False,colour='red'):
-            simulation.step(Ng)
+            simulation.step(MD_stepsize)
             state = simulation.context.getState(getPositions=True, getEnergy=True, getForces=True)
-            coords.append(state.getPositions().value_in_unit(openmm.unit.angstrom))
-            energy.append(state.getPotentialEnergy().value_in_unit(openmm.unit.kilocalorie_per_mole))
-            forces.append(state.getForces(asNumpy=True).value_in_unit(openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom))
+            coords.append(state.getPositions().value_in_unit(_OMM_ANGS))
+            energy.append(state.getPotentialEnergy().value_in_unit(_OMM_KCAL_PER_MOL))
+            forces.append(state.getForces(asNumpy=True).value_in_unit(_OMM_KCAL_PER_MOL_ANGS))
             delE = energy[i] - energy[0]
-            if delE < 1.0:
+            if delE < MD_energy_lower_cutoff:
                 weight.append(1.0)
-            elif delE > 10.0:
+            elif delE > MD_energy_upper_cutoff:
                 weight.append(0.0)
             else:
                 weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))        
@@ -234,31 +216,23 @@ def get_data_cMMMD(
     dt: float = 0.001,
     N: int = 1000,
     Nc: int = 1,
-    Ng: int = 10,
-    Ni: int = 100
+    MD_stepsize: int = 10,
+    MD_startup: int = 100,
+    MD_energy_upper_cutoff: float = 10.0,
+    MD_energy_lower_cutoff: float = 1.0,
+    Cluster_tolerance: float = 0.075,
+    Cluster_Parallel: int = 1
 ) -> datasets.Dataset:
-    """generate a dataset from an openmm run using the input FF.
-
-    Args:
-        mol: molecule object
-        force_field: The force field to use
-        ML_path: ML potential used to calculate energies and forces
-        temperature: Temperature of the MD run
-        dt: Time step in the MD run
-        N: Number of samples to take
-        Nc: Number of conformers to generate at start
-        Ng: Number of steps to take between snapshops
-        Ni: Number of steps to take before begining to take snapshots
-
+    """generate a dataset from an openmm run using the input FF
+    and cluster the data by rmsd and include counts in the weights
     Returns:
         A dataset full of MD snapshops with their energies and forces
     """
 # set up an openmm simulation
     molecule        = copy.deepcopy(mol)
-    molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * off_unit.angstrom)
-    off_topology    = openff.toolkit.Topology.from_molecules(molecule)
-    interchange     = openff.interchange.Interchange.from_smirnoff(off,off_topology)
-    integrator      = LangevinMiddleIntegrator(temperature*kelvin,1/picosecond,dt*picoseconds)
+    molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * _ANGSTROM)
+    interchange     = openff.interchange.Interchange.from_smirnoff(off,openff.toolkit.Topology.from_molecules(molecule))
+    integrator      = LangevinMiddleIntegrator(temperature*_OMM_KELVIN,1/_OMM_PS,dt*_OMM_PS)
     simulation_ff   = interchange.to_openmm_simulation(integrator)
 # minimize the system energy and take a snapshot for the ground-state reference
     coords, energy, forces, weight = [], [], [], []
@@ -267,36 +241,33 @@ def get_data_cMMMD(
         position              = interchange.positions.to_openmm()
         simulation_ff.context.setPositions(interchange.positions.to_openmm())
         simulation_ff.minimizeEnergy(maxIterations=100)
-        state                 = simulation_ff.context.getState(getPositions=True)
-        coords.append(state.getPositions().value_in_unit(openmm.unit.angstrom))
-        simulation_ff.step(Ni)
+        coords.append(simulation_ff.context.getState(getPositions=True).getPositions().value_in_unit(_OMM_ANGS))
+        simulation_ff.step(MD_startup)
 # run the MD and take snapshots
         for _ in tqdm(range(N-1),leave=False,colour='red',desc="Running MD"):
-            simulation_ff.step(Ng)
-            state  = simulation_ff.context.getState(getPositions=True)
-            coords.append(state.getPositions().value_in_unit(openmm.unit.angstrom))
+            simulation_ff.step(MD_stepsize)
+            coords.append(simulation_ff.context.getState(getPositions=True).getPositions().value_in_unit(_OMM_ANGS))
     coords_out = torch.tensor(coords) 
 # Cluster the coordinates based on rmsd
     coords_clstr = coords_out.reshape(N * Nc, -1, 3).tolist()
-    coords_clstr = [c * off_unit.angstrom for c in coords_clstr]
+    coords_clstr = [c * _ANGSTROM for c in coords_clstr]
     mol_clstr    = copy.deepcopy(mol)
     mol_clstr._conformers = coords_clstr
     mol_rdkit: Chem.Mol   = Chem.RemoveHs(mol_clstr.to_rdkit())
     conf_ids     = [conf.GetId() for conf in mol_rdkit.GetConformers()]
     conf_pairs   = [(i, j) for i in range(len(conf_ids)) for j in range(i)]
-    conf_pairs   = numpy.array_split(numpy.array(conf_pairs), N_WORKERS)
+    conf_pairs   = numpy.array_split(numpy.array(conf_pairs), Cluster_Parallel)
     rms_fn       = functools.partial(compute_best_rms, mol=mol_rdkit)
-    with multiprocessing.Pool(N_WORKERS) as pool:
+    with multiprocessing.Pool(Cluster_Parallel) as pool:
         dists   = list(tqdm(pool.imap(rms_fn, conf_pairs), total=len(conf_pairs),leave=False,colour='green',desc="Clustering the Conformers"))
     dists       = [d for dist in dists for d in dist]
-    clusters    = Butina.ClusterData(dists, len(conf_ids), 0.075, isDistData=True, reordering=True)
-#    clusters    = Butina.ClusterData(dists, len(conf_ids), 0.1, isDistData=True, reordering=True)
+    clusters    = Butina.ClusterData(dists, len(conf_ids), Cluster_tolerance, isDistData=True, reordering=True)
     cluster_ids = [cluster[0] for cluster in clusters]
     cluster_len = [len(cluster) for cluster in clusters]
-    tqdm.write(f"{len(conf_ids)} -> {len(cluster_ids)}")
+    tqdm.write(f"Clustering Summary: {len(conf_ids)} -> {len(cluster_ids)}")
     coords_use = coords_out[cluster_ids, :, :]
 # Generate energy and force for the snapshots using a ML potential
-    potential     = MLPotential(*ML_path)
+    potential     = MLPotential(ML_path)
     with open("/dev/null", 'w') as f:
         with redirect_stdout(f):
             system = potential.createSystem(interchange.to_openmm_topology())   
@@ -306,12 +277,12 @@ def get_data_cMMMD(
         my_pos =  Quantity(numpy.array(coords_use[i]), angstrom)
         simulation_ml.context.setPositions(my_pos)
         state  = simulation_ml.context.getState(getEnergy=True, getForces=True)
-        energy.append(state.getPotentialEnergy().value_in_unit(openmm.unit.kilocalorie_per_mole))
-        forces.append(state.getForces(asNumpy=True).value_in_unit(openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom))
+        energy.append(state.getPotentialEnergy().value_in_unit(_OMM_KCAL_PER_MOL))
+        forces.append(state.getForces(asNumpy=True).value_in_unit(_OMM_KCAL_PER_MOL_ANGS))
         delE = energy[i] - energy[0]
-        if delE < 1.0:
+        if delE < MD_energy_lower_cutoff:
             weight.append(cluster_len[i])
-        elif delE > 10.0:
+        elif delE > MD_energy_upper_cutoff:
             weight.append(0.0)
         else:
             weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))      
@@ -322,9 +293,7 @@ def get_data_cMMMD(
     return create_dataset( [{"coords": coords_use, "energy": energy_out, "forces": forces_out, "weight": weight_out}]) 
 
 def compute_best_rms(pairs: list[tuple[int, int]], mol: Chem.Mol) -> list[float]:
-    # return rdMolAlign.GetBestRMS(Chem.Mol(mol), Chem.Mol(mol), *pair)
     atom_map = [(i, i) for i in range(mol.GetNumAtoms())]
-
     return [
         rdMolAlign.AlignMol(
             Chem.Mol(mol), Chem.Mol(mol), int(i), int(j), atomMap=atom_map
