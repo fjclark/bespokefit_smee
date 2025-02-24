@@ -12,9 +12,13 @@ After a given number of epochs, the new parameterization is stored. The new forc
 ---
 
 Four methods for generating the initial dataset are implemented:
+
  1 - "DATA" : Read the dataset from a file
+ 
  2 - "MLMD" : Run the ML-Potential MD to get the snapshots. This is the most expensive option.
+ 
  3 - "MMMD" : Run Force-Field MD using the initial guess to generate the snapshots. Then use the ML-Potential to generate energies and forces
+ 
  4 - "cMMMD" : Run Force-Field MD using the initial guess to generate the snapshots. Cluster the snapshots with respect to their pairwise RMSD and then use the ML-Potential to generate energies and forces
 
  
