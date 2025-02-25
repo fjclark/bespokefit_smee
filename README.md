@@ -37,7 +37,11 @@ The easiest way to install BespokeFit2 is with conda:
    cd bespokefit2
 ```
 ## Running
-
+Running BespokeFit2 is easy. Simply determine the SMILES string of your molecule are run:
+```
+    bespokefit2.py --smiles SMILES [options]
+```
+where a full list of options follows. Note, only the SMILES string is required. The other options have reasonable defaults.
 | Input parameter | Varaible | Default | Description |
 | --- | --- | --- | --- |
 | `--smiles` | *str* | None | SMILES string of the molecule |
@@ -47,8 +51,8 @@ The easiest way to install BespokeFit2 is with conda:
 | `--learning_rate_decay` | *float* | 0.99 | Learning Rate Decay |
 | `--learning_rate_decay_step` | *int* | 10 | Learning Rate Decay Step |
 | `--loss_force_weight` | *float* | 1e5 | Scaling Factor for the Force loss term |
-| `--force_field_init` | *str* | "openff-2.2.0.offxml" | Starting guess force field |
-| `--MLMD_potential` | *str* | "mace-off23-small" | Name of the MD potential used |
+| `--force_field_init` | *str* | openff-2.2.0.offxml | Starting guess force field |
+| `--MLMD_potential` | *str* | mace-off23-small | Name of the MD potential used |
 | `--N_train` | *int* | 1000 | Number of datapoints in training set |
 | `--N_test` | *int* | 1000 | Number of datapoints in test set |
 | `--N_conformers` | *int* | 10 | Number of Starting Conformers |
@@ -61,8 +65,8 @@ The easiest way to install BespokeFit2 is with conda:
 | `--MD_energy_upper_cutoff` | *float* | 10.0 | Upper bound for the energy cutoff function in kcal/mol |
 | `--Cluster_tolerance` | *float* | 0.075 | Tolerance used in the RMSD clustering |
 | `--Cluster_Parallel` | *int* | 1 | MPI nodes used in the RMSD clustering |
-| `--data` | *str* | "train_data" | Location of pre-calculated data set |
+| `--data` | *str* | train_data | Location of pre-calculated data set |
 | `--modSem_finite_step` | *float* | 0.005291772 | Finite Step to Calculate Hessian in Ang |
 | `--modSem_vib_scaling` | *float* | 0.957 | Vibrational Scaling Parameter |
 | `--modSem_tolerance` | *float* | 0.0001 | Tolerance for the geometry optimizer |
-| --- | --- | --- | --- |
+
