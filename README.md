@@ -4,14 +4,13 @@ Generate a Force-Field Parameterization from ML-Potential MD
 ---
 ## Table of Contents
 
-* [What is BespokeFit2?]([https://github.com/thomasjamespope/Bespokefit2#what-is-BespokeFit2])
-* [Installation]([https://github.com/thomasjamespope/Bespokefit2#Installation)
-    * [Requirements](https://github.com/qubekit/QUBEKit#requirements)
-    * [Installing as Dev](https://github.com/qubekit/QUBEKit#installing-as-dev)
-* [Help](https://github.com/qubekit/QUBEKit#help)
+* [What is BespokeFit2?]
+* [Installation]
+* [Running]
 
 ## What is BespokeFit2? 
 BespokeFit2 is a Force-Field parameterization tool. For a given molecule, it will generate a data set of conformers using machine learning models in [OpenMM-ML](https://github.com/openmm/openmm-ml) simulations. This dataset is used to minimize the Force-Field parameterization. 
+
 ---
 From a SMILES string, we generate a initial parameterization using a default open-ff force field - and optionally, adding in modified-Seminario derived bond and angle force constants. This is used to generate a dataset of conformers by running either ML-Potential MD of Force-Field MD and grabbing a number of snapshots. For every snapshot, the energies and forces are taken using the ML-Potental. 
 
@@ -20,7 +19,6 @@ This dataset is used to minimize the given force field parameters using the ADAM
 After a given number of epochs, the new parameterization is stored. The new force-field is used to generate another set of MD snapshots, which are used in the same way to further optimize the force field. This continues for a given number of iterations, where the relative reduction is error is tracked. The number of iterations should be increased upto convergence.
 
 ---
-
 Four methods for generating the initial dataset are implemented:
 
  1 - "DATA" : Read the dataset from a file
@@ -31,4 +29,10 @@ Four methods for generating the initial dataset are implemented:
  
  4 - "cMMMD" : Run Force-Field MD using the initial guess to generate the snapshots. Cluster the snapshots with respect to their pairwise RMSD and then use the ML-Potential to generate energies and forces
 
- 
+## Installation
+
+The easiest way to install BespokeFit2 is with conda:
+
+   git clone https://github.com/thomasjamespope/Bespokefit2.git
+   cd bespokefit2
+   conda create --file meta.yaml
