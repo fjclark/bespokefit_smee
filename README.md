@@ -37,6 +37,7 @@ The easiest way to install BespokeFit2 is with conda:
    cd bespokefit2
 ```
 ## Running
+
 | Input parameter | Varaible | Default | Description |
 | --- | --- | --- | --- |
 | `--smiles` | *str* | None | SMILES string of the molecule |
@@ -46,7 +47,6 @@ The easiest way to install BespokeFit2 is with conda:
 | `--learning_rate_decay` | *float* | 0.99 | Learning Rate Decay |
 | `--learning_rate_decay_step` | *int* | 10 | Learning Rate Decay Step |
 | `--loss_force_weight` | *float* | 1e5 | Scaling Factor for the Force loss term |
-
 | `--force_field_init` | *str* | "openff-2.2.0.offxml" | Starting guess force field |
 | `--MLMD_potential` | *str* | "mace-off23-small" | Name of the MD potential used |
 | `--N_train` | *int* | 1000 | Number of datapoints in training set |
@@ -65,3 +65,4 @@ The easiest way to install BespokeFit2 is with conda:
 | `--modSem_finite_step` | *float* | 0.005291772 | Finite Step to Calculate Hessian in Ang |
 | `--modSem_vib_scaling` | *float* | 0.957 | Vibrational Scaling Parameter |
 | `--modSem_tolerance` | *float* | 0.0001 | Tolerance for the geometry optimizer |
+| --- | --- | --- | --- |
