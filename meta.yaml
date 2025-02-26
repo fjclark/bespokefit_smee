@@ -1,15 +1,20 @@
 package:
-  name: bespokefit2
+  name: bespokefit-smee
   version: 1.0
   summary: Generate a Force-Field Parameterization from Single-Molecule MD
 
 source:
-  git_url: https://github.com/thomasjamespope/Bespokefit2
+  git_url: https://github.com/thomasjamespope/bespokefit-smee.git
+
+build:
+  noarch: python
+  number: 0 
+  script: python -m pip install --no-deps --ignore-installed .
 
 requirements:
-  build:
+  host: 
     - python
-    - setuptools
+    - pip
 
   run:
     - python

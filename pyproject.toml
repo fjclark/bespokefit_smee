@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bespokefit-smee"
+description = "Generate a Force-Field Parameterization from Single-Molecule MD."
+authors = [ {name = "Thomas Pope"} ]
+license = { text = "MIT" }
+dynamic = ["version"]
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = ["Programming Language :: Python :: 3"]
+

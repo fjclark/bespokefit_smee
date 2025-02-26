@@ -54,7 +54,8 @@ def write_scatter(
     with open(filename, "w") as out_file:
            numpy.savetxt(out_file,print_array,delimiter=' ',newline='\n')     
     energy_summary = torch.std_mean(energy_out_prd - energy_out_ref)
-    return energy_summary[1].item(),energy_summary[0].item()
+    forces_summary = torch.std_mean(forces_out_prd - forces_out_ref)
+    return energy_summary[1].item(),energy_summary[0].item(),forces_summary[1].item(),forces_summary[0].item()
 
 def write_metrics(
     i: int,

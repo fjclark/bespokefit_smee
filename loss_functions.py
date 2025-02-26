@@ -18,7 +18,8 @@ import copy
 def prediction_loss(
     dataset: datasets.Dataset,
     force_field: smee.TensorForceField,
-    topology: smee.TensorTopology
+    topology: smee.TensorTopology,
+    loss_force_weight: float
 ):
     """Predict the loss function for a guess forcefield against a dataset.
 
@@ -42,5 +43,5 @@ def prediction_loss(
         forces_loss.append(((forces_prd - forces_ref) * weight_ref.reshape(len(energy_ref),1,1)).reshape(-1, 3))
     lossE  = (torch.cat(energy_loss) ** 2).mean()
     lossF  = (torch.cat(forces_loss) ** 2).mean()
-    return lossE + lossF
+    return lossE + lossF * loss_force_weight
 

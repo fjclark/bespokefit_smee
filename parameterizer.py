@@ -38,6 +38,7 @@ _OMM_KELVIN            = openmm.unit.kelvin
 _OMM_PS                = openmm.unit.picosecond 
 _OMM_NM                = openmm.unit.nanometer
 _OMM_ANGS              = openmm.unit.angstrom
+_OMM_KCAL_PER_MOL      = openmm.unit.kilocalorie_per_mole
 _OMM_KCAL_PER_MOL_ANGS = openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom
 
 class ParameterConfig(pydantic.BaseModel):
@@ -453,7 +454,7 @@ def build_parameters(
     modSem_finite_step: float,
     modSem_vib_scaling: float,
     modSem_tolerance: float
-) -> tuple[TrainableParameters, smee.TensorTopology]:
+) -> tuple[smee.TensorForceField, TrainableParameters, smee.TensorTopology]:
     """Prepare a Trainable object that contains  a force field with 
     unique parameters for each topologically symmetric term of a molecule.
     Args:
@@ -559,7 +560,7 @@ def build_parameters(
                         ),
                     }
                 )
-    return TrainableParameters(out_ff,parameter_list), topology
+    return copy.deepcopy(out_ff), TrainableParameters(out_ff,parameter_list), topology
 
 def expand_torsions(ff: openff.toolkit.ForceField) -> openff.toolkit.ForceField:
     """Expand the torsion potential to include K0-4 for proper torsions"""
@@ -615,7 +616,7 @@ def modSeminario(
 #   calculate the ground-state geometry and energy
     interchange.positions = molecule.conformers[0]
     simulation.context.setPositions(interchange.positions.to_openmm())
-    simulation.minimizeEnergy(maxIterations=0,tolerance=minimize_tol)
+    simulation.minimizeEnergy(maxIterations=0,tolerance=minimize_tol*_OMM_KCAL_PER_MOL_ANGS)
     position = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
     crd0     = position.value_in_unit(_OMM_NM).reshape(3 * molecule.n_atoms)
 #   extract bond info from the smee tensor
