@@ -12,10 +12,10 @@ build:
   script: python -m pip install --no-deps --ignore-installed .
 
 requirements:
-  host: 
+  host:
     - python
     - pip
-
+    - setuptools
   run:
     - python
     - smee
@@ -34,7 +34,11 @@ requirements:
 test:
   imports:
     - bespokefit_smee
-
+  requires:
+    - pip
+  commands:
+    - pip check
+    
 about:
   home:
   license: MIT
