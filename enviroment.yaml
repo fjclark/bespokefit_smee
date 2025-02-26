@@ -1,0 +1,15 @@
+dependencies:
+    - python
+    - smee
+    - datasets
+    - jupyter 
+    - nglview 
+    - smirnoff-plugins >=0.0.4
+    - openmm 
+    - openff-toolkit 
+    - openff-units 
+    - openff-interchange 
+    - openmm-ml 
+    - tensorboardX 
+    - tensorboard
+
