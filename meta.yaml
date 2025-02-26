@@ -33,7 +33,7 @@ requirements:
 
 test:
   imports:
-    -
+    - bespokefit-smee
 
 about:
   home:
