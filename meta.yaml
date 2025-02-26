@@ -1,23 +1,26 @@
+{% set name = "bespokefit_smee" %}
+{% set version = "0.1.1" %}
+
 package:
-  name: bespokefit_smee
-  version: 1.0
-  summary: Generate a Force-Field Parameterization from Single-Molecule MD
+  name: {{ name|lower }}
+  version: {{ version }}
 
 source:
-  git_url: https://github.com/thomasjamespope/bespokefit_smee.git
+  url: https://github.com/thomasjamespope/bespokefit_smee/archive/{{ version }}.tar.gz
+  sha256: 085b8702c32bfe45ebda2d47547e447105e085892e0da2f11803d3707672f706
 
 build:
   noarch: python
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   number: 0 
-  script: python -m pip install --no-deps --ignore-installed .
-
+ 
 requirements:
   host:
-    - python
+    - python >=3.10
     - pip
     - setuptools
   run:
-    - python
+    - python >=3.10
     - smee
     - datasets
     - jupyter 
@@ -36,6 +39,7 @@ test:
     - bespokefit_smee
     
 about:
-  home:
+  summary: Generate a Force-Field Parameterization from Single-Molecule MD.
   license: MIT
+  license_file: LICENSE
 
