@@ -12,18 +12,18 @@ readme = "README.md"
 requires-python = ">=3.10"
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
- "python"
- "smee"
- "datasets"
- "jupyter"
- "nglview"
- "smirnoff-plugins >=0.0.4"
- "openmm"
- "openff-toolkit" 
- "openff-units"
- "openff-interchange" 
- "openmm-ml"
- "tensorboardX" 
+ "python",
+ "smee",
+ "datasets",
+ "jupyter",
+ "nglview",
+ "smirnoff-plugins >=0.0.4",
+ "openmm",
+ "openff-toolkit",
+ "openff-units",
+ "openff-interchange",
+ "openmm-ml",
+ "tensorboardX",
  "tensorboard"
 ]
 [tool.setuptools]
