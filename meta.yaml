@@ -19,6 +19,7 @@ requirements:
   run:
     - python
     - smee
+    - datasets
     - jupyter 
     - nglview 
     - smirnoff-plugins >=0.0.4
