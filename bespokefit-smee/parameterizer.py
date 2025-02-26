@@ -472,6 +472,7 @@ def build_parameters(
         The prepared Traninable object with a smee force_field and topology ready for fitting.
     """
     force_field, [topology] = smee.converters.convert_interchange(openff.interchange.Interchange.from_smirnoff(expand_torsions(off),mol.to_topology()))
+    topology.constraints = None
     symmetries = list(Chem.CanonicalRankAtoms(mol.to_rdkit(), breakTies=False))
     if topology.n_v_sites != 0:
         raise NotImplementedError("virtual sites are not supported yet.")
@@ -486,7 +487,7 @@ def build_parameters(
     if(linear_harmonics):
         topology.parameters["LinearBonds"]  = copy.deepcopy(topology.parameters["Bonds"])
         topology.parameters["LinearAngles"] = copy.deepcopy(topology.parameters["Angles"])
-        out_ff = linearize_harmonics(force_field)
+        force_field = linearize_harmonics(force_field)
         parameter_list = {
             "LinearBonds": ParameterConfig(
                 cols=["k1", "k2"],
@@ -516,7 +517,7 @@ def build_parameters(
         if(potential.type == "ProperTorsions"):
             if(linear_torsions): 
                 topology.parameters["LinearProperTorsions"] = copy.deepcopy(topology.parameters["ProperTorsions"])
-                out_ff = linearize_propertorsions(out_ff)
+                force_field = linearize_propertorsions(force_field)
                 parameter_list.update(
                     {
                         "LinearProperTorsions": ParameterConfig(
@@ -540,7 +541,7 @@ def build_parameters(
             improper_torsion_flag = True
             if(linear_torsions):
                 topology.parameters["LinearImproperTorsions"] = copy.deepcopy(topology.parameters["ImproperTorsions"])
-                out_ff = linearize_impropertorsions(out_ff)
+                force_field = linearize_impropertorsions(force_field)
                 parameter_list.update(
                     {
                         "LinearImproperTorsions": ParameterConfig(
@@ -560,7 +561,7 @@ def build_parameters(
                         ),
                     }
                 )
-    return copy.deepcopy(out_ff), TrainableParameters(out_ff,parameter_list), topology
+    return copy.deepcopy(force_field), TrainableParameters(force_field,parameter_list), topology
 
 def expand_torsions(ff: openff.toolkit.ForceField) -> openff.toolkit.ForceField:
     """Expand the torsion potential to include K0-4 for proper torsions"""
@@ -838,4 +839,3 @@ def linearize_impropertorsions(ff: smee.TensorForceField) -> smee.TensorForceFie
         else:
             ff_copy.potentials.append(potential)
     return ff_copy
-
