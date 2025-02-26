@@ -42,7 +42,7 @@ The easiest way to install BespokeFit-smee is with conda:
 ## Running
 Running BespokeFit-smee is easy. Simply determine the SMILES string of your molecule are run:
 ```
-    bespokefit-smee.py --smiles SMILES [options]
+    python bespokefit-smee.py --smiles SMILES [options]
 ```
 where a full list of options follows. Note, only the SMILES string is required. The other options have reasonable defaults.
 | Input parameter | Varaible | Default | Description |
@@ -55,15 +55,15 @@ where a full list of options follows. Note, only the SMILES string is required. 
 | `--learning_rate_decay_step` | *int* | 10 | Learning Rate Decay Step |
 | `--loss_force_weight` | *float* | 1e5 | Scaling Factor for the Force loss term |
 | `--force_field_init` | *str* | openff-2.2.0.offxml | Starting guess force field |
-| `--modSem  --no-modSem` | | --modSem | Use mod-Seminario method to initialize the Force Field |
-| `--linear_harmonics  --no-linear_harmonics` | | --linear_harmonics | Linearize the Harmonic potentials in the Force Field |
-| `--linear_torsions  --no-linear_torsions` | | --linear_torsions | Linearize the Torsion potentials in the Force Field |
+| `--modSem  --no-modSem` | | `--modSem` | Use mod-Seminario method to initialize the Force Field |
+| `--linear_harmonics  --no-linear_harmonics` | | `--linear_harmonics` | Linearize the Harmonic potentials in the Force Field |
+| `--linear_torsions  --no-linear_torsions` | | `--linear_torsions` | Linearize the Torsion potentials in the Force Field |
 | `--MLMD_potential` | *str* | mace-off23-small | Name of the MD potential used |
 | `--N_train` | *int* | 1000 | Number of datapoints in training set |
 | `--N_test` | *int* | 1000 | Number of datapoints in test set |
 | `--N_conformers` | *int* | 10 | Number of Starting Conformers |
 | `--N_iterations` | *int* | 5 | Number of ML Iterations Performed |
-| `--memory  --no-memory` | | --memory | Retain data upon iteration |
+| `--memory  --no-memory` | | `--memory` | Retain data upon iteration |
 | `--MD_stepsize` | *int* | 10 | Number of Time Steps Between MD Snapshots |
 | `--MD_startup` | *int* | 100 | Number of Time Steps Ignored |
 | `--MD_temperature` | *int* | 500 | Temperature in Kelvin |
