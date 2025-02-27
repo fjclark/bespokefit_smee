@@ -1,15 +1,15 @@
-# Bespokefit-smee
+# Bespokefit_smee
 Generate a Force-Field Parameterization from ML-Potential MD
 #### **Newcastle University UK - Cole Group**
 ---
 ## Table of Contents
 
-* What is BespokeFit-smee?
+* What is Bespokefit_smee?
 * Installation
 * Running
 
-## What is BespokeFit-smee? 
-BespokeFit-smee is a Force-Field parameterization tool. For a given molecule, it will generate a data set of conformers using machine learning models in [OpenMM-ML](https://github.com/openmm/openmm-ml) simulations. This dataset is used to minimize the Force-Field parameterization. 
+## What is Bespokefit_smee? 
+Bespokefit_smee is a Force-Field parameterization tool. For a given molecule, it will generate a data set of conformers using machine learning models in [OpenMM-ML](https://github.com/openmm/openmm-ml) simulations. This dataset is used to minimize the Force-Field parameterization. 
 
 ---
 From a SMILES string, we generate a initial parameterization using a default open-ff force field - and optionally, adding in modified-Seminario derived bond and angle force constants. This is used to generate a dataset of conformers by running either ML-Potential MD of Force-Field MD and grabbing a number of snapshots. For every snapshot, the energies and forces are taken using the ML-Potental. 
@@ -31,18 +31,18 @@ Four methods for generating the initial dataset are implemented:
 
 ## Installation
 
-The easiest way to install BespokeFit-smee is with conda:
+The easiest way to install Bespokefit_smee is with conda:
 ```
-   git clone https://github.com/thomasjamespope/Bespokefit-smee.git
-   cd bespokefit-smee
-   mamba env create -n bespokefit-smee --file enviroment.yaml
-   mamba activate bespokefit-smee
+   git clone https://github.com/thomasjamespope/bespokefit_smee.git
+   cd bespokefit_smee
+   mamba env create -n bespokefit_smee --file enviroment.yaml
+   mamba activate bespokefit_smee
    pip install mace-torch
 ```
 ## Running
-Running BespokeFit-smee is easy. Simply determine the SMILES string of your molecule are run:
+Running Bespokefit_smee is easy. Simply determine the SMILES string of your molecule are run:
 ```
-    python bespokefit-smee.py --smiles SMILES [options]
+    python bespokefit_smee.py --smiles SMILES [options]
 ```
 where a full list of options follows. Note, only the SMILES string is required. The other options have reasonable defaults.
 | Input parameter | Varaible | Default | Description |
