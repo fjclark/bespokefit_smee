@@ -12,7 +12,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
- "python",
  "smee",
  "datasets",
  "jupyter",
