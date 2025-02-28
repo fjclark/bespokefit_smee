@@ -471,8 +471,8 @@ def build_parameters(
     Returns:
         The prepared Traninable object with a smee force_field and topology ready for fitting.
     """
+    del off['Constraints'].parameters["[#1:1]-[*:2]"]
     force_field, [topology] = smee.converters.convert_interchange(openff.interchange.Interchange.from_smirnoff(expand_torsions(off),mol.to_topology()))
-    topology.constraints = None
     symmetries = list(Chem.CanonicalRankAtoms(mol.to_rdkit(), breakTies=False))
     if topology.n_v_sites != 0:
         raise NotImplementedError("virtual sites are not supported yet.")
