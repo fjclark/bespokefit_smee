@@ -52,10 +52,10 @@ The easiest way to install Bespokefit_smee is with conda:
 In addition, an updated version on the package [smee](https://github.com/SimonBoothroyd/smee) is required:
 ```
    mamba uninstall smee
+   mamba install pydantic-units msgpack-python nnpops
    git clone https://github.com/thomasjamespope/smee
    cd smee
    pip install .
-   mamba install nnpops
 ```
 
 ## Running
