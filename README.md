@@ -49,7 +49,7 @@ The easiest way to install Bespokefit_smee is with conda:
    mamba activate bespokefit_smee
    pip install mace-torch
 ```
-In addition, an updated version on the package "smee" is required:
+In addition, an updated version on the package [smee](https://github.com/SimonBoothroyd/smee) is required:
 ```
    mamba uninstall smee
    git clone https://github.com/thomasjamespope/smee
