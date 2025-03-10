@@ -27,3 +27,6 @@ dependencies = [
 ]
 [tool.setuptools]
 packages = ["bespokefit_smee"]
+
+[project.scripts]
+bespokefit_smee = "bespokefit_smee.bespokefit_smee:cli"
