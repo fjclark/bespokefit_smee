@@ -1,4 +1,4 @@
-name: bespokefit_smee
+name: bespokefit_smee_testing
 
 channels:
   - conda-forge
@@ -18,4 +18,18 @@ dependencies:
     - openmm-ml 
     - tensorboardX 
     - tensorboard
+    - versioneer
+
+    # Development
+    - versioneer
+
+    - pre-commit
+    - ruff
+
+    - pytest
+    - pytest-mock
+    - pytest-cov
+    - codecov
+
+
 
