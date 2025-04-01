@@ -8,7 +8,7 @@ TEST_ARGS := -v --cov=$(PACKAGE_NAME) --cov-report=term --cov-report=xml --junit
 
 env:
 	mamba create     --name $(PACKAGE_NAME)
-	mamba env update --name $(PACKAGE_NAME) --file devtools/envs/base.yaml
+	mamba env update --name $(PACKAGE_NAME) --file devtools/envs/base.yaml -y
 	$(CONDA_ENV_RUN) pip install mace-torch
 	$(CONDA_ENV_RUN) conda remove --force smee -y
 	$(CONDA_ENV_RUN) pip install git+https://github.com/thomasjamespope/smee.git
