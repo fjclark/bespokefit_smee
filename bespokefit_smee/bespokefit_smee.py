@@ -201,7 +201,7 @@ def main(world_size: int, args: list):
         with redirect_stderr(f):
             dataset.save_to_disk("data_it_0")
     # Generate the test set
-    dataset_test = get_data_MMMD(
+    dataset_test = get_data_MLMD(
         mol,
         off_force_field,
         ML_path,
