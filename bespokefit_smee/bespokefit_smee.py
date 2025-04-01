@@ -595,7 +595,7 @@ def cli():
         action="store_false",
         help="Don't retain data upon iteration",
     )
-    parser.set_defaults(memory=True)
+    parser.set_defaults(memory=False)
     parser.add_argument(
         "--linear_harmonics",
         action="store_true",
