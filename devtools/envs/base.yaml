@@ -1,4 +1,4 @@
-name: bespokefit_smee_testing
+name: bespokefit_smee
 
 channels:
   - conda-forge
@@ -19,6 +19,7 @@ dependencies:
     - tensorboardX 
     - tensorboard
     - versioneer
+    - pytorch-gpu
 
     # Development
     - versioneer
