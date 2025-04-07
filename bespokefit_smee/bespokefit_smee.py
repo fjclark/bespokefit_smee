@@ -1,38 +1,43 @@
 """Apply OpenFF parameters to molecule, cluster conformers by RMSD and train"""
 
-from argparse import ArgumentParser
+import copy
 import datetime
+import functools
+import logging
 import os
-import sys
 import pathlib
-from contextlib import redirect_stdout, redirect_stderr
+import sys
+import typing
+from argparse import ArgumentParser
+from contextlib import redirect_stderr, redirect_stdout
 
-from .data_maker import *
-from .writers import *
-from .parameterizer import *
-from .loss_functions import *
-
+import datasets
+import datasets.combine
+import datasets.distributed
+import datasets.table
+import descent.optim
 import openff.interchange
 import openff.toolkit
 import openff.units
-from openmm.app import *
-from openmm import *
-from openmm.unit import *
-from openmmml import MLPotential
 import tensorboardX
 import torch
 import torch.distributed
-import datasets
-import datasets.distributed
-import datasets.table
-import datasets.combine
-import typing
-import copy
+from openmm import *
+from openmm.app import *
+from openmm.unit import *
+from openmmml import MLPotential
+
+from .data_maker import *
+from .loss_functions import *
+from .parameterizer import *
+from .writers import *
+from .writers import report
 
 
 def main(world_size: int, args: list):
     # Check for GPU availability
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
     print(f"Using device: {device}")
 
     #   read in the command line inputs
@@ -142,6 +147,10 @@ def main(world_size: int, args: list):
     trainable_parameters = trainable.to_values().to(device.type)
     topology = topology.to(device.type)
 
+    # Convert topology assignment tensors to dense - needed for some reason for hessian calc
+    for param in topology.parameters.values():
+        param.assignment_matrix = param.assignment_matrix.to_dense()
+
     off_force_field = convert_to_smirnoff(
         trainable.to_force_field(trainable_parameters), base=VdW_forcefield
     )
@@ -200,8 +209,9 @@ def main(world_size: int, args: list):
     with open("/dev/null", "w") as f:
         with redirect_stderr(f):
             dataset.save_to_disk("data_it_0")
+
     # Generate the test set
-    dataset_test = get_data_MLMD(
+    dataset_test = get_data_MMMD(
         mol,
         off_force_field,
         ML_path,
@@ -232,57 +242,70 @@ def main(world_size: int, args: list):
         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         experiment_dir = pathlib.Path(f"{timestamp}")
 
-        # run the ML training
-        with open("training-" + str(iteration) + ".data", "w") as metrics_file:
-            with open_writer(experiment_dir) as writer:
-                optimizer = torch.optim.Adam(
-                    [trainable_parameters], lr=learning_rate, amsgrad=True
-                )
-                scheduler = torch.optim.lr_scheduler.ExponentialLR(
-                    optimizer, gamma=learning_rate_decay
-                )
-                for v in tensorboardX.writer.hparams(
-                    {"optimizer": "Adam", "lr": learning_rate}, {}
-                ):
-                    writer.file_writer.add_summary(v)
-                for i in tqdm(
-                    range(n_epochs),
-                    leave=False,
-                    colour="blue",
-                    desc="Running ML Optimization",
-                ):
-                    loss_trn = prediction_loss(
-                        dataset,
-                        trainable.to_force_field(trainable_parameters),
-                        topology,
-                        loss_force_weight,
-                        device.type,
-                    )
-                    if i % 10 == 0:
-                        loss_tst = prediction_loss(
-                            dataset_test,
-                            trainable.to_force_field(trainable_parameters),
-                            topology,
-                            loss_force_weight,
-                            device.type,
-                        )
-                        write_metrics(i, loss_trn, loss_tst, writer, metrics_file)
-                    loss_trn.backward(retain_graph=True)
-                    # trainable.freeze_grad()
-                    optimizer.step()
-                    optimizer.zero_grad(set_to_none=True)
-                    trainable.clamp(trainable_parameters)
-                    if i % learning_rate_decay_step == 0:
-                        scheduler.step()
-            # some book-keeping and outputing
-            loss_tst = prediction_loss(
-                dataset_test,
-                trainable.to_force_field(trainable_parameters),
-                topology,
-                loss_force_weight,
-                device.type,
+        # Run the training with the LM optimiser
+        lm_config = descent.optim.LevenbergMarquardtConfig(
+            mode="adaptive", n_convergence_criteria=0, max_steps=10
+        )
+
+        closure_fn = get_loss_closure_fn(
+            trainable,
+            topology,
+            dataset,
+        )
+
+        def report(
+            step,
+            x: torch.Tensor,
+            loss,
+            gradient,
+            hessian,
+            step_quality,
+            accept_step,
+            trainable: descent.train.Trainable,
+            topologies: dict[str, smee.TensorTopology],
+            # thermo_dataset: datasets.Dataset,
+        ):
+            # if accept_step:
+            #     ff = trainable.to_force_field(x.detach().clone().requires_grad_(False))
+            #
+            #     with tempfile.TemporaryDirectory() as tmp_dir:
+            #         descent.targets.thermo.predict(
+            #             thermo_dataset, ff, topologies, pathlib.Path(tmp_dir), None, None, True
+            #         )
+
+            logging.info(
+                f"step: {step} "
+                f"loss: {loss.detach().item():.5f} "
+                f"quality: {step_quality.detach().item():.5f} "
+                f"accept: {str(accept_step).lower()}"
             )
-            write_metrics(n_epochs, loss_trn, loss_tst, writer, metrics_file)
+            # logging.info(f"x: {x.detach().cpu().numpy()}")
+
+        correct_fn = trainable.clamp
+
+        report_fn = functools.partial(
+            report,
+            trainable=trainable,
+            topologies=topology,
+            # thermo_dataset=thermo_dataset_val
+        )
+
+        # report_fn = functools.partial(
+        #     report,
+        #     trainable=trainable,
+        #     trainable_parameters=trainable_parameters,
+        #     loss_force_weight=loss_force_weight,
+        #     topology=topology,
+        #     device_type=device.type,
+        #     dataset_test=dataset_test,
+        #     metrics_file="training-" + str(iteration) + ".data",
+        #     experiment_dir=experiment_dir,
+        # )
+
+        trainable_parameters = descent.optim.levenberg_marquardt(
+            trainable_parameters, lm_config, closure_fn, correct_fn, report_fn
+        )
+
         print(f"Summary for Iteration {iteration + 1}".center(88, "="))
         print("")
         print(f"Parameterization".center(88, "="))

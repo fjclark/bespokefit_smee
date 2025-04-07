@@ -19,6 +19,11 @@ import pandas
 import copy
 from openff.units import unit
 
+import descent.train
+
+from .loss_functions import prediction_loss
+
+
 ###############################################################################
 ############################### FUNCTIONS #####################################
 ###############################################################################
@@ -57,7 +62,7 @@ def write_scatter(
             coords_ref,
             create_graph=True,
             retain_graph=True,
-            allow_unused=True,
+            # allow_unused=True,
         )[0]
         energy_prd_0 = energy_prd.detach()[0]
         energy_ref_all.append(energy_ref)
@@ -83,6 +88,37 @@ def write_scatter(
         forces_summary[0].item(),
     )
 
+def report(
+    step,
+    x: torch.Tensor,
+    loss,
+    gradient,
+    hessian,
+    step_quality,
+    accept_step,
+    trainable: descent.train.Trainable,
+    trainable_parameters: torch.Tensor,
+    loss_force_weight: float,
+    topology: smee.TensorTopology,
+    device_type: str,
+    dataset_test: datasets.Dataset,
+    metrics_file: str,
+    experiment_dir: pathlib.Path,
+):
+
+    if step % 10 == 0:
+
+        loss_tst = prediction_loss(
+            dataset_test,
+            trainable.to_force_field(trainable_parameters),
+            topology,
+            loss_force_weight,
+            torch.device(device_type),
+        )
+
+        with open_writer(experiment_dir) as writer:
+            with open(metrics_file, "a") as metrics_file:
+                write_metrics(step, loss, loss_tst, writer, metrics_file)
 
 def write_metrics(
     i: int,
