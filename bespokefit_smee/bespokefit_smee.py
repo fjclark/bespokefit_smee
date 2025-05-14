@@ -1,33 +1,33 @@
 """Apply OpenFF parameters to molecule, cluster conformers by RMSD and train"""
 
-from argparse import ArgumentParser
+import copy
 import datetime
 import os
-import sys
 import pathlib
-from contextlib import redirect_stdout, redirect_stderr
+from argparse import ArgumentParser
+from contextlib import redirect_stderr
 
-from .data_maker import *
-from .writers import *
-from .parameterizer import *
-from .loss_functions import *
-
+import datasets
+import datasets.combine
+import datasets.distributed
+import datasets.table
 import openff.interchange
 import openff.toolkit
 import openff.units
-from openmm.app import *
-from openmm import *
-from openmm.unit import *
-from openmmml import MLPotential
 import tensorboardX
 import torch
 import torch.distributed
-import datasets
-import datasets.distributed
-import datasets.table
-import datasets.combine
-import typing
-import copy
+from tqdm import tqdm
+
+from .data_maker import get_data_cMMMD, get_data_MLMD, get_data_MMMD
+from .loss_functions import prediction_loss
+from .parameterizer import build_parameters, convert_to_smirnoff
+from .writers import (
+    open_writer,
+    write_metrics,
+    write_potential_comparison,
+    write_scatter,
+)
 
 
 def main(world_size: int, args: list):
@@ -285,7 +285,7 @@ def main(world_size: int, args: list):
             write_metrics(n_epochs, loss_trn, loss_tst, writer, metrics_file)
         print(f"Summary for Iteration {iteration + 1}".center(88, "="))
         print("")
-        print(f"Parameterization".center(88, "="))
+        print("Parameterization".center(88, "="))
         print("")
         print("")
         for potential_type in trainable._param_types:
@@ -315,7 +315,7 @@ def main(world_size: int, args: list):
         )
         print("")
         print("")
-        print(f"Convergence".center(88, "="))
+        print("Convergence".center(88, "="))
         print("")
         print(
             f"    Energy Error (Mean): {energy_mean:10.3e}->{energy_mean_new:10.3e} : Change = {energy_mean_new - energy_mean:10.3e}"

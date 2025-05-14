@@ -12,8 +12,8 @@ source:
 build:
   noarch: python
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-  number: 0 
- 
+  number: 0
+
 requirements:
   host:
     - python >=3.10
@@ -23,23 +23,22 @@ requirements:
     - python >=3.10
     - smee
     - datasets
-    - jupyter 
-    - nglview 
+    - jupyter
+    - nglview
     - smirnoff-plugins >=0.0.4
-    - openmm 
-    - openff-toolkit 
-    - openff-units 
-    - openff-interchange 
-    - openmm-ml 
-    - tensorboardX 
+    - openmm
+    - openff-toolkit
+    - openff-units
+    - openff-interchange
+    - openmm-ml
+    - tensorboardX
     - tensorboard
 
 test:
   imports:
     - bespokefit_smee
-    
+
 about:
   summary: Generate a Force-Field Parameterization from Single-Molecule MD.
   license: MIT
   license_file: LICENSE
-

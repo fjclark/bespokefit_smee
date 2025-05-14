@@ -2,21 +2,21 @@ name: bespokefit_smee
 
 channels:
   - conda-forge
-  
+
 dependencies:
     - python
     - smee
     - descent
     - datasets
-    - jupyter 
-    - nglview 
+    - jupyter
+    - nglview
     - smirnoff-plugins >=0.0.4
-    - openmm 
-    - openff-toolkit 
-    - openff-units 
-    - openff-interchange 
-    - openmm-ml 
-    - tensorboardX 
+    - openmm
+    - openff-toolkit
+    - openff-units
+    - openff-interchange
+    - openmm-ml
+    - tensorboardX
     - tensorboard
     - versioneer
     - pytorch-gpu
@@ -31,6 +31,3 @@ dependencies:
     - pytest-mock
     - pytest-cov
     - codecov
-
-
-

@@ -7,24 +7,24 @@ force-field parameterization functions
 ###############################################################################
 ############################### LIBRARY IMPORTS ###############################
 ###############################################################################
-from contextlib import redirect_stdout
-import sys
+import collections
 import copy
 import math
+from contextlib import redirect_stdout
+
 import numpy as np
-import collections
 import openff.interchange
 import openff.toolkit
-from openff.units import unit as off_unit
 import openmm.unit
 import smee
 import smee.converters
 import torch
 import torch.distributed
-import pydantic
+from descent.train import ParameterConfig, Trainable
+from openff.units import unit as off_unit
 from rdkit import Chem
 from tqdm import tqdm
-from descent.train import ParameterConfig, Trainable
+
 ###############################################################################
 ############################### FUNCTIONS #####################################
 ###############################################################################
@@ -200,8 +200,7 @@ def convert_to_smirnoff(
                 k1 = param[0].item()
                 k2 = param[1].item()
                 periodicity = param[2].item()
-                phase1 = param[3].item()
-                phase2 = param[4].item()
+                # Params 3 and 4 are phase1 and phase2
                 idivf = param[5].item()
                 k = k1 + k2
                 if k == 0.0:
@@ -247,8 +246,7 @@ def convert_to_smirnoff(
                 k1 = param[0].item()
                 k2 = param[1].item()
                 periodicity = param[2].item()
-                phase1 = param[3].item()
-                phase2 = param[4].item()
+                # Params 3 and 4 are phase1 and phase2
                 idivf = param[5].item()
                 k = k1 + k2
                 if k == 0.0:
@@ -529,7 +527,6 @@ def build_parameters(
             modSem_vib_scaling,
             modSem_tolerance,
         )
-    improper_torsion_flag = False
     if linear_harmonics:
         topology.parameters["LinearBonds"] = copy.deepcopy(topology.parameters["Bonds"])
         topology.parameters["LinearAngles"] = copy.deepcopy(
@@ -590,7 +587,6 @@ def build_parameters(
                     }
                 )
         elif potential.type == "ImproperTorsions":
-            improper_torsion_flag = True
             if linear_torsions:
                 topology.parameters["LinearImproperTorsions"] = copy.deepcopy(
                     topology.parameters["ImproperTorsions"]
@@ -662,10 +658,10 @@ def modSeminario(
     """Generate modified Seminario parameters for the bond and angle terms in the
     force-field. see doi: 10.1021/acs.jctc.7b00785
     """
-    from openmm.app.simulation import Simulation
     from openmm import LangevinMiddleIntegrator
-    import openmm.unit
+    from openmm.app.simulation import Simulation
     from openmmml import MLPotential
+
     from .writers import write_potential_comparison
 
     #   set up an MD sim with the ML potential
@@ -760,9 +756,9 @@ def modSeminario(
                 position.value_in_unit(_OMM_ANGS)[iA]
                 - position.value_in_unit(_OMM_ANGS)[iB]
             )
-            l = np.linalg.norm(b)
-            k_sum += modSem_projection(-hessian[jA : jA + 3, jB : jB + 3], b / l)
-            l_sum += l
+            norm_b = np.linalg.norm(b)
+            k_sum += modSem_projection(-hessian[jA : jA + 3, jB : jB + 3], b / norm_b)
+            l_sum += norm_b
         bond_k.append(k_sum * vib_scaling**2 * 0.1 / len(bond_types[j]))
         bond_l.append(l_sum / len(bond_types[j]))
     #   calculate mod-seminario force constants along around the angles and group by angle-type, as given in the smee tensors

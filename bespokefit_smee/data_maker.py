@@ -7,29 +7,30 @@ Dataset generation functions for run-fit
 ###############################################################################
 ############################### LIBRARY IMPORTS ###############################
 ###############################################################################
-from contextlib import redirect_stdout
-import smee
-from tqdm import tqdm
-import multiprocessing
-import torch
-import numpy
+import copy
+import functools
 import math
+import multiprocessing
+import typing
+from contextlib import redirect_stdout
+
 import datasets
 import datasets.table
-import pyarrow
-import typing
-import copy
+import numpy
 import openff.interchange
 import openff.toolkit
-from openmm.app import *
-from openmm import *
-from openmm.unit import *
-from openmmml import MLPotential
+import openmm
+import pyarrow
+import torch
 from openff.units import unit as off_unit
-from .parameterizer import convert_to_smirnoff
+from openmm.app import LangevinMiddleIntegrator, Simulation
+from openmm.unit import Quantity, angstrom
+from openmmml import MLPotential
 from rdkit import Chem
 from rdkit.Chem import rdMolAlign
 from rdkit.ML.Cluster import Butina
+from tqdm import tqdm
+
 ###############################################################################
 ############################### FUNCTIONS #####################################
 ###############################################################################
@@ -117,14 +118,13 @@ def get_data_MMMD(
     simulation_ff = interchange.to_openmm_simulation(integrator)
     # minimize the system energy and take a snapshot for the ground-state reference
     coords, energy, forces, weight = [], [], [], []
-    for i, conformer in tqdm(
-        list(enumerate(molecule.conformers)),
+    for conformer in tqdm(
+        molecule.conformers,
         leave=False,
         colour="green",
         desc="Generating Snapshots",
     ):
         interchange.positions = conformer
-        position = interchange.positions.to_openmm()
         simulation_ff.context.setPositions(interchange.positions.to_openmm())
         simulation_ff.minimizeEnergy(maxIterations=100)
         coords.append(
@@ -306,14 +306,13 @@ def get_data_cMMMD(
     simulation_ff = interchange.to_openmm_simulation(integrator)
     # minimize the system energy and take a snapshot for the ground-state reference
     coords, energy, forces, weight = [], [], [], []
-    for i, conformer in tqdm(
-        list(enumerate(molecule.conformers)),
+    for conformer in tqdm(
+        molecule.conformers,
         leave=False,
         colour="green",
         desc="Generating Snapshots",
     ):
         interchange.positions = conformer
-        position = interchange.positions.to_openmm()
         simulation_ff.context.setPositions(interchange.positions.to_openmm())
         simulation_ff.minimizeEnergy(maxIterations=100)
         coords.append(

@@ -7,17 +7,17 @@ Output functions for run-fit
 ###############################################################################
 ############################### LIBRARY IMPORTS ###############################
 ###############################################################################
-import smee
-import torch
-import datasets
-import tensorboardX
 import contextlib
-import pathlib
-import numpy
-import typing
-import pandas
 import copy
-from openff.units import unit
+import pathlib
+import typing
+
+import datasets
+import numpy
+import pandas
+import smee
+import tensorboardX
+import torch
 
 ###############################################################################
 ############################### FUNCTIONS #####################################
@@ -39,8 +39,7 @@ def write_scatter(
     filename: str,
 ):
     energy_ref_all, energy_prd_all = [], []
-    index_tracker = []
-    for i, entry in enumerate(dataset):
+    for entry in dataset:
         energy_ref = entry["energy"].to(device_type)
         forces_ref = entry["forces"].reshape(len(energy_ref), -1, 3).to(device_type)
         coords_ref = (
@@ -121,7 +120,7 @@ def write_potential_summary(potential: smee.TensorPotential):
     if potential.attributes is not None:
         attribute_rows = [
             {
-                f"{col}{_format_unit(potential.attribute_units[idx])}": (
+                f"{col}{potential.attribute_units[idx]}": (
                     f"{potential.attributes[idx].item():.4f} "
                 )
                 for idx, col in enumerate(potential.attribute_cols)
@@ -141,7 +140,7 @@ def write_potential_summary(potential: smee.TensorPotential):
 def write_potential_comparison(pot1: smee.TensorPotential, pot2: smee.TensorPotential):
     parameter_rows = []
     for key_id, value in enumerate(
-        zip(pot1.parameters.detach(), pot2.parameters.detach())
+        zip(pot1.parameters.detach(), pot2.parameters.detach(), strict=False)
     ):
         row = {"ID": key_id}
         row.update(
@@ -158,7 +157,7 @@ def write_potential_comparison(pot1: smee.TensorPotential, pot2: smee.TensorPote
     if pot1.attributes is not None:
         attribute_rows = [
             {
-                f"{col}{_format_unit(pot1.attribute_units[idx])}": (
+                f"{col}{pot1.attribute_units[idx]}": (
                     f"{pot1.attributes[idx].item():.4f} "
                 )
                 for idx, col in enumerate(pot1.attribute_cols)
