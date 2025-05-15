@@ -305,7 +305,10 @@ def get_data_cMMMD(
     )
     simulation_ff = interchange.to_openmm_simulation(integrator)
     # minimize the system energy and take a snapshot for the ground-state reference
-    coords, energy, forces, weight = [], [], [], []
+    coords: list[float] = []
+    energy: list[float] = []
+    forces: list[float] = []
+    weight: list[float] = []
     for conformer in tqdm(
         molecule.conformers,
         leave=False,
@@ -338,21 +341,21 @@ def get_data_cMMMD(
     mol_rdkit: Chem.Mol = Chem.RemoveHs(mol_clstr.to_rdkit())
     conf_ids = [conf.GetId() for conf in mol_rdkit.GetConformers()]
     conf_pairs = [(i, j) for i in range(len(conf_ids)) for j in range(i)]
-    conf_pairs = numpy.array_split(numpy.array(conf_pairs), Cluster_Parallel)
+    conf_pairs_np = numpy.array_split(numpy.array(conf_pairs), Cluster_Parallel)
     rms_fn = functools.partial(compute_best_rms, mol=mol_rdkit)
     with multiprocessing.Pool(Cluster_Parallel) as pool:
         dists = list(
             tqdm(
-                pool.imap(rms_fn, conf_pairs),
-                total=len(conf_pairs),
+                pool.imap(rms_fn, conf_pairs_np),
+                total=len(conf_pairs_np),
                 leave=False,
                 colour="green",
                 desc="Clustering the Conformers",
             )
         )
-    dists = [d for dist in dists for d in dist]
-    clusters = Butina.ClusterData(
-        dists, len(conf_ids), Cluster_tolerance, isDistData=True, reordering=True
+    dists_flat = [d for dist in dists for d in dist]
+    clusters = Butina.ClusterData(  # type: ignore[no-untyped-call]
+        dists_flat, len(conf_ids), Cluster_tolerance, isDistData=True, reordering=True
     )
     cluster_ids = [cluster[0] for cluster in clusters]
     cluster_len = [len(cluster) for cluster in clusters]

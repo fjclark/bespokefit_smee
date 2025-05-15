@@ -11,6 +11,7 @@ import collections
 import copy
 import math
 from contextlib import redirect_stdout
+from typing import Literal, cast
 
 import numpy as np
 import openff.interchange
@@ -19,9 +20,10 @@ import openmm.unit
 import smee
 import smee.converters
 import torch
-import torch.distributed
 from descent.train import ParameterConfig, Trainable
+from numpy import typing as npt
 from openff.units import unit as off_unit
+from openff.units.unit import Quantity
 from rdkit import Chem
 from tqdm import tqdm
 
@@ -81,7 +83,9 @@ def convert_to_smirnoff(
     for potential in ff.potentials:
         if potential.type in {"Bonds", "Angles", "ProperTorsions", "ImproperTorsions"}:
             assert potential.attribute_cols is None
-            parameters_by_smarts = collections.defaultdict(dict)
+            parameters_by_smarts: dict[str, dict[int | None, torch.Tensor]] = (
+                collections.defaultdict(dict)
+            )
             for parameter, parameter_key in zip(
                 potential.parameters, potential.parameter_keys, strict=True
             ):
@@ -96,7 +100,10 @@ def convert_to_smirnoff(
                     raise NotImplementedError("unexpected parameters found")
                 counter = len(handler.parameters) + 1
                 parameter_id = f"{potential.type[0].lower()}-bespoke-{counter}"
-                parameter_dict = {"smirks": smarts, "id": parameter_id}
+                parameter_dict: dict[str, str | Quantity] = {
+                    "smirks": smarts,
+                    "id": parameter_id,
+                }
                 parameter_dict.update(
                     {
                         (col if mult is None else f"{col}{mult + 1}"): float(
@@ -210,8 +217,13 @@ def convert_to_smirnoff(
                 dt = param.dtype
                 new_params.append([k, periodicity, phase, idivf])
             reconstructed_param = torch.tensor(new_params, dtype=dt)
-            reconstructed_units = (_KCAL_PER_MOL, _UNITLESS, _RADIANS, _UNITLESS)
-            reconstructed_cols = ("k", "periodicity", "phase", "idivf")
+            reconstructed_torsion_units = (
+                _KCAL_PER_MOL,
+                _UNITLESS,
+                _RADIANS,
+                _UNITLESS,
+            )
+            reconstructed_torsion_cols = ("k", "periodicity", "phase", "idivf")
             for parameter, parameter_key in zip(
                 reconstructed_param, potential.parameter_keys, strict=True
             ):
@@ -232,9 +244,9 @@ def convert_to_smirnoff(
                         (col if mult is None else f"{col}{mult + 1}"): float(
                             parameter[col_idx]
                         )
-                        * reconstructed_units[col_idx]
+                        * reconstructed_torsion_units[col_idx]
                         for mult, parameter in parameters_by_mult.items()
-                        for col_idx, col in enumerate(reconstructed_cols)
+                        for col_idx, col in enumerate(reconstructed_torsion_cols)
                     }
                 )
                 handler.add_parameter(parameter_dict)
@@ -257,8 +269,13 @@ def convert_to_smirnoff(
                 dt = param.dtype
                 new_params.append([k, periodicity, phase, idivf])
             reconstructed_param = torch.tensor(new_params, dtype=dt)
-            reconstructed_units = (_KCAL_PER_MOL, _UNITLESS, _RADIANS, _UNITLESS)
-            reconstructed_cols = ("k", "periodicity", "phase", "idivf")
+            reconstructed_torsion_units = (
+                _KCAL_PER_MOL,
+                _UNITLESS,
+                _RADIANS,
+                _UNITLESS,
+            )
+            reconstructed_torsion_cols = ("k", "periodicity", "phase", "idivf")
             for parameter, parameter_key in zip(
                 reconstructed_param, potential.parameter_keys, strict=True
             ):
@@ -279,9 +296,9 @@ def convert_to_smirnoff(
                         (col if mult is None else f"{col}{mult + 1}"): float(
                             parameter[col_idx]
                         )
-                        * reconstructed_units[col_idx]
+                        * reconstructed_torsion_units[col_idx]
                         for mult, parameter in parameters_by_mult.items()
-                        for col_idx, col in enumerate(reconstructed_cols)
+                        for col_idx, col in enumerate(reconstructed_torsion_cols)
                     }
                 )
                 handler.add_parameter(parameter_dict)
@@ -381,7 +398,7 @@ def _prepare_potential(
     mol: openff.toolkit.Molecule,
     symmetries: list[int],
     potential: smee.TensorPotential,
-    parameter_map: smee.ParameterMap,
+    parameter_map: smee.ValenceParameterMap,
 ) -> None:
     """Prepare a potential to use bespoke parameters for each 'slot'."""
 
@@ -423,14 +440,14 @@ def _prepare_potential(
 
         ids_to_smarts[particle_ids] = _create_smarts(mol, particle_idxs)
 
-    ids_to_parameter_idxs = {
+    sorted_ids_to_parameter_idxs = {
         particle_ids: sorted(parameter_idxs)
         for particle_ids, parameter_idxs in ids_to_parameter_idxs.items()
     }
 
     parameter_ids = [
         (particle_ids, parameter_idx)
-        for particle_ids, parameter_idxs in ids_to_parameter_idxs.items()
+        for particle_ids, parameter_idxs in sorted_ids_to_parameter_idxs.items()
         for parameter_idx in parameter_idxs
     ]
     potential.parameters = potential.parameters[
@@ -439,10 +456,13 @@ def _prepare_potential(
     potential.parameter_keys = [
         openff.interchange.models.PotentialKey(
             id=ids_to_smarts[particle_ids],
-            mult=ids_to_parameter_idxs[particle_ids].index(parameter_idx)
+            mult=sorted_ids_to_parameter_idxs[particle_ids].index(parameter_idx)
             if is_indexed
             else None,
             associated_handler=potential.type,
+            bond_order=None,
+            virtual_site_type=None,
+            cosmetic_attributes={},
         )
         for particle_ids, parameter_idx in parameter_ids
     ]
@@ -451,11 +471,12 @@ def _prepare_potential(
         (len(parameter_map.particle_idxs), len(potential.parameters)),
         parameter_map.assignment_matrix,
     )
-    particle_idxs_updated = []
+
+    particle_idxs_updated: list[tuple[int, ...]] = []
 
     for particle_ids, particle_idxs in ids_to_particle_idxs.items():
         for particle_idx in particle_idxs:
-            for parameter_idx in ids_to_parameter_idxs[particle_ids]:
+            for parameter_idx in sorted_ids_to_parameter_idxs[particle_ids]:
                 j = parameter_ids.index((particle_ids, parameter_idx))
 
                 assignment_matrix[len(particle_idxs_updated), j] = 1
@@ -477,7 +498,7 @@ def build_parameters(
     modSem_finite_step: float,
     modSem_vib_scaling: float,
     modSem_tolerance: float,
-    device_type: str = "cuda",
+    device_type: Literal["cpu", "cuda"] = "cuda",
 ) -> tuple[smee.TensorForceField, Trainable, smee.TensorTopology]:
     """Prepare a Trainable object that contains  a force field with
     unique parameters for each topologically symmetric term of a molecule.
@@ -685,7 +706,7 @@ def modSeminario(
     position = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
     crd0 = position.value_in_unit(_OMM_NM).reshape(3 * molecule.n_atoms)
     #   extract bond info from the smee tensor
-    bonds_obj = copy.deepcopy(top.parameters["Bonds"])
+    bonds_obj = cast(smee.ValenceParameterMap, copy.deepcopy(top.parameters["Bonds"]))
     n_bonds = len(bonds_obj.assignment_matrix.indices()[0].detach().flatten().tolist())
     n_bond_types = (
         max(bonds_obj.assignment_matrix.indices()[-1].detach().flatten().tolist()) + 1
@@ -700,7 +721,7 @@ def modSeminario(
     ]
     bond_indxs = bonds_obj.particle_idxs.tolist()
     #   extract angle info from the smee tensor
-    angles_obj = copy.deepcopy(top.parameters["Angles"])
+    angles_obj = cast(smee.ValenceParameterMap, copy.deepcopy(top.parameters["Angles"]))
     n_angles = len(
         angles_obj.assignment_matrix.indices()[0].detach().flatten().tolist()
     )
@@ -758,7 +779,7 @@ def modSeminario(
             )
             norm_b = np.linalg.norm(b)
             k_sum += modSem_projection(-hessian[jA : jA + 3, jB : jB + 3], b / norm_b)
-            l_sum += norm_b
+            l_sum += float(norm_b)
         bond_k.append(k_sum * vib_scaling**2 * 0.1 / len(bond_types[j]))
         bond_l.append(l_sum / len(bond_types[j]))
     #   calculate mod-seminario force constants along around the angles and group by angle-type, as given in the smee tensors
@@ -789,8 +810,8 @@ def modSeminario(
             uN = unit_normal_vector(uAB, uCB)
             uPA, uPC = unit_normal_vector(uN, uAB), unit_normal_vector(uCB, uN)
             kPA, kPC = modSem_projection(HAB, uPA), modSem_projection(HCB, uPC)
-            fixA, fixC = 0, 0
-            NfA, NfC = 0, 0
+            fixA, fixC = 0.0, 0.0
+            NfA, NfC = 0.0, 0.0
             for jj in range(n_angles):
                 iiA, iiB, iiC = (
                     angle_indxs[jj][0],
@@ -822,7 +843,9 @@ def modSeminario(
                 fixA = fixA / NfA
             if NfC > 0:
                 fixC = fixC / NfC
-            k_sum += 1 / (((1 + fixA) / (lAB**2 * kPA)) + ((1 + fixC) / (lCB**2 * kPC)))
+            k_sum += float(
+                1 / (((1 + fixA) / (lAB**2 * kPA)) + ((1 + fixC) / (lCB**2 * kPC)))
+            )
             t_sum += np.arccos(np.dot(uAB, uCB))
         angle_k.append(k_sum * vib_scaling**2 * 0.1 / len(angle_types[j]))
         angle_t.append(t_sum / len(angle_types[j]))
@@ -844,13 +867,17 @@ def modSeminario(
     return sff_out
 
 
-def unit_normal_vector(u1, u2):
+def unit_normal_vector(
+    u1: npt.NDArray[np.float64], u2: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]:
     """Return a unit vector perpendicular to the two input vectors"""
     cross = np.cross(u1, u2)
     return cross / np.linalg.norm(cross)
 
 
-def modSem_projection(parhess, unit_vector):
+def modSem_projection(
+    parhess: npt.NDArray[np.float64], unit_vector: npt.NDArray[np.float64]
+) -> float:
     """Return a spring constant projected out of a partial hessian onto a unit vector"""
     vals, vecs = np.linalg.eig(parhess)
     kab1 = sum(abs(np.dot(unit_vector, vecs[:, i])) * vals[i] for i in range(3)).real
@@ -862,7 +889,7 @@ def modSem_projection(parhess, unit_vector):
     kba2 = sum(
         abs(np.dot(unit_vector[::-1], vecs[:, i])) * vals[i] for i in range(3)
     ).real
-    return 0.25 * (kab1 + kba1 + kab2 + kba2)
+    return float(0.25 * (kab1 + kba1 + kab2 + kba2))
 
 
 def linearize_harmonics(

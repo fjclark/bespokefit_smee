@@ -21,10 +21,10 @@ repos:
         entry: bash
         args: [-c, "make lint"]
 
-# -   repo: local
-#     hooks:
-#     -   id: mypy
-#         name: Type check python code
-#         language: system
-#         entry: bash
-#         args: [-c, "make type-check"]
+-   repo: local
+    hooks:
+    -   id: mypy
+        name: Type check python code
+        language: system
+        entry: bash
+        args: [-c, "make type-check"]

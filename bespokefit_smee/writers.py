@@ -11,6 +11,7 @@ import contextlib
 import copy
 import pathlib
 import typing
+from typing import TextIO
 
 import datasets
 import numpy
@@ -37,7 +38,7 @@ def write_scatter(
     topology_in: smee.TensorTopology,
     device_type: str,
     filename: str,
-):
+) -> tuple[float, float, float, float]:
     energy_ref_all, energy_prd_all = [], []
     for entry in dataset:
         energy_ref = entry["energy"].to(device_type)
@@ -88,9 +89,9 @@ def write_metrics(
     loss_trn: torch.Tensor,
     loss_tst: torch.Tensor,
     writer: tensorboardX.SummaryWriter,
-    filename: str,
-):
-    filename.write(f"{i} {loss_trn:.10f} {loss_tst:.10f}\n")
+    outfile: TextIO,
+) -> None:
+    outfile.write(f"{i} {loss_trn:.10f} {loss_tst:.10f}\n")
     writer.add_scalar("loss_trn", loss_trn.detach().item(), i)
     writer.add_scalar("loss_tst", loss_tst.detach().item(), i)
     writer.flush()
@@ -99,13 +100,13 @@ def write_metrics(
 def _format_parameter_id(id_: typing.Any) -> str:
     """Format a parameter ID for display in a table."""
     id_str = id_ if "EP" not in id_ else id_[: id_.index("EP") + 2]
-    return id_str[:60] + (id_str[60:] and "...")
+    return str(id_str[:60] + (id_str[60:] and "..."))
 
 
-def write_potential_summary(potential: smee.TensorPotential):
+def write_potential_summary(potential: smee.TensorPotential) -> None:
     parameter_rows = []
     for key_id, value in enumerate(potential.parameters.detach()):
-        row = {"ID": key_id}
+        row: dict[str, int | str] = {"ID": key_id}
         row.update(
             {
                 f"{col}": (f"{value[idx].item():.4f}")
@@ -118,6 +119,12 @@ def write_potential_summary(potential: smee.TensorPotential):
     print(f"fn={potential.fn}", flush=True)
 
     if potential.attributes is not None:
+        assert potential.attribute_units is not None, (
+            "Attribute units are None even though attributes are not None"
+        )
+        assert potential.attribute_cols is not None, (
+            "Attribute columns are None even though attributes are not None"
+        )
         attribute_rows = [
             {
                 f"{col}{potential.attribute_units[idx]}": (
@@ -137,12 +144,14 @@ def write_potential_summary(potential: smee.TensorPotential):
     print(pandas.DataFrame(parameter_rows).to_string(index=False), flush=True)
 
 
-def write_potential_comparison(pot1: smee.TensorPotential, pot2: smee.TensorPotential):
+def write_potential_comparison(
+    pot1: smee.TensorPotential, pot2: smee.TensorPotential
+) -> None:
     parameter_rows = []
     for key_id, value in enumerate(
         zip(pot1.parameters.detach(), pot2.parameters.detach(), strict=False)
     ):
-        row = {"ID": key_id}
+        row: dict[str, int | str] = {"ID": key_id}
         row.update(
             {
                 f"{col}": (f"{value[0][idx].item():.4f} --> {value[1][idx].item():.4f}")
@@ -155,6 +164,12 @@ def write_potential_comparison(pot1: smee.TensorPotential, pot2: smee.TensorPote
     print(f"fn={pot1.fn}", flush=True)
 
     if pot1.attributes is not None:
+        assert pot1.attribute_units is not None, (
+            "Attribute units are None even though attributes are not None"
+        )
+        assert pot1.attribute_cols is not None, (
+            "Attribute columns are None even though attributes are not None"
+        )
         attribute_rows = [
             {
                 f"{col}{pot1.attribute_units[idx]}": (

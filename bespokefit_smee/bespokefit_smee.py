@@ -4,8 +4,9 @@ import copy
 import datetime
 import os
 import pathlib
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from contextlib import redirect_stderr
+from typing import Literal
 
 import datasets
 import datasets.combine
@@ -30,9 +31,10 @@ from .writers import (
 )
 
 
-def main(world_size: int, args: list):
+def main(world_size: int, args: Namespace) -> None:
     # Check for GPU availability
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device_type: Literal["cpu", "cuda"] = "cuda" if torch.cuda.is_available() else "cpu"
+    device = torch.device(device_type)
     print(f"Using device: {device}")
 
     #   read in the command line inputs
@@ -135,12 +137,12 @@ def main(world_size: int, args: list):
         modSem_finite_step,
         modSem_vib_scaling,
         modSem_tolerance,
-        device_type=device.type,
+        device_type=device_type,
     )
 
-    # Move to the GPU, if available
-    trainable_parameters = trainable.to_values().to(device.type)
-    topology = topology.to(device.type)
+    # Move to the requested device (not strictly necessary if on CPU)
+    trainable_parameters = trainable.to_values().to((device_type))
+    topology = topology.to(device_type)
 
     off_force_field = convert_to_smirnoff(
         trainable.to_force_field(trainable_parameters), base=VdW_forcefield
@@ -267,7 +269,7 @@ def main(world_size: int, args: list):
                             device.type,
                         )
                         write_metrics(i, loss_trn, loss_tst, writer, metrics_file)
-                    loss_trn.backward(retain_graph=True)
+                    loss_trn.backward(retain_graph=True)  # type: ignore[no-untyped-call]
                     # trainable.freeze_grad()
                     optimizer.step()
                     optimizer.zero_grad(set_to_none=True)
@@ -411,7 +413,7 @@ def main(world_size: int, args: list):
                     dataset.save_to_disk("data_it_" + str(iteration))
 
 
-def cli():
+def cli() -> None:
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "29500"
     parser = ArgumentParser()

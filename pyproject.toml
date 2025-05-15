@@ -51,6 +51,9 @@ ignore-init-module-imports = true
 [tool.coverage.run]
 omit = ["**/tests/*", "**/_version.py"]
 
+[tool.mypy]
+exclude = ["bespokefit_smee/_version.py"]
+
 [tool.coverage.report]
 exclude_lines = [
     "@overload",

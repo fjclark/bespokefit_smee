@@ -26,7 +26,7 @@ test:
 	$(CONDA_ENV_RUN) pytest -v $(TEST_ARGS) $(PACKAGE_NAME)/tests/
 
 type-check:
-	$(CONDA_ENV_RUN) mypy --follow-imports=silent --ignore-missing-imports --strict $(PACKAGE_DIR)
+	$(CONDA_ENV_RUN) mypy --follow-imports=silent --ignore-missing-imports --strict $(PACKAGE_NAME)
 
 docs:
 	$(CONDA_ENV_RUN) mkdocs build
