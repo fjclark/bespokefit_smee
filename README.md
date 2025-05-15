@@ -1,6 +1,12 @@
 <h2 align="center">Bespokefit_smee</h2>
 
 <p align="center">
+  <a href="https://github.com/fjclark/bespokefit_smee/actions/workflows/ci.yaml">
+    <img src="https://github.com/fjclark/bespokefit_smee/actions/workflows/ci.yaml/badge.svg" alt="CI" />
+  </a>
+  <a href="https://codecov.io/gh/fjclark/bespokefit_smee" >
+    <img src="https://codecov.io/gh/fjclark/bespokefit_smee/graph/badge.svg?token=IBZ2H0NL58"/>
+  </a>
   <a href="https://opensource.org/licenses/MIT">
     <img alt="license" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   </a>
