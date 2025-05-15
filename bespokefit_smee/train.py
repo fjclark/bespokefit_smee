@@ -4,7 +4,6 @@ import copy
 import datetime
 import pathlib
 from contextlib import redirect_stderr
-from typing import Literal
 
 import datasets
 import datasets.combine
@@ -26,13 +25,9 @@ from .writers import (
 
 
 def train(world_size: int, args: TrainingConfig) -> None:
-    # Check for GPU availability
-    device_type: Literal["cpu", "cuda"] = "cuda" if torch.cuda.is_available() else "cpu"
-    device = torch.device(device_type)
-    print(f"Using device: {device}")
-
-    #   read in the command line inputs
     smiles = args.smiles  # SMILES string
+    device_type = args.device_type
+    device = torch.device(device_type)
     method = args.method  # Method for generating data
     memory = args.memory  # Include previous data on iteration
     n_epochs = args.N_epochs  # Number of epochs in the ML fit

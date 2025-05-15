@@ -11,7 +11,7 @@ import collections
 import copy
 import math
 from contextlib import redirect_stdout
-from typing import Literal, cast
+from typing import cast
 
 import numpy as np
 import openff.interchange
@@ -26,6 +26,8 @@ from openff.units import Quantity
 from openff.units import unit as off_unit
 from rdkit import Chem
 from tqdm import tqdm
+
+from .utils.typing import TorchDevice
 
 ###############################################################################
 ############################### FUNCTIONS #####################################
@@ -498,7 +500,7 @@ def build_parameters(
     modSem_finite_step: float,
     modSem_vib_scaling: float,
     modSem_tolerance: float,
-    device_type: Literal["cpu", "cuda"] = "cuda",
+    device_type: TorchDevice = "cuda",
 ) -> tuple[smee.TensorForceField, Trainable, smee.TensorTopology]:
     """Prepare a Trainable object that contains  a force field with
     unique parameters for each topologically symmetric term of a molecule.

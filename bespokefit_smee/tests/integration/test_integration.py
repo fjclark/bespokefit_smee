@@ -12,6 +12,8 @@ def test_integration_cli(tmp_cwd) -> None:
         "train",
         "--smiles",
         "CCO",  # Ethanol
+        "--device-type",
+        "cpu",  # So we can run on GH actions
         "--N-iterations",
         "1",  # Super short run for testing
         "--N-epochs",

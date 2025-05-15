@@ -1,9 +1,12 @@
 """Pydantic models which control/validate the settings."""
 
-import yaml
-from pydantic import BaseModel, ConfigDict, Field
+import warnings
 
-from .utils.typing import PathLike
+import torch
+import yaml
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from .utils.typing import PathLike, TorchDevice
 
 
 class TrainingConfig(BaseModel):
@@ -15,6 +18,9 @@ class TrainingConfig(BaseModel):
     )
 
     smiles: str = Field(..., description="SMILES string")
+    device_type: TorchDevice = Field(
+        "cuda", description="Device type for training, either 'cpu' or 'cuda'"
+    )
     method: str = Field("MMMD", description="Method for generating data")
     N_epochs: int = Field(1000, description="Number of epochs in the ML fit")
     learning_rate: float = Field(0.1, description="Learning Rate in the ML fit")
@@ -74,6 +80,22 @@ class TrainingConfig(BaseModel):
         True,
         description="Use mod-Seminario method to initialize the Force Field (Default)",
     )
+
+    @field_validator("device_type")
+    @classmethod
+    def validate_device_type(cls, value: TorchDevice) -> TorchDevice:
+        """Ensure that the requested device type is available."""
+        if value == "cuda" and not torch.cuda.is_available():
+            raise ValueError("CUDA is not available on this system.")
+
+        if value == "cpu":
+            warnings.warn(
+                "Using CPU for training. This may be slow. Consider using CUDA if available.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        return value
 
     @classmethod
     def from_yaml(cls, yaml_path: PathLike) -> "TrainingConfig":
