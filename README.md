@@ -20,7 +20,7 @@
 
 ---
 
-Generate a Bespoke Force-Field Parametrization Quickly and Reliably. Developed in the [Cole Group](https://blogs.ncl.ac.uk/danielcole/about-us/) at Newcastle University. Please see the [**documentation**](https://fjclark.github.io/bespokefit_smee/).
+Generate a Bespoke Force-Field Parametrization Quickly and Reliably. Developed in the [Cole Group](https://blogs.ncl.ac.uk/danielcole/about-us/) at Newcastle University. Please see the [**documentation**](https://fjclark.github.io/bespokefit_smee/latest/).
 
 ***Warning**: This code is experimental and under active development. It is not guaranteed to provide correct results,
 the documentation and testing is incomplete, and the API may change without notice.*
@@ -45,6 +45,11 @@ Run with command line arguments:
 bespokefit_smee train --smiles "CCC(CC)C(=O)Nc2cc(NC(=O)c1c(Cl)cccc1Cl)ccn2"
 ```
 
+Sensible defaults have been set, but all available options can be viewed with:
+```bash
+bespokefit_smee train --help
+```
+
 Run from a yaml file:
 ```bash
 bespokefit_smee write-default-yaml default.yaml
@@ -52,6 +57,7 @@ bespokefit_smee write-default-yaml default.yaml
 bespokefit_smee train-from-yaml default.yaml
 ```
 
+For more details on the theory and implementation, please see the [documentation](https://fjclark.github.io/bespokefit_smee/latest/).
 
 ## Copyright
 
