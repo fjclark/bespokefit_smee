@@ -52,7 +52,10 @@ ignore-init-module-imports = true
 omit = ["**/tests/*", "**/_version.py"]
 
 [tool.mypy]
-exclude = ["bespokefit_smee/_version.py"]
+exclude = [
+    "bespokefit_smee/_version.py",
+    "bespokefit_smee/tests/",
+]
 
 [tool.coverage.report]
 exclude_lines = [
