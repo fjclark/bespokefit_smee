@@ -13,7 +13,7 @@ env:
 		mamba create --name $(PACKAGE_NAME); \
 	fi
 	@if [ -n "$$BESPOKEFIT_SMEE_CPU_INSTALL" ]; then \
-		mamba env update --name $(PACKAGE_NAME) --file devtools/envs/cpu.yaml; \
+		mamba env update --name $(PACKAGE_NAME) --file devtools/envs/cpu_only.yaml; \
 	else \
 		mamba env update --name $(PACKAGE_NAME) --file devtools/envs/base.yaml; \
 	fi
