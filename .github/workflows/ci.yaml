@@ -17,9 +17,10 @@ jobs:
   test:
     name: Test on ubuntu-latest, Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    container: condaforge/mambaforge:latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
 
     steps:
       - uses: actions/checkout@v4
