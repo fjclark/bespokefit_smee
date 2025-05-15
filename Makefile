@@ -14,7 +14,7 @@ env:
 	fi
 	mamba env update --name $(PACKAGE_NAME) --file devtools/envs/base.yaml -y
 	$(CONDA_ENV_RUN) pip install mace-torch
-	$(CONDA_ENV_RUN) conda remove --force smee -y
+	$(CONDA_ENV_RUN) conda remove --force smee
 	$(CONDA_ENV_RUN) pip install git+https://github.com/thomasjamespope/smee.git
 	$(CONDA_ENV_RUN) pip install --no-deps -e .
 	$(CONDA_ENV_RUN) pre-commit install || true
