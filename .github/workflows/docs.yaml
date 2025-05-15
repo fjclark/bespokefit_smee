@@ -41,7 +41,7 @@ jobs:
 
         git fetch --all --prune
 
-        export KEEP_CONDA_ENV_RUN=1
+        export BESPOKEFIT_SMEE_CPU_INSTALL=1
         make env
 
         make docs-deploy VERSION="$VERSION"
