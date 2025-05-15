@@ -12,7 +12,7 @@ env:
 	else \
 		mamba create --name $(PACKAGE_NAME); \
 	fi
-	mamba env update --name $(PACKAGE_NAME) --file devtools/envs/base.yaml -y
+	mamba env update --name $(PACKAGE_NAME) --file devtools/envs/base.yaml
 	$(CONDA_ENV_RUN) pip install mace-torch
 	$(CONDA_ENV_RUN) conda remove --force smee
 	$(CONDA_ENV_RUN) pip install git+https://github.com/thomasjamespope/smee.git
