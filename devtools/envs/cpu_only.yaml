@@ -4,6 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
+    # Base dependencies
     - python
     - pyyaml
     - smee
@@ -24,8 +25,7 @@ dependencies:
     - pydantic>=2
     - pydantic-settings
 
-    # Development
-
+    # Testing/ Development
     - pre-commit
     - ruff
     - pytest
@@ -33,3 +33,17 @@ dependencies:
     - pytest-cov
     - codecov
     - mypy
+
+    # Docs
+    - mkdocs
+    - mkdocs-material
+    - mkdocs-gen-files
+    - mkdocs-literate-nav
+    - mkdocs-jupyter
+    - mkdocstrings
+    - mkdocstrings-python
+    - black
+    - mike
+
+    - pip:
+        - mkdocs-bibtex
