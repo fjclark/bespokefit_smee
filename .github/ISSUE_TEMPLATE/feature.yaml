@@ -1,0 +1,40 @@
+name: Feature request
+description: Request a new feature
+labels: ["enhancement"]
+body:
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: >-
+        Optional context about what you are trying to do.
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: >-
+        A clear and concise description of the feature you would like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: >-
+        Alternatives or workarounds you've considered.
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: >-
+        Any other context or screenshots about the feature request that might be relevant.
+    validations:
+      required: false

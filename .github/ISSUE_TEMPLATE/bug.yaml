@@ -1,0 +1,49 @@
+name: Bug report
+description: Create a bug report
+labels: ["bug"]
+body:
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: >-
+        Optional context about what you are / were trying to do when you found this
+        bug. You can leave this field empty if the context is not relevant.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: >-
+        A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: >-
+        A minimal runnable example that showcases the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: >-
+        The logs / error message(s) that you are seeing, if any. The more verbose the better!
+    validations:
+      required: false
+
+  - type: textarea
+    id: version
+    attributes:
+      label: Version
+      description: >-
+        The version (either a git commit hash or the release version) of the package
+        that you are using.
+    validations:
+      required: true

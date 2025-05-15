@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "devel"
+  pull_request:
+    branches:
+      - "devel"
+  schedule:
+    # Weekly tests run by default:
+    #   Scheduled workflows run on the latest commit on the default or base branch.
+    #   (from https://help.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events-schedule)
+    - cron: "0 0 * * 0"
+
+jobs:
+  test:
+    name: Test on ubuntu-latest, Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Additional info about the build
+        shell: bash
+        run: |
+          uname -a
+          df -h
+          ulimit -a
+
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: devtools/conda-envs/test.yaml
+          environment-name: red
+          create-args: >- # beware the >- instead of |, we don't split on newlines but on spaces
+            python=${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          apt update && apt install -y make
+          make env
+
+      - name: Lint
+        run: |
+          make lint
+
+      - name: Type check
+          make type-check
+
+      - name: Run tests
+          make test
+
+      - name: Build Docs
+          make docs-build
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
