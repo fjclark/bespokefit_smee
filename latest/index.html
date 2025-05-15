@@ -690,7 +690,7 @@
 </p>
 
 <hr />
-<p>Generate a Bespoke Force-Field Parametrization Quickly and Reliably. Developed in the <a href="https://blogs.ncl.ac.uk/danielcole/about-us/">Cole Group</a> at Newcastle University. Please see the <a href="https://fjclark.github.io/bespokefit_smee/"><strong>documentation</strong></a>.</p>
+<p>Generate a Bespoke Force-Field Parametrization Quickly and Reliably. Developed in the <a href="https://blogs.ncl.ac.uk/danielcole/about-us/">Cole Group</a> at Newcastle University. Please see the <a href="https://fjclark.github.io/bespokefit_smee/latest/"><strong>documentation</strong></a>.</p>
 <p><em><strong>Warning</strong>: This code is experimental and under active development. It is not guaranteed to provide correct results,
 the documentation and testing is incomplete, and the API may change without notice.</em></p>
 <h2 id="what-is-bespokefit_smee">What is Bespokefit_smee?<a class="headerlink" href="#what-is-bespokefit_smee" title="Permanent link">#</a></h2>
@@ -705,11 +705,15 @@ the documentation and testing is incomplete, and the API may change without noti
 <p>Run with command line arguments:
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>bespokefit_smee<span class="w"> </span>train<span class="w"> </span>--smiles<span class="w"> </span><span class="s2">&quot;CCC(CC)C(=O)Nc2cc(NC(=O)c1c(Cl)cccc1Cl)ccn2&quot;</span>
 </span></code></pre></div></p>
-<p>Run from a yaml file:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>bespokefit_smee<span class="w"> </span>write-default-yaml<span class="w"> </span>default.yaml
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># Modify the yaml to set the desired smiles</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>bespokefit_smee<span class="w"> </span>train-from-yaml<span class="w"> </span>default.yaml
+<p>Sensible defaults have been set, but all available options can be viewed with:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>bespokefit_smee<span class="w"> </span>train<span class="w"> </span>--help
 </span></code></pre></div></p>
+<p>Run from a yaml file:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>bespokefit_smee<span class="w"> </span>write-default-yaml<span class="w"> </span>default.yaml
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># Modify the yaml to set the desired smiles</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>bespokefit_smee<span class="w"> </span>train-from-yaml<span class="w"> </span>default.yaml
+</span></code></pre></div></p>
+<p>For more details on the theory and implementation, please see the <a href="https://fjclark.github.io/bespokefit_smee/latest/">documentation</a>.</p>
 <h2 id="copyright">Copyright<a class="headerlink" href="#copyright" title="Permanent link">#</a></h2>
 <p>Copyright (c) 2025, Thomas James Pope, Newcastle University, UK</p>
 <p>Copyright (c) 2025, Finlay Clark, Newcastle University, UK</p>
