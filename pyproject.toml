@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [project.scripts]
-bespokefit_smee = "bespokefit_smee.bespokefit_smee:cli"
+bespokefit_smee = "bespokefit_smee._cli:run_cli"
 
 [tool.setuptools]
 zip-safe = false

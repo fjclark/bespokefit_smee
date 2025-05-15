@@ -23,7 +23,8 @@ import openmm
 import pyarrow
 import torch
 from openff.units import unit as off_unit
-from openmm.app import LangevinMiddleIntegrator, Simulation
+from openmm import LangevinMiddleIntegrator
+from openmm.app import Simulation
 from openmm.unit import Quantity, angstrom
 from openmmml import MLPotential
 from rdkit import Chem

@@ -5,6 +5,7 @@ channels:
 
 dependencies:
     - python
+    - pyyaml
     - smee
     - descent
     - datasets
@@ -20,13 +21,13 @@ dependencies:
     - tensorboard
     - versioneer
     - pytorch-gpu
+    - pydantic>=2
+    - pydantic-settings
 
     # Development
-    - versioneer
 
     - pre-commit
     - ruff
-
     - pytest
     - pytest-mock
     - pytest-cov

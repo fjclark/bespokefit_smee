@@ -22,8 +22,8 @@ import smee.converters
 import torch
 from descent.train import ParameterConfig, Trainable
 from numpy import typing as npt
+from openff.units import Quantity
 from openff.units import unit as off_unit
-from openff.units.unit import Quantity
 from rdkit import Chem
 from tqdm import tqdm
 
