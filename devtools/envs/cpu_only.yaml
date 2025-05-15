@@ -1,0 +1,35 @@
+name: bespokefit_smee
+
+channels:
+  - conda-forge
+
+dependencies:
+    - python
+    - pyyaml
+    - smee
+    - descent
+    - datasets
+    - jupyter
+    - nglview
+    - smirnoff-plugins >=0.0.4
+    - openmm
+    - openff-toolkit
+    - openff-units
+    - openff-interchange
+    - openmm-ml
+    - tensorboardX
+    - tensorboard
+    - versioneer
+    - pytorch
+    - pydantic>=2
+    - pydantic-settings
+
+    # Development
+
+    - pre-commit
+    - ruff
+    - pytest
+    - pytest-mock
+    - pytest-cov
+    - codecov
+    - mypy

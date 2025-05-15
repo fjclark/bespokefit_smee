@@ -36,6 +36,7 @@ jobs:
         run: |
           apt update && apt install -y git make
           export BESPOKEFIT_SMEE_PYTHON_VERSION=${{ matrix.python-version }}
+          export BESPOKEFIT_SMEE_CPU_INSTALL=1
           make env
 
       - name: Lint
