@@ -1,5 +1,18 @@
+<h2 align="center">Bespokefit_smee</h2>
 
-# Bespokefit_smee
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT">
+    <img alt="license" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
+  </a>
+  <a href="https://github.com/astral-sh/ruff">
+    <img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" />
+  </a>
+  <a href="https://mypy-lang.org/">
+    <img alt="Checked with mypy" src="https://www.mypy-lang.org/static/mypy_badge.svg" />
+  </a>
+</p>
+
+---
 
 Generate a Bespoke Force-Field Parametrization Quickly and Reliably
 
