@@ -7,7 +7,11 @@ TEST_ARGS := -v --cov=$(PACKAGE_NAME) --cov-report=term --cov-report=xml --junit
 .PHONY: env lint format test docs docs-deploy
 
 env:
-	mamba create     --name $(PACKAGE_NAME)
+	@if [ -n "$$BESPOKEFIT_SMEE_PYTHON_VERSION" ]; then \
+		mamba create --name $(PACKAGE_NAME) python=$$BESPOKEFIT_SMEE_PYTHON_VERSION; \
+	else \
+		mamba create --name $(PACKAGE_NAME); \
+	fi
 	mamba env update --name $(PACKAGE_NAME) --file devtools/envs/base.yaml -y
 	$(CONDA_ENV_RUN) pip install mace-torch
 	$(CONDA_ENV_RUN) conda remove --force smee -y
