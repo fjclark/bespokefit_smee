@@ -51,10 +51,6 @@ jobs:
         run: |
           make test
 
-      - name: Build Docs
-        run: |
-          make docs-build
-
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         env:

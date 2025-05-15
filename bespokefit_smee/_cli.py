@@ -49,8 +49,7 @@ class WriteDefaultYAML(BaseModel):
 
     def cli_cmd(self) -> None:
         print("Writing default YAML configuration file")
-        # Silence mypy here as it wants all of the default values explicitly set
-        TrainingConfig(smiles=_DEFAULT_CONFIG_SMILES).to_yaml(self.file_name)  # type: ignore[call-arg]
+        TrainingConfig(smiles=_DEFAULT_CONFIG_SMILES).to_yaml(self.file_name)
         print(
             "Default YAML configuration file written to 'bespokefit_smee_default.yaml'"
         )

@@ -6,6 +6,8 @@ TEST_ARGS := -v --cov=$(PACKAGE_NAME) --cov-report=term --cov-report=xml --junit
 
 .PHONY: env lint format test docs docs-deploy
 
+# To make the installation easier during CI, allow the Python version and CPU-only
+# install to be set via environment variables.
 env:
 	@if [ -n "$$BESPOKEFIT_SMEE_PYTHON_VERSION" ]; then \
 		mamba create --name $(PACKAGE_NAME) python=$$BESPOKEFIT_SMEE_PYTHON_VERSION; \
@@ -21,6 +23,7 @@ env:
 	$(CONDA_ENV_RUN) conda remove --force smee
 	$(CONDA_ENV_RUN) pip install git+https://github.com/thomasjamespope/smee.git
 	$(CONDA_ENV_RUN) pip install --no-deps -e .
+	$(CONDA_ENV_RUN) pip install -r typing-requirements.txt
 	$(CONDA_ENV_RUN) pre-commit install || true
 
 lint:

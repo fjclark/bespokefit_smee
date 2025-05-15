@@ -52,6 +52,7 @@ ignore-init-module-imports = true
 omit = ["**/tests/*", "**/_version.py"]
 
 [tool.mypy]
+plugins = "numpy.typing.mypy_plugin,pydantic.mypy"
 exclude = [
     "bespokefit_smee/_version.py",
     "bespokefit_smee/tests/",
