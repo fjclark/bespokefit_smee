@@ -19,6 +19,7 @@ extra:
 nav:
 - Home:
   - Overview: index.md
+- Theory: theory.md
 - API reference: reference/
 - Development: development.md
 - Changelog: changelog.md
