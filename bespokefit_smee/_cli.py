@@ -5,10 +5,10 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from pydantic_settings import CliApp, CliPositionalArg, CliSubCommand
 
-from .settings import TrainingConfig
+from .analysis import OutputData, plot_all
+from .settings import DEFAULT_CONFIG_PATH, TrainingConfig
 from .train import train
 
-_DEFAULT_CONFIG = Path("default_config.yaml")
 _DEFAULT_CONFIG_SMILES = "CHANGEME"
 
 
@@ -25,7 +25,7 @@ class TrainFromYAML(BaseModel):
     """Run the training process with arguments read from a YAML file."""
 
     config_yaml: CliPositionalArg[Path] = Field(
-        _DEFAULT_CONFIG,
+        DEFAULT_CONFIG_PATH,
         description="Path to the YAML configuration file for training",
     )
 
@@ -43,7 +43,7 @@ class WriteDefaultYAML(BaseModel):
     """Write a default YAML file for the training configuration."""
 
     file_name: CliPositionalArg[Path] = Field(
-        _DEFAULT_CONFIG,
+        DEFAULT_CONFIG_PATH,
         description="The name of the default YAML configuration file to write",
     )
 
@@ -53,6 +53,21 @@ class WriteDefaultYAML(BaseModel):
         print(
             "Default YAML configuration file written to 'bespokefit_smee_default.yaml'"
         )
+
+
+class Analyse(BaseModel):
+    """Analyse the training data and results."""
+
+    config_yaml: CliPositionalArg[Path] = Field(
+        DEFAULT_CONFIG_PATH,
+        description="Path to the YAML configuration used for training",
+    )
+
+    def cli_cmd(self) -> None:
+        print(f"Analyzing training data with settings from {self.config_yaml}")
+        training_config = TrainingConfig.from_yaml(Path(self.config_yaml))
+        output_data = OutputData(training_config)
+        plot_all(output_data)
 
 
 class CLI(BaseModel):
@@ -68,6 +83,10 @@ class CLI(BaseModel):
 
     write_default_yaml: CliSubCommand[WriteDefaultYAML] = Field(
         description="Write a default YAML configuration file for the training process",
+    )
+
+    analyse: CliSubCommand[Analyse] = Field(
+        description="Analyse the training data and results",
     )
 
     def cli_cmd(self) -> None:

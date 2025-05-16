@@ -4,7 +4,7 @@ import subprocess
 
 
 def test_integration_cli(tmp_cwd) -> None:
-    """Test running bespokefit smee via CLI with ethanol."""
+    """Test running bespokefit smee via CLI with ethanol, and analysing."""
 
     # Run the command
     args = [
@@ -51,3 +51,26 @@ def test_integration_cli(tmp_cwd) -> None:
     assert len(directories_found) == 2, (
         "Expected exactly two directories in the current working directory."
     )
+
+    # Now, analyse
+    args = [
+        "bespokefit_smee",
+        "analyse",
+    ]
+
+    result = subprocess.run(
+        args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    # Check the command executed successfully
+    assert result.returncode == 0, f"Analysis command failed: {result.stderr}"
+
+    # Check that the expected output is generated
+    expected_plots = ["loss.png", "error_distributions.png"]
+    for plot_name in expected_plots:
+        assert (tmp_cwd / plot_name).exists(), (
+            f"Expected plot '{plot_name}' not found in the current working directory."
+        )

@@ -1,12 +1,15 @@
 """Pydantic models which control/validate the settings."""
 
 import warnings
+from pathlib import Path
 
 import torch
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .utils.typing import PathLike, TorchDevice
+
+DEFAULT_CONFIG_PATH = Path("training_config.yaml")
 
 
 class TrainingConfig(BaseModel):
@@ -18,6 +21,10 @@ class TrainingConfig(BaseModel):
     )
 
     smiles: str = Field(..., description="SMILES string")
+    output_dir: Path = Field(
+        Path("."),
+        description="Directory where the output files will be saved",
+    )
     device_type: TorchDevice = Field(
         "cuda", description="Device type for training, either 'cpu' or 'cuda'"
     )
@@ -98,13 +105,18 @@ class TrainingConfig(BaseModel):
         return value
 
     @classmethod
-    def from_yaml(cls, yaml_path: PathLike) -> "TrainingConfig":
+    def from_yaml(cls, yaml_path: PathLike = DEFAULT_CONFIG_PATH) -> "TrainingConfig":
         """Load configuration from a YAML file."""
         with open(yaml_path, "r") as file:
             config_data = yaml.safe_load(file)
         return cls(**config_data)
 
-    def to_yaml(self, yaml_path: PathLike) -> None:
+    def to_yaml(self, yaml_path: PathLike = DEFAULT_CONFIG_PATH) -> None:
         """Save configuration to a YAML file."""
+        data = self.model_dump()
+        # Convert Path objects to strings for YAML serialisation
+        for key, value in data.items():
+            if isinstance(value, Path):
+                data[key] = str(value)
         with open(yaml_path, "w") as file:
-            yaml.dump(self.model_dump(), file, default_flow_style=False)
+            yaml.dump(data, file, default_flow_style=False)

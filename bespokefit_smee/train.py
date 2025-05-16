@@ -111,6 +111,10 @@ def train(world_size: int, args: TrainingConfig) -> None:
     Ntrn, Ntst = int(Ntrn / Ncnf), int(Ntst / Ncnf)  #   Convert to "per-conformer"
     MD_dt = MD_dt / 1000  #   Convert to ps
     modSem_finite_step = modSem_finite_step / 10  #   Convert to nm
+
+    # Save config to YAML file
+    args.to_yaml()
+
     #   parameterize the molecule and output the forcefield to a file
     mol = openff.toolkit.Molecule.from_smiles(
         smiles, allow_undefined_stereo=True, hydrogens_are_explicit=False
