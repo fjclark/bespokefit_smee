@@ -5,7 +5,7 @@ import pathlib
 import mkdocs_gen_files
 
 nav = mkdocs_gen_files.Nav()
-src = pathlib.Path(__file__).parent.parent.parent / "red"
+src = pathlib.Path(__file__).parent.parent.parent / "bespokefit_smee"
 
 for path in sorted(src.rglob("*.py")):
     if "tests" in str(path):
