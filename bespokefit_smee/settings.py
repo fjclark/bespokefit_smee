@@ -74,7 +74,7 @@ class TrainingConfig(BaseModel):
     modSem_tolerance: float = Field(
         0.0001, description="Tolerance for the geometry optimizer"
     )
-    memory: bool = Field(True, description="Retain data upon iteration (Default)")
+    memory: bool = Field(False, description="Retain data upon iteration (Default)")
     linear_harmonics: bool = Field(
         True,
         description="Linearize the Harmonic potentials in the Force Field (Default)",

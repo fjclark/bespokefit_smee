@@ -196,6 +196,7 @@ def train(world_size: int, args: TrainingConfig) -> None:
         with redirect_stderr(f):
             dataset.save_to_disk("data_it_0")
     # Generate the test set
+    print("Generating Test Set with MLMD")
     dataset_test = get_data_MLMD(
         mol,
         off_force_field,
@@ -209,8 +210,6 @@ def train(world_size: int, args: TrainingConfig) -> None:
         MD_energy_upper_cutoff,
         MD_energy_lower_cutoff,
     )
-    # print("Generating Test Set with MLMD")
-    # dataset_test = get_data_MLMD(mol,off_force_field,ML_path,MD_temperature,MD_dt,Ntrn,Ncnf,MD_stepsize,MD_startup,MD_energy_upper_cutoff,MD_energy_lower_cutoff)
 
     # Generate the Energy Scatter Plot
     energy_mean, energy_SD, forces_mean, forces_SD = write_scatter(
