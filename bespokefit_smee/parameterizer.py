@@ -868,9 +868,9 @@ def modSeminario(
     )
 
     logger.info(
-        "Modified Seminario Summary:",
-        bond_potential_comparison,
-        angle_potential_comparison,
+        "Modified Seminario Summary:"
+        f"{bond_potential_comparison}"
+        f"{angle_potential_comparison}"
     )
 
     return sff_out
