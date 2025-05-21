@@ -9,7 +9,6 @@ Dataset generation functions for run-fit
 ###############################################################################
 import copy
 import functools
-import math
 import multiprocessing
 import typing
 from contextlib import redirect_stdout
@@ -163,13 +162,14 @@ def get_data_MMMD(
         forces.append(
             state.getForces(asNumpy=True).value_in_unit(_OMM_KCAL_PER_MOL_ANGS)
         )
-        delE = energy[i] - energy[0]
-        if delE < MD_energy_lower_cutoff:
-            weight.append(1.0)
-        elif delE > MD_energy_upper_cutoff:
-            weight.append(0.0)
-        else:
-            weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))
+        weight.append(1.0)
+        # delE = energy[i] - energy[0]
+        # if delE < MD_energy_lower_cutoff:
+        #     weight.append(1.0)
+        # elif delE > MD_energy_upper_cutoff:
+        #     weight.append(0.0)
+        # else:
+        #     weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))
     energy_0 = energy[0]
     energy_out = torch.tensor([x - energy_0 for x in energy])
     forces_out = torch.tensor(forces)
@@ -221,8 +221,8 @@ def get_data_MLMD(
     simulation = Simulation(interchange.topology, system, integrator)
 
     coords, energy, forces, weight = [], [], [], []
-    for i, conformer in tqdm(
-        list(enumerate(molecule.conformers)),
+    for conformer in tqdm(
+        list(molecule.conformers),
         leave=False,
         colour="green",
         desc="Generating Dataset",
@@ -251,13 +251,14 @@ def get_data_MLMD(
             forces.append(
                 state.getForces(asNumpy=True).value_in_unit(_OMM_KCAL_PER_MOL_ANGS)
             )
-            delE = energy[i] - energy[0]
-            if delE < MD_energy_lower_cutoff:
-                weight.append(1.0)
-            elif delE > MD_energy_upper_cutoff:
-                weight.append(0.0)
-            else:
-                weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))
+            weight.append(1.0)
+            # delE = energy[i] - energy[0]
+            # if delE < MD_energy_lower_cutoff:
+            #     weight.append(1.0)
+            # elif delE > MD_energy_upper_cutoff:
+            #     weight.append(0.0)
+            # else:
+            #     weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))
     energy_0 = energy[0]
     energy_out = torch.tensor([x - energy_0 for x in energy])
     forces_out = torch.tensor(forces)
@@ -382,13 +383,14 @@ def get_data_cMMMD(
         forces.append(
             state.getForces(asNumpy=True).value_in_unit(_OMM_KCAL_PER_MOL_ANGS)
         )
-        delE = energy[i] - energy[0]
-        if delE < MD_energy_lower_cutoff:
-            weight.append(cluster_len[i])
-        elif delE > MD_energy_upper_cutoff:
-            weight.append(0.0)
-        else:
-            weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))
+        weight.append(cluster_len[i])
+        # delE = energy[i] - energy[0]
+        # if delE < MD_energy_lower_cutoff:
+        #     weight.append(cluster_len[i])
+        # elif delE > MD_energy_upper_cutoff:
+        #     weight.append(0.0)
+        # else:
+        #     weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))
     energy_0 = energy[0]
     energy_out = torch.tensor([x - energy_0 for x in energy])
     forces_out = torch.tensor(forces)
