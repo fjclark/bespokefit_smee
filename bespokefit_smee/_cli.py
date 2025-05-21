@@ -16,8 +16,6 @@ class TrainFromCli(TrainingConfig):
     """Run the training process with command line arguments."""
 
     def cli_cmd(self) -> None:
-        print("Running bespokefit_smee CLI application")
-        """Command to run the CLI application."""
         train(1, self)
 
 
@@ -48,11 +46,8 @@ class WriteDefaultYAML(BaseModel):
     )
 
     def cli_cmd(self) -> None:
-        print("Writing default YAML configuration file")
+        print(f"Writing default YAML configuration to {self.file_name}.")
         TrainingConfig(smiles=_DEFAULT_CONFIG_SMILES).to_yaml(self.file_name)
-        print(
-            "Default YAML configuration file written to 'bespokefit_smee_default.yaml'"
-        )
 
 
 class Analyse(BaseModel):
@@ -94,7 +89,6 @@ class CLI(BaseModel):
 
 
 def run_cli() -> None:
-    print("Running app")
     CliApp.run(
         CLI,
     )
