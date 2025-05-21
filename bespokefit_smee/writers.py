@@ -4,9 +4,6 @@ WRITERS:
 Output functions for run-fit
 """
 
-###############################################################################
-############################### LIBRARY IMPORTS ###############################
-###############################################################################
 import contextlib
 import copy
 import pathlib
@@ -14,15 +11,14 @@ import typing
 from typing import TextIO
 
 import datasets
+import loguru
 import numpy
 import pandas
 import smee
 import tensorboardX
 import torch
 
-###############################################################################
-############################### FUNCTIONS #####################################
-###############################################################################
+logger = loguru.logger
 
 
 @contextlib.contextmanager
@@ -103,7 +99,8 @@ def _format_parameter_id(id_: typing.Any) -> str:
     return str(id_str[:60] + (id_str[60:] and "..."))
 
 
-def write_potential_summary(potential: smee.TensorPotential) -> None:
+def get_potential_summary(potential: smee.TensorPotential) -> str:
+    output = [""]
     parameter_rows = []
     for key_id, value in enumerate(potential.parameters.detach()):
         row: dict[str, int | str] = {"ID": key_id}
@@ -115,8 +112,10 @@ def write_potential_summary(potential: smee.TensorPotential) -> None:
         )
         parameter_rows.append(row)
 
-    print(f" {potential.type} ".center(88, "="), flush=True)
-    print(f"fn={potential.fn}", flush=True)
+    output.append(
+        f" {potential.type} ".center(88, "="),
+    )
+    output.append(f"fn={potential.fn}")
 
     if potential.attributes is not None:
         assert potential.attribute_units is not None, (
@@ -133,20 +132,23 @@ def write_potential_summary(potential: smee.TensorPotential) -> None:
                 for idx, col in enumerate(potential.attribute_cols)
             }
         ]
-        print("")
-        print("attributes=", flush=True)
-        print("")
-        print(pandas.DataFrame(attribute_rows).to_string(index=False), flush=True)
+        output.append("")
+        output.append("attributes=")
+        output.append("")
+        output.append(pandas.DataFrame(attribute_rows).to_string(index=False))
 
-    print("")
-    print("parameters=", flush=True)
-    print("")
-    print(pandas.DataFrame(parameter_rows).to_string(index=False), flush=True)
+    output.append("")
+    output.append("parameters=")
+    output.append("")
+    output.append(pandas.DataFrame(parameter_rows).to_string(index=False))
+
+    return "\n".join(output)
 
 
-def write_potential_comparison(
+def get_potential_comparison(
     pot1: smee.TensorPotential, pot2: smee.TensorPotential
-) -> None:
+) -> str:
+    output = [""]
     parameter_rows = []
     for key_id, value in enumerate(
         zip(pot1.parameters.detach(), pot2.parameters.detach(), strict=False)
@@ -160,8 +162,10 @@ def write_potential_comparison(
         )
         parameter_rows.append(row)
 
-    print(f" {pot1.type} ".center(88, "="), flush=True)
-    print(f"fn={pot1.fn}", flush=True)
+    output.append(
+        f" {pot1.type} vs {pot2.type} ".center(88, "="),
+    )
+    output.append(f"fn={pot1.fn}")
 
     if pot1.attributes is not None:
         assert pot1.attribute_units is not None, (
@@ -178,12 +182,14 @@ def write_potential_comparison(
                 for idx, col in enumerate(pot1.attribute_cols)
             }
         ]
-        print("")
-        print("attributes=", flush=True)
-        print("")
-        print(pandas.DataFrame(attribute_rows).to_string(index=False), flush=True)
+        output.append("")
+        output.append("attributes=")
+        output.append("")
+        output.append(pandas.DataFrame(attribute_rows).to_string(index=False))
 
-    print("")
-    print("parameters=", flush=True)
-    print("")
-    print(pandas.DataFrame(parameter_rows).to_string(index=False), flush=True)
+    output.append("")
+    output.append("parameters=")
+    output.append("")
+    output.append(pandas.DataFrame(parameter_rows).to_string(index=False))
+
+    return "\n".join(output)

@@ -7,6 +7,7 @@ from contextlib import redirect_stderr
 
 import datasets
 import datasets.combine
+import loguru
 import openff.toolkit
 import tensorboardX
 import torch
@@ -17,11 +18,13 @@ from .loss_functions import prediction_loss
 from .parameterizer import build_parameters, convert_to_smirnoff
 from .settings import TrainingConfig
 from .writers import (
+    get_potential_comparison,
     open_writer,
     write_metrics,
-    write_potential_comparison,
     write_scatter,
 )
+
+logger = loguru.logger
 
 
 def train(world_size: int, args: TrainingConfig) -> None:
@@ -68,46 +71,10 @@ def train(world_size: int, args: TrainingConfig) -> None:
     )  # Finite Step for the Hessian Calculation
     modSem_vib_scaling = args.modSem_vib_scaling  # Vibrational Scaling Parameter
     modSem_tolerance = args.modSem_tolerance  # Tolerance for the geometry optimize
+
     #   Summarize input parameters
-    print("Input Summary".center(88, "="), flush=True)
-    print("")
-    print(f"    Smiles                   :{smiles:>20}")
-    print(f"    Method                   :{method:>20}")
-    print(f"    Memory                   :{memory!s:>20}")
-    print(f"    N_epochs                 :{n_epochs:>20}")
-    print(f"    linear_harmonics         :{linear_harmonics!s:>20}")
-    print(f"    linear_torsions          :{linear_torsions!s:>20}")
-    print(f"    learning_rate            :{learning_rate:>20}")
-    print(f"    learning_rate_decay      :{learning_rate_decay:>20}")
-    print(f"    learning_rate_decay_step :{learning_rate_decay_step:>20}")
-    print(f"    loss_force_weight        :{loss_force_weight:>20}")
-    print(f"    force_field_init         :{ff_path:>20}")
-    print(f"    MLMD_potential           :{ML_path:>20}")
-    print(f"    MD_temperature           :{MD_temperature:>20} K")
-    print(f"    MD_dt                    :{MD_dt:>20} fs")
-    print(
-        f"    MD_stepsize              :{MD_stepsize:>20} steps ({int(MD_stepsize * MD_dt):5d} fs)"
-    )
-    print(
-        f"    MD_startup               :{MD_startup:>20} steps ({int(MD_startup * MD_dt):5d} fs)"
-    )
-    print(f"    MD_energy_lower_cutoff   :{MD_energy_lower_cutoff:>20} kcal/mole")
-    print(f"    MD_energy_upper_cutoff   :{MD_energy_upper_cutoff:>20} kcal/mole")
-    if method == "cMMMD":
-        print(f"    Cluster_tolerance        :{Cluster_tolerance:>20}")
-        print(f"    Cluster_Parallel         :{Cluster_Parallel:>20}")
-    print(f"    N_train                  :{Ntrn:>20}")
-    print(f"    N_test                   :{Ntst:>20}")
-    print(f"    N_conformers             :{Ncnf:>20}")
-    print(f"    N_iterations             :{Nits:>20}")
-    if method == "DATA":
-        print(f"    source_train             :{source_train:>20}")
-    print(f"    modSem                   :{modSem!s:>20}")
-    if modSem:
-        print(f"    modSem_finite_step       :{modSem_finite_step:>20} ang")
-        print(f"    modSem_vib_scaling       :{modSem_vib_scaling:>20}")
-        print(f"    modSem_tolerance         :{modSem_tolerance:>20} kcal/(mole*ang)")
-    print("")
+    logger.info(f"Training settings:\n{args.pretty_string}")
+
     Ntrn, Ntst = int(Ntrn / Ncnf), int(Ntst / Ncnf)  #   Convert to "per-conformer"
     MD_dt = MD_dt / 1000  #   Convert to ps
     modSem_finite_step = modSem_finite_step / 10  #   Convert to nm
@@ -190,13 +157,12 @@ def train(world_size: int, args: TrainingConfig) -> None:
             MD_energy_lower_cutoff,
         )
     else:
-        print("ERROR:: Chosen method is not supported (method = ", method, ")")
-        exit(0)
+        raise ValueError(f"Chosen method is not supported (method = {method})")
     with open("/dev/null", "w") as f:
         with redirect_stderr(f):
             dataset.save_to_disk("data_it_0")
     # Generate the test set
-    print("Generating Test Set with MLMD")
+    logger.info("Generating Test Set with MLMD")
     dataset_test = get_data_MLMD(
         mol,
         off_force_field,
@@ -277,13 +243,13 @@ def train(world_size: int, args: TrainingConfig) -> None:
                 device.type,
             )
             write_metrics(n_epochs, loss_trn, loss_tst, writer, metrics_file)
-        print(f"Summary for Iteration {iteration + 1}".center(88, "="))
-        print("")
-        print("Parameterization".center(88, "="))
-        print("")
-        print("")
+        summary_output = f"Summary for Iteration {iteration + 1}".center(88, "=")
+        summary_output += "\n"
+        summary_output += "Parameterization".center(88, "=")
+        summary_output += "\n"
+        summary_output += "\n"
         for potential_type in trainable._param_types:
-            write_potential_comparison(
+            summary_output += get_potential_comparison(
                 old_force_field.potentials_by_type[potential_type],
                 trainable.to_force_field(trainable_parameters).potentials_by_type[
                     potential_type
@@ -307,23 +273,23 @@ def train(world_size: int, args: TrainingConfig) -> None:
             device.type,
             "trained-" + str(iteration) + ".scat",
         )
-        print("")
-        print("")
-        print("Convergence".center(88, "="))
-        print("")
-        print(
+        logger.info("")
+        logger.info("")
+        logger.info("Convergence".center(88, "="))
+        logger.info("")
+        logger.info(
             f"    Energy Error (Mean): {energy_mean:10.3e}->{energy_mean_new:10.3e} : Change = {energy_mean_new - energy_mean:10.3e}"
         )
-        print(
+        logger.info(
             f"                 (SD):   {energy_SD:10.3e}->{energy_SD_new:10.3e} : Change = {energy_SD_new - energy_SD:10.3e}"
         )
-        print(
+        logger.info(
             f"    Forces Error (Mean): {forces_mean:10.3e}->{forces_mean_new:10.3e} : Change = {forces_mean_new - forces_mean:10.3e}"
         )
-        print(
+        logger.info(
             f"                 (SD):   {forces_SD:10.3e}->{forces_SD_new:10.3e} : Change = {forces_SD_new - forces_SD:10.3e}"
         )
-        print("")
+        logger.info("")
         energy_mean, energy_SD = energy_mean_new, energy_SD_new
         forces_mean, forces_SD = forces_mean_new, forces_SD_new
         # get the next iteration of training data, unless the loop is finished

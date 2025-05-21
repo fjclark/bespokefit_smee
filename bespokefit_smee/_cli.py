@@ -2,12 +2,15 @@
 
 from pathlib import Path
 
+import loguru
 from pydantic import BaseModel, Field
 from pydantic_settings import CliApp, CliPositionalArg, CliSubCommand
 
 from .analysis import OutputData, plot_all
 from .settings import DEFAULT_CONFIG_PATH, TrainingConfig
 from .train import train
+
+logger = loguru.logger
 
 _DEFAULT_CONFIG_SMILES = "CHANGEME"
 
@@ -28,7 +31,7 @@ class TrainFromYAML(BaseModel):
     )
 
     def cli_cmd(self) -> None:
-        print(f"Running bespokefit_smee with settings from {self.config_yaml}")
+        logger.info(f"Running bespokefit_smee with settings from {self.config_yaml}")
         config = TrainingConfig.from_yaml(Path(self.config_yaml))
         if config.smiles == _DEFAULT_CONFIG_SMILES:
             raise ValueError(
@@ -46,7 +49,7 @@ class WriteDefaultYAML(BaseModel):
     )
 
     def cli_cmd(self) -> None:
-        print(f"Writing default YAML configuration to {self.file_name}.")
+        logger.info(f"Writing default YAML configuration to {self.file_name}.")
         TrainingConfig(smiles=_DEFAULT_CONFIG_SMILES).to_yaml(self.file_name)
 
 
@@ -59,7 +62,7 @@ class Analyse(BaseModel):
     )
 
     def cli_cmd(self) -> None:
-        print(f"Analyzing training data with settings from {self.config_yaml}")
+        logger.info(f"Analyzing training data with settings from {self.config_yaml}")
         training_config = TrainingConfig.from_yaml(Path(self.config_yaml))
         output_data = OutputData(training_config)
         plot_all(output_data)

@@ -104,6 +104,16 @@ class TrainingConfig(BaseModel):
 
         return value
 
+    @property
+    def pretty_string(self) -> str:
+        """Return a pretty string representation of the configuration."""
+        lines = ["TrainingConfig Parameters".center(60, "=")]
+        lines.append("")
+        for field, value in self.model_dump().items():
+            lines.append(f"{'':5}{field:<24}: {value}")
+        lines.append("")
+        return "\n".join(lines)
+
     @classmethod
     def from_yaml(cls, yaml_path: PathLike = DEFAULT_CONFIG_PATH) -> "TrainingConfig":
         """Load configuration from a YAML file."""

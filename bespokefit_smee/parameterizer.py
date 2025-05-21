@@ -4,15 +4,13 @@ PARAMETERIZE:
 force-field parameterization functions
 """
 
-###############################################################################
-############################### LIBRARY IMPORTS ###############################
-###############################################################################
 import collections
 import copy
 import math
 from contextlib import redirect_stdout
 from typing import cast
 
+import loguru
 import numpy as np
 import openff.interchange
 import openff.toolkit
@@ -29,9 +27,8 @@ from tqdm import tqdm
 
 from .utils.typing import TorchDevice
 
-###############################################################################
-############################### FUNCTIONS #####################################
-###############################################################################
+logger = loguru.logger
+
 
 _UNITLESS = off_unit.dimensionless
 _ANGSTROM = off_unit.angstrom
@@ -458,9 +455,11 @@ def _prepare_potential(
     potential.parameter_keys = [
         openff.interchange.models.PotentialKey(
             id=ids_to_smarts[particle_ids],
-            mult=sorted_ids_to_parameter_idxs[particle_ids].index(parameter_idx)
-            if is_indexed
-            else None,
+            mult=(
+                sorted_ids_to_parameter_idxs[particle_ids].index(parameter_idx)
+                if is_indexed
+                else None
+            ),
             associated_handler=potential.type,
             bond_order=None,
             virtual_site_type=None,
@@ -685,7 +684,7 @@ def modSeminario(
     from openmm.app.simulation import Simulation
     from openmmml import MLPotential
 
-    from .writers import write_potential_comparison
+    from .writers import get_potential_comparison
 
     #   set up an MD sim with the ML potential
     molecule = copy.deepcopy(mol)
@@ -859,13 +858,21 @@ def modSeminario(
     sff_out.potentials_by_type["Angles"].parameters = torch.tensor(
         [[angle_k[j], angle_t[j]] for j in range(n_angle_types)]
     )
-    print("Modified Seminario Summary:")
-    write_potential_comparison(
-        sff.potentials_by_type["Bonds"], sff_out.potentials_by_type["Bonds"]
+    bond_potential_comparison = get_potential_comparison(
+        sff.potentials_by_type["Bonds"],
+        sff_out.potentials_by_type["Bonds"],
     )
-    write_potential_comparison(
-        sff.potentials_by_type["Angles"], sff_out.potentials_by_type["Angles"]
+    angle_potential_comparison = get_potential_comparison(
+        sff.potentials_by_type["Angles"],
+        sff_out.potentials_by_type["Angles"],
     )
+
+    logger.info(
+        "Modified Seminario Summary:",
+        bond_potential_comparison,
+        angle_potential_comparison,
+    )
+
     return sff_out
 
 

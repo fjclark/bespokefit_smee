@@ -4,9 +4,6 @@ DATA_MAKER:
 Dataset generation functions for run-fit
 """
 
-###############################################################################
-############################### LIBRARY IMPORTS ###############################
-###############################################################################
 import copy
 import functools
 import multiprocessing
@@ -30,10 +27,6 @@ from rdkit import Chem
 from rdkit.Chem import rdMolAlign
 from rdkit.ML.Cluster import Butina
 from tqdm import tqdm
-
-###############################################################################
-############################### FUNCTIONS #####################################
-###############################################################################
 
 _ANGSTROM = off_unit.angstrom
 

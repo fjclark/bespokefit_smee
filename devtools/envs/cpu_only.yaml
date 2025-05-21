@@ -24,6 +24,7 @@ dependencies:
     - pytorch
     - pydantic>=2
     - pydantic-settings
+    - loguru
 
     # Testing/ Development
     - pre-commit
