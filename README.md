@@ -25,6 +25,8 @@ Generate a Bespoke Force-Field Parametrization Quickly and Reliably. Developed i
 ***Warning**: This code is experimental and under active development. It is not guaranteed to provide correct results,
 the documentation and testing is incomplete, and the API may change without notice.*
 
+Please note that the MACE models currently used are released under the [Academic Software License](https://github.com/gabor1/ASL/blob/main/ASL.md) which **does not permit commercial use**. We will incorporate MIT-licensed models soon.
+
 ## What is Bespokefit_smee?
 
 Bespokefit_smee is a Force-Field parametrization tool. For a given molecule, it will generate a data set of conformers using machine learning models in [OpenMM-ML](https://github.com/openmm/openmm-ml) simulations. This dataset is used to optimise the force field parameters.
