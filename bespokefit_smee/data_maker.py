@@ -1,7 +1,5 @@
 """
-DATA_MAKER:
-
-Dataset generation functions for run-fit
+Functionality to obtain samples, to which the force field is fitted.
 """
 
 import copy
@@ -9,6 +7,7 @@ import functools
 import multiprocessing
 import typing
 from contextlib import redirect_stdout
+from typing import Callable
 
 import datasets
 import datasets.table
@@ -35,6 +34,25 @@ _OMM_PS = openmm.unit.picosecond
 _OMM_ANGS = openmm.unit.angstrom
 _OMM_KCAL_PER_MOL = openmm.unit.kilocalorie_per_mole
 _OMM_KCAL_PER_MOL_ANGS = openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom
+
+GetDataFnType = Callable[
+    [
+        openff.toolkit.Molecule,
+        openff.toolkit.ForceField,
+        str,
+        float,
+        float,
+        int,
+        int,
+        int,
+        int,
+        float,
+        float,
+        float,
+        int,
+    ],
+    datasets.Dataset,
+]
 
 
 class Entry(typing.TypedDict):
@@ -94,6 +112,8 @@ def get_data_MMMD(
     MD_startup: int = 100,
     MD_energy_upper_cutoff: float = 10.0,
     MD_energy_lower_cutoff: float = 1.0,
+    cluster_tolerance: float = 0.075,
+    cluster_Parallel: int = 1,
 ) -> datasets.Dataset:
     """generate a dataset from an openmm run using the input FF.
     Returns:
@@ -192,6 +212,8 @@ def get_data_MLMD(
     MD_startup: int = 100,
     MD_energy_upper_cutoff: float = 10.0,
     MD_energy_lower_cutoff: float = 1.0,
+    cluster_tolerance: float = 0.075,
+    cluster_Parallel: int = 1,
 ) -> datasets.Dataset:
     """generate a dataset from an openmm run using the input ML Potential.
     Returns:
@@ -281,8 +303,8 @@ def get_data_cMMMD(
     MD_startup: int = 100,
     MD_energy_upper_cutoff: float = 10.0,
     MD_energy_lower_cutoff: float = 1.0,
-    Cluster_tolerance: float = 0.075,
-    Cluster_Parallel: int = 1,
+    cluster_tolerance: float = 0.075,
+    cluster_Parallel: int = 1,
 ) -> datasets.Dataset:
     """generate a dataset from an openmm run using the input FF
     and cluster the data by rmsd and include counts in the weights
@@ -336,9 +358,9 @@ def get_data_cMMMD(
     mol_rdkit: Chem.Mol = Chem.RemoveHs(mol_clstr.to_rdkit())
     conf_ids = [conf.GetId() for conf in mol_rdkit.GetConformers()]
     conf_pairs = [(i, j) for i in range(len(conf_ids)) for j in range(i)]
-    conf_pairs_np = numpy.array_split(numpy.array(conf_pairs), Cluster_Parallel)
+    conf_pairs_np = numpy.array_split(numpy.array(conf_pairs), cluster_Parallel)
     rms_fn = functools.partial(compute_best_rms, mol=mol_rdkit)
-    with multiprocessing.Pool(Cluster_Parallel) as pool:
+    with multiprocessing.Pool(cluster_Parallel) as pool:
         dists = list(
             tqdm(
                 pool.imap(rms_fn, conf_pairs_np),
@@ -350,7 +372,7 @@ def get_data_cMMMD(
         )
     dists_flat = [d for dist in dists for d in dist]
     clusters = Butina.ClusterData(  # type: ignore[no-untyped-call]
-        dists_flat, len(conf_ids), Cluster_tolerance, isDistData=True, reordering=True
+        dists_flat, len(conf_ids), cluster_tolerance, isDistData=True, reordering=True
     )
     cluster_ids = [cluster[0] for cluster in clusters]
     cluster_len = [len(cluster) for cluster in clusters]

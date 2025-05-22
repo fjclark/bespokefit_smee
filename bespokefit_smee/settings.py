@@ -2,14 +2,22 @@
 
 import warnings
 from pathlib import Path
+from typing import Literal
 
 import torch
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from . import data_maker
 from .utils.typing import PathLike, TorchDevice
 
 DEFAULT_CONFIG_PATH = Path("training_config.yaml")
+
+METHOD_TO_GET_DATA_FN = {
+    "MMMD": data_maker.get_data_MMMD,
+    "MLMD": data_maker.get_data_MLMD,
+    "cMMMD": data_maker.get_data_cMMMD,
+}
 
 
 class TrainingConfig(BaseModel):
@@ -28,7 +36,9 @@ class TrainingConfig(BaseModel):
     device_type: TorchDevice = Field(
         "cuda", description="Device type for training, either 'cpu' or 'cuda'"
     )
-    method: str = Field("MMMD", description="Method for generating data")
+    method: Literal["MMMD", "MLMD", "cMMMD", "data"] = Field(
+        "MMMD", description="Method for generating data"
+    )
     n_epochs: int = Field(1000, description="Number of epochs in the ML fit")
     learning_rate: float = Field(0.002, description="Learning Rate in the ML fit")
     learning_rate_decay: float = Field(
@@ -169,6 +179,15 @@ class TrainingConfig(BaseModel):
             raise ValueError("If method is not 'data', the data field must be None.")
 
         return self
+
+    @property
+    def run_md_fn(self) -> data_maker.GetDataFnType:
+        """Return the function to get data based on the selected method."""
+        if self.method == "data":
+            raise ValueError(
+                "The method is 'data' - no need to run MD. Use the data field to load data."
+            )
+        return METHOD_TO_GET_DATA_FN[self.method]
 
     @property
     def pretty_string(self) -> str:

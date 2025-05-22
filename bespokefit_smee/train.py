@@ -13,7 +13,7 @@ import tensorboardX
 import torch
 from tqdm import tqdm
 
-from .data_maker import get_data_cMMMD, get_data_MLMD, get_data_MMMD
+from .data_maker import get_data_MLMD, get_data_MMMD
 from .loss_functions import prediction_loss
 from .parameterizer import build_parameters, convert_to_smirnoff
 from .settings import DEFAULT_CONFIG_PATH, TrainingConfig
@@ -71,24 +71,10 @@ def train(config: TrainingConfig) -> None:
     off_force_field.to_file("default.offxml")
 
     # get the inital training data
-    if config.method == "DATA":
+    if config.method == "data":
         dataset = datasets.Dataset.load_from_disk(config.data)
-    elif config.method == "MMMD":
-        dataset = get_data_MMMD(
-            mol,
-            off_force_field,
-            config.ml_potential,
-            config.temperature,
-            timestep_ps,
-            config.n_train_snapshots_per_conformer,
-            config.n_conformers,
-            config.snapshot_interval,
-            config.n_equilibration_steps,
-            config.energy_upper_cutoff,
-            config.energy_lower_cutoff,
-        )
-    elif config.method == "cMMMD":
-        dataset = get_data_cMMMD(
+    else:
+        dataset = config.run_md_fn(
             mol,
             off_force_field,
             config.ml_potential,
@@ -103,25 +89,11 @@ def train(config: TrainingConfig) -> None:
             config.cluster_tolerance,
             config.cluster_parallel,
         )
-    elif config.method == "MLMD":
-        dataset = get_data_MLMD(
-            mol,
-            off_force_field,
-            config.ml_potential,
-            config.temperature,
-            timestep_ps,
-            config.n_train_snapshots_per_conformer,
-            config.n_conformers,
-            config.snapshot_interval,
-            config.n_equilibration_steps,
-            config.energy_upper_cutoff,
-            config.energy_lower_cutoff,
-        )
-    else:
-        raise ValueError(f"Chosen method is not supported (method = {config.method})")
+
     with open("/dev/null", "w") as f:
         with redirect_stderr(f):
             dataset.save_to_disk("data_it_0")
+
     # Generate the test set
     logger.info("Generating Test Set with MLMD")
     dataset_test = get_data_MLMD(
@@ -256,80 +228,32 @@ def train(config: TrainingConfig) -> None:
         logger.info("")
         energy_mean, energy_SD = energy_mean_new, energy_SD_new
         forces_mean, forces_SD = forces_mean_new, forces_SD_new
-        # get the next iteration of training data, unless the loop is finished
+
+        # Get the next iteration of training data, unless the loop is finished
         if iteration + 1 < config.n_iterations:
+            get_data_fn = config.run_md_fn if config.method != "data" else get_data_MMMD
+
+            new_dataset = get_data_fn(
+                mol,
+                off_force_field,
+                config.ml_potential,
+                config.temperature,
+                timestep_ps,
+                config.n_train_snapshots_per_conformer,
+                config.n_conformers,
+                config.snapshot_interval,
+                config.n_equilibration_steps,
+                config.energy_upper_cutoff,
+                config.energy_lower_cutoff,
+                config.cluster_tolerance,
+                config.cluster_parallel,
+            )
+
             if config.memory:
-                if config.method == "cMMMD":
-                    dataset = datasets.combine.concatenate_datasets(
-                        [
-                            dataset,
-                            get_data_cMMMD(
-                                mol,
-                                off_force_field,
-                                config.ml_potential,
-                                config.temperature,
-                                timestep_ps,
-                                config.n_train_snapshots_per_conformer,
-                                config.n_conformers,
-                                config.snapshot_interval,
-                                config.n_equilibration_steps,
-                                config.energy_upper_cutoff,
-                                config.energy_lower_cutoff,
-                                config.cluster_tolerance,
-                                config.cluster_parallel,
-                            ),
-                        ]
-                    )
-                else:
-                    dataset = datasets.combine.concatenate_datasets(
-                        [
-                            dataset,
-                            get_data_MMMD(
-                                mol,
-                                off_force_field,
-                                config.ml_potential,
-                                config.temperature,
-                                timestep_ps,
-                                config.n_train_snapshots_per_conformer,
-                                config.n_conformers,
-                                config.snapshot_interval,
-                                config.n_equilibration_steps,
-                                config.energy_upper_cutoff,
-                                config.energy_lower_cutoff,
-                            ),
-                        ]
-                    )
+                dataset = datasets.combine.concatenate_datasets([dataset, new_dataset])
             else:
-                if config.method == "cMMMD":
-                    dataset = get_data_cMMMD(
-                        mol,
-                        off_force_field,
-                        config.ml_potential,
-                        config.temperature,
-                        timestep_ps,
-                        config.n_train_snapshots_per_conformer,
-                        config.n_conformers,
-                        config.snapshot_interval,
-                        config.n_equilibration_steps,
-                        config.energy_upper_cutoff,
-                        config.energy_lower_cutoff,
-                        config.cluster_tolerance,
-                        config.cluster_parallel,
-                    )
-                else:
-                    dataset = get_data_MMMD(
-                        mol,
-                        off_force_field,
-                        config.ml_potential,
-                        config.temperature,
-                        timestep_ps,
-                        config.n_train_snapshots_per_conformer,
-                        config.n_conformers,
-                        config.snapshot_interval,
-                        config.n_equilibration_steps,
-                        config.energy_upper_cutoff,
-                        config.energy_lower_cutoff,
-                    )
+                dataset = new_dataset
+
             with open("/dev/null", "w") as f:
                 with redirect_stderr(f):
                     dataset.save_to_disk("data_it_" + str(iteration))
