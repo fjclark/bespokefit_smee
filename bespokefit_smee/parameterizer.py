@@ -549,6 +549,8 @@ def build_parameters(
             modSem_vib_scaling,
             modSem_tolerance,
         )
+    # Parameter scales obtained from trained force field - but only for linearised bonds and
+    # angles and unlinearised harmonics.
     if linear_harmonics:
         topology.parameters["LinearBonds"] = copy.deepcopy(topology.parameters["Bonds"])
         topology.parameters["LinearAngles"] = copy.deepcopy(
@@ -558,12 +560,12 @@ def build_parameters(
         parameter_list = {
             "LinearBonds": ParameterConfig(
                 cols=["k1", "k2"],
-                scales={"k1": 1.0, "k2": 1.0},
+                scales={"k1": 0.0024, "k2": 0.0024},
                 limits={"k1": (None, None), "k2": (None, None)},
             ),
             "LinearAngles": ParameterConfig(
                 cols=["k1", "k2"],
-                scales={"k1": 10.0, "k2": 10.0},
+                scales={"k1": 0.0207, "k2": 0.0207},
                 limits={"k1": (None, None), "k2": (None, None)},
             ),
         }
@@ -602,7 +604,7 @@ def build_parameters(
                         "ProperTorsions": ParameterConfig(
                             cols=["k"],
                             scales={
-                                "k": 100.0,
+                                "k": 0.3252,
                             },
                             limits={"k": (None, None)},
                         ),
@@ -629,7 +631,7 @@ def build_parameters(
                         "ImproperTorsions": ParameterConfig(
                             cols=["k"],
                             scales={
-                                "k": 100.0,
+                                "k": 0.1647,
                             },
                             limits={"k": (None, None)},
                         ),

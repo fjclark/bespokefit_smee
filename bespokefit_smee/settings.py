@@ -29,9 +29,11 @@ class TrainingConfig(BaseModel):
         "cuda", description="Device type for training, either 'cpu' or 'cuda'"
     )
     method: str = Field("MMMD", description="Method for generating data")
-    N_epochs: int = Field(1000, description="Number of epochs in the ML fit")
-    learning_rate: float = Field(0.1, description="Learning Rate in the ML fit")
-    learning_rate_decay: float = Field(0.99, description="Learning Rate Decay")
+    n_epochs: int = Field(1000, description="Number of epochs in the ML fit")
+    learning_rate: float = Field(0.005, description="Learning Rate in the ML fit")
+    learning_rate_decay: float = Field(
+        1.00, description="Learning Rate Decay. 0.99 is 1%, and 1.0 is no decay."
+    )
     learning_rate_decay_step: int = Field(10, description="Learning Rate Decay Step")
     loss_force_weight: float = Field(
         1e5, description="Scaling Factor for the Force loss term"
