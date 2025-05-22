@@ -16,7 +16,7 @@ from tqdm import tqdm
 from .data_maker import get_data_cMMMD, get_data_MLMD, get_data_MMMD
 from .loss_functions import prediction_loss
 from .parameterizer import build_parameters, convert_to_smirnoff
-from .settings import TrainingConfig
+from .settings import DEFAULT_CONFIG_PATH, TrainingConfig
 from .writers import (
     get_potential_comparison,
     open_writer,
@@ -27,82 +27,43 @@ from .writers import (
 logger = loguru.logger
 
 
-def train(world_size: int, args: TrainingConfig) -> None:
-    smiles = args.smiles  # SMILES string
-    device_type = args.device_type
-    device = torch.device(device_type)
-    method = args.method  # Method for generating data
-    memory = args.memory  # Include previous data on iteration
-    n_epochs = args.N_epochs  # Number of epochs in the ML fit
-    linear_harmonics = (
-        args.linear_harmonics
-    )  # Flag to turn of linearized harmonic potentials
-    linear_torsions = (
-        args.linear_torsions
-    )  # Flag to turn of linearized torsions potentials
-    learning_rate = args.learning_rate  # Learning Rate in the ML fit
-    learning_rate_decay = args.learning_rate_decay  # Learning Rate Decay Rate
-    learning_rate_decay_step = args.learning_rate_decay_step  # Learning Rate Decay Step
-    loss_force_weight = args.loss_force_weight  # Scaling Factor for the Force loss term
-    ff_path = args.force_field_init  # Starting guess force field
-    ML_path = args.MLMD_potential  # Name of the MLMD potential used
-    MD_temperature = args.MD_temperature  # MD Temperature in Kelvin
-    MD_dt = args.MD_dt  # MD Stepsize in picoseconds
-    MD_stepsize = args.MD_stepsize  # Number of Steps Between MD Snapshot
-    MD_startup = args.MD_startup  # Number of Steps Ignored
-    MD_energy_lower_cutoff = (
-        args.MD_energy_lower_cutoff
-    )  # Lower bound for the energy cutoff smoothing function
-    MD_energy_upper_cutoff = (
-        args.MD_energy_upper_cutoff
-    )  # Upper bound for the energy cutoff smoothing function
-    Cluster_tolerance = args.Cluster_tolerance  # Tolerance used in the RMSD clustering
-    Cluster_Parallel = args.Cluster_Parallel  # MPI nodes used in the RMSD clustering
-    Ntrn = args.N_train  # Number of MD steps in training sets
-    Ntst = args.N_test  # Number of MD steps in testing sets
-    Ncnf = args.N_conformers  # Number of Starting Conformers
-    Nits = args.N_iterations  # Number of ML Iterations performed
-    source_train = (
-        args.data
-    )  # Location of pre-calculated data set: only used if method = "DATA"
-    modSem = args.modSem  # Activate the modified Seminario Starting guess
-    modSem_finite_step = (
-        args.modSem_finite_step
-    )  # Finite Step for the Hessian Calculation
-    modSem_vib_scaling = args.modSem_vib_scaling  # Vibrational Scaling Parameter
-    modSem_tolerance = args.modSem_tolerance  # Tolerance for the geometry optimize
+def train(config: TrainingConfig) -> None:
+    """
+    Train a bespoke force field according to the provided configuration.
 
-    #   Summarize input parameters
-    logger.info(f"Training settings:\n{args.pretty_string}")
-
-    Ntrn, Ntst = int(Ntrn / Ncnf), int(Ntst / Ncnf)  #   Convert to "per-conformer"
-    MD_dt = MD_dt / 1000  #   Convert to ps
-    modSem_finite_step = modSem_finite_step / 10  #   Convert to nm
+    Parameters:
+        config  : TrainingConfig
+            Configuration object containing all the necessary parameters for training.
+    """
+    # Summarise input parameters
+    logger.info(f"Training settings:\n{config.pretty_string}")
 
     # Save config to YAML file
-    args.to_yaml()
+    config.to_yaml(yaml_path=config.output_dir / DEFAULT_CONFIG_PATH)
 
-    #   parameterize the molecule and output the forcefield to a file
+    timestep_ps = config.timestep / 1000  # Convert to ps
+
+    # Parameterize the molecule and output the forcefield to a file
     mol = openff.toolkit.Molecule.from_smiles(
-        smiles, allow_undefined_stereo=True, hydrogens_are_explicit=False
+        config.smiles, allow_undefined_stereo=True, hydrogens_are_explicit=False
     )
-    VdW_forcefield = openff.toolkit.ForceField(ff_path)
+    VdW_forcefield = openff.toolkit.ForceField(config.initial_force_field)
     old_force_field, trainable, topology = build_parameters(
         mol,
         VdW_forcefield,
-        ML_path,
-        linear_harmonics,
-        linear_torsions,
-        modSem,
-        modSem_finite_step,
-        modSem_vib_scaling,
-        modSem_tolerance,
-        device_type=device_type,
+        config.ml_potential,
+        config.linear_harmonics,
+        config.linear_torsions,
+        config.use_modified_seminaro,
+        config.modified_seminario_finite_step / 10,  # Convert to nm
+        config.modified_seminario_vib_scaling,
+        config.modified_seminario_tolerance,
+        device_type=config.device_type,
     )
 
     # Move to the requested device (not strictly necessary if on CPU)
-    trainable_parameters = trainable.to_values().to((device_type))
-    topology = topology.to(device_type)
+    trainable_parameters = trainable.to_values().to((config.device_type))
+    topology = topology.to(config.device_type)
 
     off_force_field = convert_to_smirnoff(
         trainable.to_force_field(trainable_parameters), base=VdW_forcefield
@@ -110,54 +71,54 @@ def train(world_size: int, args: TrainingConfig) -> None:
     off_force_field.to_file("default.offxml")
 
     # get the inital training data
-    if method == "DATA":
-        dataset = datasets.Dataset.load_from_disk(f"{source_train}")
-    elif method == "MMMD":
+    if config.method == "DATA":
+        dataset = datasets.Dataset.load_from_disk(config.data)
+    elif config.method == "MMMD":
         dataset = get_data_MMMD(
             mol,
             off_force_field,
-            ML_path,
-            MD_temperature,
-            MD_dt,
-            Ntrn,
-            Ncnf,
-            MD_stepsize,
-            MD_startup,
-            MD_energy_upper_cutoff,
-            MD_energy_lower_cutoff,
+            config.ml_potential,
+            config.temperature,
+            timestep_ps,
+            config.n_train_snapshots_per_conformer,
+            config.n_conformers,
+            config.snapshot_interval,
+            config.n_equilibration_steps,
+            config.energy_upper_cutoff,
+            config.energy_lower_cutoff,
         )
-    elif method == "cMMMD":
+    elif config.method == "cMMMD":
         dataset = get_data_cMMMD(
             mol,
             off_force_field,
-            ML_path,
-            MD_temperature,
-            MD_dt,
-            Ntrn,
-            Ncnf,
-            MD_stepsize,
-            MD_startup,
-            MD_energy_upper_cutoff,
-            MD_energy_lower_cutoff,
-            Cluster_tolerance,
-            Cluster_Parallel,
+            config.ml_potential,
+            config.temperature,
+            timestep_ps,
+            config.n_train_snapshots_per_conformer,
+            config.n_conformers,
+            config.snapshot_interval,
+            config.n_equilibration_steps,
+            config.energy_upper_cutoff,
+            config.energy_lower_cutoff,
+            config.cluster_tolerance,
+            config.cluster_parallel,
         )
-    elif method == "MLMD":
+    elif config.method == "MLMD":
         dataset = get_data_MLMD(
             mol,
             off_force_field,
-            ML_path,
-            MD_temperature,
-            MD_dt,
-            Ntrn,
-            Ncnf,
-            MD_stepsize,
-            MD_startup,
-            MD_energy_upper_cutoff,
-            MD_energy_lower_cutoff,
+            config.ml_potential,
+            config.temperature,
+            timestep_ps,
+            config.n_train_snapshots_per_conformer,
+            config.n_conformers,
+            config.snapshot_interval,
+            config.n_equilibration_steps,
+            config.energy_upper_cutoff,
+            config.energy_lower_cutoff,
         )
     else:
-        raise ValueError(f"Chosen method is not supported (method = {method})")
+        raise ValueError(f"Chosen method is not supported (method = {config.method})")
     with open("/dev/null", "w") as f:
         with redirect_stderr(f):
             dataset.save_to_disk("data_it_0")
@@ -166,15 +127,15 @@ def train(world_size: int, args: TrainingConfig) -> None:
     dataset_test = get_data_MLMD(
         mol,
         off_force_field,
-        ML_path,
-        MD_temperature,
-        MD_dt,
-        Ntst,
-        Ncnf,
-        MD_stepsize,
-        MD_startup,
-        MD_energy_upper_cutoff,
-        MD_energy_lower_cutoff,
+        config.ml_potential,
+        config.temperature,
+        timestep_ps,
+        config.n_test_snapshots_per_conformer,
+        config.n_conformers,
+        config.snapshot_interval,
+        config.n_equilibration_steps,
+        config.energy_upper_cutoff,
+        config.energy_lower_cutoff,
     )
 
     # Generate the Energy Scatter Plot
@@ -182,11 +143,14 @@ def train(world_size: int, args: TrainingConfig) -> None:
         dataset_test,
         trainable.to_force_field(trainable_parameters),
         topology,
-        device.type,
+        config.device_type,
         "default.scat",
     )
     for iteration in tqdm(
-        range(Nits), leave=False, colour="magenta", desc="Iterating the Fit"
+        range(config.n_iterations),
+        leave=False,
+        colour="magenta",
+        desc="Iterating the Fit",
     ):
         # some book-keeping
         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -196,17 +160,17 @@ def train(world_size: int, args: TrainingConfig) -> None:
         with open("training-" + str(iteration) + ".data", "w") as metrics_file:
             with open_writer(experiment_dir) as writer:
                 optimizer = torch.optim.Adam(
-                    [trainable_parameters], lr=learning_rate, amsgrad=True
+                    [trainable_parameters], lr=config.learning_rate, amsgrad=True
                 )
                 scheduler = torch.optim.lr_scheduler.ExponentialLR(
-                    optimizer, gamma=learning_rate_decay
+                    optimizer, gamma=config.learning_rate_decay
                 )
                 for v in tensorboardX.writer.hparams(
-                    {"optimizer": "Adam", "lr": learning_rate}, {}
+                    {"optimizer": "Adam", "lr": config.learning_rate}, {}
                 ):
                     writer.file_writer.add_summary(v)
                 for i in tqdm(
-                    range(n_epochs),
+                    range(config.n_epochs),
                     leave=False,
                     colour="blue",
                     desc="Running ML Optimization",
@@ -215,16 +179,16 @@ def train(world_size: int, args: TrainingConfig) -> None:
                         dataset,
                         trainable.to_force_field(trainable_parameters),
                         topology,
-                        loss_force_weight,
-                        device.type,
+                        config.loss_force_weight,
+                        config.device_type,
                     )
                     if i % 10 == 0:
                         loss_tst = prediction_loss(
                             dataset_test,
                             trainable.to_force_field(trainable_parameters),
                             topology,
-                            loss_force_weight,
-                            device.type,
+                            config.loss_force_weight,
+                            config.device_type,
                         )
                         write_metrics(i, loss_trn, loss_tst, writer, metrics_file)
                     loss_trn.backward(retain_graph=True)  # type: ignore[no-untyped-call]
@@ -232,17 +196,17 @@ def train(world_size: int, args: TrainingConfig) -> None:
                     optimizer.step()
                     optimizer.zero_grad(set_to_none=True)
                     trainable.clamp(trainable_parameters)
-                    if i % learning_rate_decay_step == 0:
+                    if i % config.learning_rate_decay_step == 0:
                         scheduler.step()
             # some book-keeping and outputing
             loss_tst = prediction_loss(
                 dataset_test,
                 trainable.to_force_field(trainable_parameters),
                 topology,
-                loss_force_weight,
-                device.type,
+                config.loss_force_weight,
+                config.device_type,
             )
-            write_metrics(n_epochs, loss_trn, loss_tst, writer, metrics_file)
+            write_metrics(config.n_epochs, loss_trn, loss_tst, writer, metrics_file)
         summary_output = f"Summary for Iteration {iteration + 1}".center(88, "=")
         summary_output += "\n"
         summary_output += "Parameterization".center(88, "=")
@@ -270,7 +234,7 @@ def train(world_size: int, args: TrainingConfig) -> None:
             dataset_test,
             trainable.to_force_field(trainable_parameters),
             topology,
-            device.type,
+            config.device_type,
             "trained-" + str(iteration) + ".scat",
         )
         logger.info("")
@@ -293,26 +257,26 @@ def train(world_size: int, args: TrainingConfig) -> None:
         energy_mean, energy_SD = energy_mean_new, energy_SD_new
         forces_mean, forces_SD = forces_mean_new, forces_SD_new
         # get the next iteration of training data, unless the loop is finished
-        if iteration + 1 < Nits:
-            if memory:
-                if method == "cMMMD":
+        if iteration + 1 < config.n_iterations:
+            if config.memory:
+                if config.method == "cMMMD":
                     dataset = datasets.combine.concatenate_datasets(
                         [
                             dataset,
                             get_data_cMMMD(
                                 mol,
                                 off_force_field,
-                                ML_path,
-                                MD_temperature,
-                                MD_dt,
-                                Ntrn,
-                                Ncnf,
-                                MD_stepsize,
-                                MD_startup,
-                                MD_energy_upper_cutoff,
-                                MD_energy_lower_cutoff,
-                                Cluster_tolerance,
-                                Cluster_Parallel,
+                                config.ml_potential,
+                                config.temperature,
+                                timestep_ps,
+                                config.n_train_snapshots_per_conformer,
+                                config.n_conformers,
+                                config.snapshot_interval,
+                                config.n_equilibration_steps,
+                                config.energy_upper_cutoff,
+                                config.energy_lower_cutoff,
+                                config.cluster_tolerance,
+                                config.cluster_parallel,
                             ),
                         ]
                     )
@@ -323,48 +287,48 @@ def train(world_size: int, args: TrainingConfig) -> None:
                             get_data_MMMD(
                                 mol,
                                 off_force_field,
-                                ML_path,
-                                MD_temperature,
-                                MD_dt,
-                                Ntrn,
-                                Ncnf,
-                                MD_stepsize,
-                                MD_startup,
-                                MD_energy_upper_cutoff,
-                                MD_energy_lower_cutoff,
+                                config.ml_potential,
+                                config.temperature,
+                                timestep_ps,
+                                config.n_train_snapshots_per_conformer,
+                                config.n_conformers,
+                                config.snapshot_interval,
+                                config.n_equilibration_steps,
+                                config.energy_upper_cutoff,
+                                config.energy_lower_cutoff,
                             ),
                         ]
                     )
             else:
-                if method == "cMMMD":
+                if config.method == "cMMMD":
                     dataset = get_data_cMMMD(
                         mol,
                         off_force_field,
-                        ML_path,
-                        MD_temperature,
-                        MD_dt,
-                        Ntrn,
-                        Ncnf,
-                        MD_stepsize,
-                        MD_startup,
-                        MD_energy_upper_cutoff,
-                        MD_energy_lower_cutoff,
-                        Cluster_tolerance,
-                        Cluster_Parallel,
+                        config.ml_potential,
+                        config.temperature,
+                        timestep_ps,
+                        config.n_train_snapshots_per_conformer,
+                        config.n_conformers,
+                        config.snapshot_interval,
+                        config.n_equilibration_steps,
+                        config.energy_upper_cutoff,
+                        config.energy_lower_cutoff,
+                        config.cluster_tolerance,
+                        config.cluster_parallel,
                     )
                 else:
                     dataset = get_data_MMMD(
                         mol,
                         off_force_field,
-                        ML_path,
-                        MD_temperature,
-                        MD_dt,
-                        Ntrn,
-                        Ncnf,
-                        MD_stepsize,
-                        MD_startup,
-                        MD_energy_upper_cutoff,
-                        MD_energy_lower_cutoff,
+                        config.ml_potential,
+                        config.temperature,
+                        timestep_ps,
+                        config.n_train_snapshots_per_conformer,
+                        config.n_conformers,
+                        config.snapshot_interval,
+                        config.n_equilibration_steps,
+                        config.energy_upper_cutoff,
+                        config.energy_lower_cutoff,
                     )
             with open("/dev/null", "w") as f:
                 with redirect_stderr(f):

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import torch
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .utils.typing import PathLike, TorchDevice
 
@@ -30,7 +30,7 @@ class TrainingConfig(BaseModel):
     )
     method: str = Field("MMMD", description="Method for generating data")
     n_epochs: int = Field(1000, description="Number of epochs in the ML fit")
-    learning_rate: float = Field(0.005, description="Learning Rate in the ML fit")
+    learning_rate: float = Field(0.002, description="Learning Rate in the ML fit")
     learning_rate_decay: float = Field(
         1.00, description="Learning Rate Decay. 0.99 is 1%, and 1.0 is no decay."
     )
@@ -38,43 +38,53 @@ class TrainingConfig(BaseModel):
     loss_force_weight: float = Field(
         1e5, description="Scaling Factor for the Force loss term"
     )
-    force_field_init: str = Field(
-        "openff-2.2.0.offxml", description="Starting guess force field"
+    initial_force_field: str = Field(
+        "openff-2.2.1.offxml",
+        description="The force field from which to start. This can be any"
+        " OpenFF force field, or your own .offxml file.",
     )
-    MLMD_potential: str = Field(
-        "mace-off23-small", description="Name of the MD potential used"
+    ml_potential: str = Field(
+        "mace-off23-small",
+        description="The machine learning potential to use for calculating energies and forces,"
+        " and test MD trajectory. If the method is 'MLMD', this will also be used to generate the"
+        "training data.",
     )
-    N_train: int = Field(1000, description="Number of datapoints in training sets")
-    N_test: int = Field(1000, description="Number of datapoints in testing sets")
-    N_conformers: int = Field(10, description="Number of Starting Conformers")
-    N_iterations: int = Field(5, description="Number of ML Iterations Performed")
-    MD_stepsize: int = Field(
+    n_train_snapshots: int = Field(
+        1000, description="Number of MD snapshots required for the training set"
+    )
+    n_test_snapshots: int = Field(
+        1000, description="Number of MD snapshots required for the test set"
+    )
+    n_conformers: int = Field(
+        10, description="Number of conformers to generate, from which MD is started"
+    )
+    n_iterations: int = Field(
+        10,
+        description="Number of iterations of running MD, then training the FF to run",
+    )
+    snapshot_interval: int = Field(
         10, description="Number of Time Steps Between MD Snapshots"
     )
-    MD_startup: int = Field(100, description="Number of Time Steps Ignored")
-    MD_temperature: int = Field(500, description="Temperature in Kelvin")
-    MD_dt: float = Field(1.0, description="MD Stepsize in femtoseconds")
-    MD_energy_lower_cutoff: float = Field(
+    n_equilibration_steps: int = Field(
+        100, description="Number of time steps ignored from beginning of MD runs"
+    )
+    temperature: int = Field(500, description="Temperature to run MD at, in Kelvin")
+    timestep: float = Field(1.0, description="MD timestep, in femtoseconds")
+    energy_lower_cutoff: float = Field(
         1.0, description="Lower bound for the energy cutoff function"
     )
-    MD_energy_upper_cutoff: float = Field(
+    energy_upper_cutoff: float = Field(
         10.0, description="Upper bound for the energy cutoff function"
     )
-    Cluster_tolerance: float = Field(
+    cluster_tolerance: float = Field(
         0.075, description="Tolerance used in the RMSD clustering"
     )
-    Cluster_Parallel: int = Field(
+    cluster_parallel: int = Field(
         1, description="MPI nodes used in the RMSD clustering"
     )
-    data: str = Field("train_data", description="Location of pre-calculated data set")
-    modSem_finite_step: float = Field(
-        0.005291772, description="Finite Step to Calculate Hessian in Ang"
-    )
-    modSem_vib_scaling: float = Field(
-        0.957, description="Vibrational Scaling Parameter"
-    )
-    modSem_tolerance: float = Field(
-        0.0001, description="Tolerance for the geometry optimizer"
+    data: str | None = Field(
+        None,
+        description="Location of pre-calculated data set. Must be None unless method == 'data'",
     )
     memory: bool = Field(False, description="Retain data upon iteration (Default)")
     linear_harmonics: bool = Field(
@@ -82,12 +92,24 @@ class TrainingConfig(BaseModel):
         description="Linearize the Harmonic potentials in the Force Field (Default)",
     )
     linear_torsions: bool = Field(
-        True,
+        False,
         description="Linearize the Torsion potentials in the Force Field (Default)",
     )
-    modSem: bool = Field(
+    use_modified_seminaro: bool = Field(
         True,
-        description="Use mod-Seminario method to initialize the Force Field (Default)",
+        description="Use modified Seminario method to initialize the Force Field",
+    )
+    modified_seminario_finite_step: float = Field(
+        0.005291772,
+        description="Finite step to calculate Hessian (Angstrom) in the modified Seminario method",
+    )
+    modified_seminario_tolerance: float = Field(
+        0.0001,
+        description="Tolerance for the geometry optimizer in the modified Seminario method",
+    )
+    modified_seminario_vib_scaling: float = Field(
+        0.957,
+        description="Vibrational scaling factor for the modified Seminario method",
     )
 
     @field_validator("device_type")
@@ -105,6 +127,48 @@ class TrainingConfig(BaseModel):
             )
 
         return value
+
+    @model_validator(mode="after")
+    def validate_snapshots(self) -> "TrainingConfig":
+        """Ensure that the number of snapshots is divisible by the number of conformers."""
+        if self.n_train_snapshots % self.n_conformers != 0:
+            raise ValueError(
+                f"Number of training snapshots ({self.n_train_snapshots}) must be divisible by the number of conformers ({self.n_conformers})."
+            )
+        if self.n_test_snapshots % self.n_conformers != 0:
+            raise ValueError(
+                f"Number of test snapshots ({self.n_test_snapshots}) must be divisible by the number of conformers ({self.n_conformers})."
+            )
+        return self
+
+    @property
+    def device(self) -> torch.device:
+        return torch.device(self.device_type)
+
+    @property
+    def n_test_snapshots_per_conformer(self) -> int:
+        """Return the number of test snapshots per conformer."""
+        return self.n_test_snapshots // self.n_conformers
+
+    @property
+    def n_train_snapshots_per_conformer(self) -> int:
+        """Return the number of training snapshots per conformer."""
+
+        return self.n_train_snapshots // self.n_conformers
+
+    # Validate data - this must be None unless method == 'data', in which case
+    # it must be a valid path
+    @model_validator(mode="after")
+    def validate_data(self) -> "TrainingConfig":
+        """Validate the data field based on the method."""
+        if self.method == "data" and self.data is None:
+            raise ValueError(
+                "If method is 'data', the data field must be a valid path."
+            )
+        elif self.method != "data" and self.data is not None:
+            raise ValueError("If method is not 'data', the data field must be None.")
+
+        return self
 
     @property
     def pretty_string(self) -> str:
@@ -131,4 +195,4 @@ class TrainingConfig(BaseModel):
             if isinstance(value, Path):
                 data[key] = str(value)
         with open(yaml_path, "w") as file:
-            yaml.dump(data, file, default_flow_style=False)
+            yaml.dump(data, file, default_flow_style=False, sort_keys=False)
