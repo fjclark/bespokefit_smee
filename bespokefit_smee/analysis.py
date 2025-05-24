@@ -106,11 +106,21 @@ class OutputData:
     ) -> tuple[dict[int, npt.NDArray[np.float64]], dict[int, npt.NDArray[np.float64]]]:
         error_datafiles = [self.path / f"trained-{i}.scat" for i in range(self.n_iter)]
         energy_errors = {
-            i: np.loadtxt(f)[:, 1] - np.loadtxt(f)[:, 0]
+            # i: np.loadtxt(f)[:, 1] - np.loadtxt(f)[:, 0]
+            # for i, f in enumerate(error_datafiles)
+            i: np.loadtxt(f)[:, 0]
             for i, f in enumerate(error_datafiles)
         }
+        # Drop nan values from the energy errors
+        energy_errors = {
+            i: e[~np.isnan(e)]
+            for i, e in energy_errors.items()
+            if len(e[~np.isnan(e)]) > 0
+        }
         force_errors = {
-            i: np.loadtxt(f)[:, 3] - np.loadtxt(f)[:, 2]
+            # i: np.loadtxt(f)[:, 3] - np.loadtxt(f)[:, 2]
+            # for i, f in enumerate(error_datafiles)
+            i: np.loadtxt(f)[:, 1]
             for i, f in enumerate(error_datafiles)
         }
 
@@ -153,9 +163,11 @@ def plot_distributions_of_errors(
 
     for i in range(output_data.n_iter):
         ax.hist(
-            output_data.energy_errors[i]
-            if error_type == "energy"
-            else output_data.force_errors[i],
+            (
+                output_data.energy_errors[i]
+                if error_type == "energy"
+                else output_data.force_errors[i]
+            ),
             label=f"Iteration {i}",
             alpha=0.8,
             color=colours[i],
@@ -178,9 +190,11 @@ def plot_mean_errors(
     error_type: Literal["energy", "force"],
 ) -> None:
     mean_errors = [
-        np.mean(output_data.energy_errors[i])
-        if error_type == "energy"
-        else np.mean(output_data.force_errors[i])
+        (
+            np.mean(output_data.energy_errors[i])
+            if error_type == "energy"
+            else np.mean(output_data.force_errors[i])
+        )
         for i in range(output_data.n_iter)
     ]
 
@@ -206,9 +220,11 @@ def plot_sd_of_errors(
     error_type: Literal["energy", "force"],
 ) -> None:
     sd_errors = [
-        np.std(output_data.energy_errors[i])
-        if error_type == "energy"
-        else np.std(output_data.force_errors[i])
+        (
+            np.std(output_data.energy_errors[i])
+            if error_type == "energy"
+            else np.std(output_data.force_errors[i])
+        )
         for i in range(output_data.n_iter)
     ]
 
@@ -234,9 +250,11 @@ def plot_rmse_of_errors(
     error_type: Literal["energy", "force"],
 ) -> None:
     rmsd_errors = [
-        np.sqrt(np.mean(output_data.energy_errors[i] ** 2))
-        if error_type == "energy"
-        else np.sqrt(np.mean(output_data.force_errors[i] ** 2))
+        (
+            np.sqrt(np.mean(output_data.energy_errors[i] ** 2))
+            if error_type == "energy"
+            else np.sqrt(np.mean(output_data.force_errors[i] ** 2))
+        )
         for i in range(output_data.n_iter)
     ]
 

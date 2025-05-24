@@ -39,14 +39,22 @@ class TrainingConfig(BaseModel):
     method: Literal["MMMD", "MLMD", "cMMMD", "data"] = Field(
         "MMMD", description="Method for generating data"
     )
+    optimiser: Literal["adam", "lm"] = Field(
+        "adam",
+        description="Optimiser to use for the training. 'adam' is Adam, 'lm' is Levenberg-Marquardt",
+    )
+    test_data_path: Path | None = Field(
+        None,
+        description="Path to the test data. If None, the data will be generated using the ML potential.",
+    )
     n_epochs: int = Field(1000, description="Number of epochs in the ML fit")
-    learning_rate: float = Field(0.002, description="Learning Rate in the ML fit")
+    learning_rate: float = Field(0.0005, description="Learning Rate in the ML fit")
     learning_rate_decay: float = Field(
         1.00, description="Learning Rate Decay. 0.99 is 1%, and 1.0 is no decay."
     )
     learning_rate_decay_step: int = Field(10, description="Learning Rate Decay Step")
     loss_force_weight: float = Field(
-        1e5, description="Scaling Factor for the Force loss term"
+        0.1, description="Scaling Factor for the Force loss term"
     )
     initial_force_field: str = Field(
         "openff-2.2.1.offxml",
@@ -106,7 +114,7 @@ class TrainingConfig(BaseModel):
         description="Linearize the Torsion potentials in the Force Field (Default)",
     )
     use_modified_seminaro: bool = Field(
-        True,
+        False,
         description="Use modified Seminario method to initialize the Force Field",
     )
     modified_seminario_finite_step: float = Field(

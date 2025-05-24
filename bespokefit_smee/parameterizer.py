@@ -166,7 +166,10 @@ def convert_to_smirnoff(
                 a1 = param[2].item()
                 a2 = param[3].item()
                 k = k1 + k2
+                # Set k and angle to 0 if very close
                 a = (k1 * a1 + k2 * a2) / k
+                if a < 0 or a > math.pi:
+                    breakpoint()
                 dt = param.dtype
                 new_params.append([k, a])
             reconstructed_param = torch.tensor(new_params, dtype=dt)

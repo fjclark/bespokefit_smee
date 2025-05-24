@@ -5,17 +5,16 @@ Functionality to obtain samples, to which the force field is fitted.
 import copy
 import functools
 import multiprocessing
-import typing
 from contextlib import redirect_stdout
 from typing import Callable
 
 import datasets
 import datasets.table
+import descent.targets.energy
 import numpy
 import openff.interchange
 import openff.toolkit
 import openmm
-import pyarrow
 import torch
 from openff.units import unit as off_unit
 from openmm import LangevinMiddleIntegrator
@@ -53,51 +52,6 @@ GetDataFnType = Callable[
     ],
     datasets.Dataset,
 ]
-
-
-class Entry(typing.TypedDict):
-    """Contains:
-    - The coordinates [Å] of the conformers
-    - The reference energies [kcal/mol] with ``shape=(n_confs,)``
-    - The reference forces [kcal/mol/Å] with ``shape=(n_confs, n_particles, 3)``
-    - The reference loss weights with ``shape=(n_confs,)``
-    """
-
-    coords: torch.Tensor
-    energy: torch.Tensor
-    forces: torch.Tensor
-    weight: torch.Tensor
-
-
-def create_dataset(entries: list[Entry]) -> datasets.Dataset:
-    """Create a dataset from a list of existing entries.
-    Args:
-        entries: The entries to create the dataset from.
-    Returns:
-        The created dataset.
-    """
-    table = pyarrow.Table.from_pylist(
-        [
-            {
-                "coords": entry["coords"].clone().detach().flatten().tolist(),
-                "energy": entry["energy"].clone().detach().flatten().tolist(),
-                "forces": entry["forces"].clone().detach().flatten().tolist(),
-                "weight": entry["weight"].clone().detach().flatten().tolist(),
-            }
-            for entry in entries
-        ],
-        schema=pyarrow.schema(
-            [
-                ("coords", pyarrow.list_(pyarrow.float64())),
-                ("energy", pyarrow.list_(pyarrow.float64())),
-                ("forces", pyarrow.list_(pyarrow.float64())),
-                ("weight", pyarrow.list_(pyarrow.float64())),
-            ]
-        ),
-    )
-    dataset = datasets.Dataset(datasets.table.InMemoryTable(table))
-    dataset.set_format("torch")
-    return dataset
 
 
 def get_data_MMMD(
@@ -183,18 +137,18 @@ def get_data_MMMD(
         #     weight.append(0.0)
         # else:
         #     weight.append(1.0 / math.sqrt(1.0 + (delE - 1.0) ** 2))
+    smiles = mol.to_smiles(isomeric=True, explicit_hydrogens=True, mapped=True)
     energy_0 = energy[0]
     energy_out = torch.tensor([x - energy_0 for x in energy])
     forces_out = torch.tensor(forces)
-    weight_out = torch.tensor(weight)
 
-    return create_dataset(
+    return descent.targets.energy.create_dataset(
         [
             {
+                "smiles": smiles,
                 "coords": coords_out,
                 "energy": energy_out,
                 "forces": forces_out,
-                "weight": weight_out,
             }
         ]
     )
@@ -278,14 +232,14 @@ def get_data_MLMD(
     energy_out = torch.tensor([x - energy_0 for x in energy])
     forces_out = torch.tensor(forces)
     coords_out = torch.tensor(coords)
-    weight_out = torch.tensor(weight)
-    return create_dataset(
+    smiles = mol.to_smiles(isomeric=True, explicit_hydrogens=True, mapped=True)
+    return descent.targets.energy.create_dataset(
         [
             {
+                "smiles": smiles,
                 "coords": coords_out,
                 "energy": energy_out,
                 "forces": forces_out,
-                "weight": weight_out,
             }
         ]
     )
@@ -409,14 +363,14 @@ def get_data_cMMMD(
     energy_0 = energy[0]
     energy_out = torch.tensor([x - energy_0 for x in energy])
     forces_out = torch.tensor(forces)
-    weight_out = torch.tensor(weight)
-    return create_dataset(
+    smiles = mol.to_smiles(isomeric=True, explicit_hydrogens=True, mapped=True)
+    return descent.targets.energy.create_dataset(
         [
             {
-                "coords": coords_use,
+                "smiles": smiles,
+                "coords": coords_out,
                 "energy": energy_out,
                 "forces": forces_out,
-                "weight": weight_out,
             }
         ]
     )

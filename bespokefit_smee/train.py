@@ -2,29 +2,202 @@
 
 import copy
 import datetime
+import functools
+import logging
 import pathlib
 from contextlib import redirect_stderr
 
 import datasets
 import datasets.combine
+import descent
+import descent.optim
 import loguru
 import openff.toolkit
+import smee
 import tensorboardX
 import torch
 from tqdm import tqdm
 
 from .data_maker import get_data_MLMD, get_data_MMMD
-from .loss_functions import prediction_loss
+from .loss_functions import get_loss_closure_fn, prediction_loss
 from .parameterizer import build_parameters, convert_to_smirnoff
 from .settings import DEFAULT_CONFIG_PATH, TrainingConfig
 from .writers import (
     get_potential_comparison,
     open_writer,
+    report,
     write_metrics,
     write_scatter,
 )
 
+logging.basicConfig(
+    level=logging.INFO,  # or logging.DEBUG for more detail
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logging.getLogger("descent").setLevel(logging.DEBUG)
+
 logger = loguru.logger
+
+
+def _iterate_training_levenberg_marquardt(
+    trainable_parameters: torch.Tensor,
+    trainable: descent.train.Trainable,
+    topology: smee.TensorTopology,
+    dataset: datasets.Dataset,
+    dataset_test: datasets.Dataset,
+    config: TrainingConfig,
+    iteration: int,
+) -> tuple[torch.Tensor, descent.train.Trainable]:
+    """
+    Iterate the training process using the Levenberg-Marquardt algorithm.
+
+    Parameters
+    ----------
+        trainable_parameters: torch.Tensor
+            The parameters to be optimized.
+        trainable: descent.train.Trainable
+            The trainable object containing the parameters.
+        topology: smee.TensorTopology
+            The topology of the system.
+        dataset: datasets.Dataset
+            The dataset to be used for training.
+        dataset_test: datasets.Dataset
+            The dataset to be used for testing.
+        config: TrainingConfig
+            The configuration object containing training parameters.
+        iteration: int
+            The current iteration number.
+
+    Returns
+    -------
+        tuple[torch.Tensor, float, float, float, float]
+            The updated parameters and the mean and standard deviation of energy and forces.
+    """
+    # Some book-keeping
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    experiment_dir = pathlib.Path(f"{timestamp}")
+
+    # Run the training with the LM optimiser
+    lm_config = descent.optim.LevenbergMarquardtConfig(
+        mode="adaptive", n_convergence_criteria=2, max_steps=100
+    )
+
+    closure_fn = get_loss_closure_fn(
+        trainable,
+        topology,
+        dataset,
+    )
+
+    correct_fn = trainable.clamp
+
+    report_fn = functools.partial(
+        report,
+        trainable=trainable,
+        topology=topology,
+        dataset_test=dataset_test,
+        metrics_file="training-" + str(iteration) + ".data",
+        experiment_dir=experiment_dir,
+    )
+
+    trainable_parameters = descent.optim.levenberg_marquardt(
+        trainable_parameters, lm_config, closure_fn, correct_fn, report_fn
+    )
+    trainable_parameters.requires_grad_(True)
+
+    return trainable_parameters, trainable
+
+
+def _iterate_training_adam(
+    trainable_parameters: torch.Tensor,
+    trainable: descent.train.Trainable,
+    topology: smee.TensorTopology,
+    dataset: datasets.Dataset,
+    dataset_test: datasets.Dataset,
+    config: TrainingConfig,
+    iteration: int,
+) -> tuple[torch.Tensor, descent.train.Trainable]:
+    """
+    Iterate the training process using the Adam optimizer.
+
+    Parameters
+    ----------
+        trainable_parameters: torch.Tensor
+            The parameters to be optimized.
+        trainable: descent.train.Trainable
+            The trainable object containing the parameters.
+        topology: smee.TensorTopology
+            The topology of the system.
+        dataset: datasets.Dataset
+            The dataset to be used for training.
+        dataset_test: datasets.Dataset
+            The dataset to be used for testing.
+        config: TrainingConfig
+            The configuration object containing training parameters.
+        iteration: int
+            The current iteration number.
+
+    Returns
+    -------
+        tuple[torch.Tensor, float, float, float, float]
+            The updated parameters and the mean and standard deviation of energy and forces.
+    """
+    # some book-keeping
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    experiment_dir = pathlib.Path(f"{timestamp}")
+
+    # run the ML training
+    with open("training-" + str(iteration) + ".data", "w") as metrics_file:
+        with open_writer(experiment_dir) as writer:
+            optimizer = torch.optim.Adam(
+                [trainable_parameters], lr=config.learning_rate, amsgrad=True
+            )
+            scheduler = torch.optim.lr_scheduler.ExponentialLR(
+                optimizer, gamma=config.learning_rate_decay
+            )
+            for v in tensorboardX.writer.hparams(
+                {"optimizer": "Adam", "lr": config.learning_rate}, {}
+            ):
+                writer.file_writer.add_summary(v)
+            for i in tqdm(
+                range(config.n_epochs),
+                leave=False,
+                colour="blue",
+                desc="Running ML Optimization",
+            ):
+                loss_trn = prediction_loss(
+                    dataset,
+                    trainable.to_force_field(trainable_parameters),
+                    topology,
+                    config.loss_force_weight,
+                    config.device_type,
+                )
+                if i % 10 == 0:
+                    loss_tst = prediction_loss(
+                        dataset_test,
+                        trainable.to_force_field(trainable_parameters),
+                        topology,
+                        config.loss_force_weight,
+                        config.device_type,
+                    )
+                    write_metrics(i, loss_trn, loss_tst, writer, metrics_file)
+                loss_trn.backward(retain_graph=True)  # type: ignore[no-untyped-call]
+                # trainable.freeze_grad()
+                optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
+                trainable.clamp(trainable_parameters)
+                if i % config.learning_rate_decay_step == 0:
+                    scheduler.step()
+        # some book-keeping and outputing
+        loss_tst = prediction_loss(
+            dataset_test,
+            trainable.to_force_field(trainable_parameters),
+            topology,
+            config.loss_force_weight,
+            config.device_type,
+        )
+        write_metrics(config.n_epochs, loss_trn, loss_tst, writer, metrics_file)
+
+        return trainable_parameters, trainable
 
 
 def train(config: TrainingConfig) -> None:
@@ -65,6 +238,10 @@ def train(config: TrainingConfig) -> None:
     trainable_parameters = trainable.to_values().to((config.device_type))
     topology = topology.to(config.device_type)
 
+    # Convert topology assignment tensors to dense - needed for some reason for hessian calc
+    for param in topology.parameters.values():
+        param.assignment_matrix = param.assignment_matrix.to_dense()
+
     off_force_field = convert_to_smirnoff(
         trainable.to_force_field(trainable_parameters), base=VdW_forcefield
     )
@@ -95,20 +272,30 @@ def train(config: TrainingConfig) -> None:
             dataset.save_to_disk("data_it_0")
 
     # Generate the test set
-    logger.info("Generating Test Set with MLMD")
-    dataset_test = get_data_MLMD(
-        mol,
-        off_force_field,
-        config.ml_potential,
-        config.temperature,
-        timestep_ps,
-        config.n_test_snapshots_per_conformer,
-        config.n_conformers,
-        config.snapshot_interval,
-        config.n_equilibration_steps,
-        config.energy_upper_cutoff,
-        config.energy_lower_cutoff,
-    )
+    if config.test_data_path is not None:
+        logger.info(
+            f"Loading test set from {config.test_data_path} instead of generating it"
+        )
+        dataset_test = datasets.Dataset.load_from_disk(config.test_data_path)
+    else:
+        logger.info("Generating Test Set with MLMD")
+        dataset_test = get_data_MLMD(
+            mol,
+            off_force_field,
+            config.ml_potential,
+            config.temperature,
+            timestep_ps,
+            config.n_test_snapshots_per_conformer,
+            config.n_conformers,
+            config.snapshot_interval,
+            config.n_equilibration_steps,
+            config.energy_upper_cutoff,
+            config.energy_lower_cutoff,
+        )
+
+        with open("/dev/null", "w") as f:
+            with redirect_stderr(f):
+                dataset_test.save_to_disk("data_test")
 
     # Generate the Energy Scatter Plot
     energy_mean, energy_SD, forces_mean, forces_SD = write_scatter(
@@ -118,67 +305,27 @@ def train(config: TrainingConfig) -> None:
         config.device_type,
         "default.scat",
     )
+
     for iteration in tqdm(
         range(config.n_iterations),
         leave=False,
         colour="magenta",
         desc="Iterating the Fit",
     ):
-        # some book-keeping
-        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        experiment_dir = pathlib.Path(f"{timestamp}")
+        iterate_training_fns = {
+            "lm": _iterate_training_levenberg_marquardt,
+            "adam": _iterate_training_adam,
+        }
+        trainable_parameters, trainable = iterate_training_fns[config.optimiser](
+            trainable_parameters,
+            trainable,
+            topology,
+            dataset,
+            dataset_test,
+            config,
+            iteration,
+        )
 
-        # run the ML training
-        with open("training-" + str(iteration) + ".data", "w") as metrics_file:
-            with open_writer(experiment_dir) as writer:
-                optimizer = torch.optim.Adam(
-                    [trainable_parameters], lr=config.learning_rate, amsgrad=True
-                )
-                scheduler = torch.optim.lr_scheduler.ExponentialLR(
-                    optimizer, gamma=config.learning_rate_decay
-                )
-                for v in tensorboardX.writer.hparams(
-                    {"optimizer": "Adam", "lr": config.learning_rate}, {}
-                ):
-                    writer.file_writer.add_summary(v)
-                for i in tqdm(
-                    range(config.n_epochs),
-                    leave=False,
-                    colour="blue",
-                    desc="Running ML Optimization",
-                ):
-                    loss_trn = prediction_loss(
-                        dataset,
-                        trainable.to_force_field(trainable_parameters),
-                        topology,
-                        config.loss_force_weight,
-                        config.device_type,
-                    )
-                    if i % 10 == 0:
-                        loss_tst = prediction_loss(
-                            dataset_test,
-                            trainable.to_force_field(trainable_parameters),
-                            topology,
-                            config.loss_force_weight,
-                            config.device_type,
-                        )
-                        write_metrics(i, loss_trn, loss_tst, writer, metrics_file)
-                    loss_trn.backward(retain_graph=True)  # type: ignore[no-untyped-call]
-                    # trainable.freeze_grad()
-                    optimizer.step()
-                    optimizer.zero_grad(set_to_none=True)
-                    trainable.clamp(trainable_parameters)
-                    if i % config.learning_rate_decay_step == 0:
-                        scheduler.step()
-            # some book-keeping and outputing
-            loss_tst = prediction_loss(
-                dataset_test,
-                trainable.to_force_field(trainable_parameters),
-                topology,
-                config.loss_force_weight,
-                config.device_type,
-            )
-            write_metrics(config.n_epochs, loss_trn, loss_tst, writer, metrics_file)
         summary_output = f"Summary for Iteration {iteration + 1}".center(88, "=")
         summary_output += "\n"
         summary_output += "Parameterization".center(88, "=")

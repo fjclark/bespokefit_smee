@@ -38,6 +38,7 @@ def test_integration_cli(tmp_cwd) -> None:
 
     # Check that the expected output is generated
     expected_files = [
+        "training_config.yaml",
         "default.offxml",
         "default.scat",
         "trained-0.offxml",
@@ -50,8 +51,8 @@ def test_integration_cli(tmp_cwd) -> None:
         )
 
     directories_found = [d for d in tmp_cwd.iterdir() if d.is_dir()]
-    assert len(directories_found) == 2, (
-        "Expected exactly two directories in the current working directory."
+    assert len(directories_found) == 3, (
+        "Expected exactly three directories in the current working directory."
     )
 
     # Now, analyse
