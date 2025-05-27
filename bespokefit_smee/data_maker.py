@@ -20,11 +20,12 @@ from openff.units import unit as off_unit
 from openmm import LangevinMiddleIntegrator
 from openmm.app import Simulation
 from openmm.unit import Quantity, angstrom
-from openmmml import MLPotential
 from rdkit import Chem
 from rdkit.Chem import rdMolAlign
 from rdkit.ML.Cluster import Butina
 from tqdm import tqdm
+
+from . import mlp
 
 _ANGSTROM = off_unit.angstrom
 
@@ -38,7 +39,7 @@ GetDataFnType = Callable[
     [
         openff.toolkit.Molecule,
         openff.toolkit.ForceField,
-        str,
+        mlp.AvailableModels,
         float,
         float,
         int,
@@ -57,7 +58,7 @@ GetDataFnType = Callable[
 def get_data_MMMD(
     mol: openff.toolkit.Molecule,
     off: openff.toolkit.ForceField,
-    ML_path: str = "mace-off23-small",
+    ML_path: mlp.AvailableModels = "mace-off23-small",
     temperature: float = 300,
     dt: float = 0.001,
     N: int = 1000,
@@ -110,10 +111,13 @@ def get_data_MMMD(
             )
     coords_out = torch.tensor(coords)
     # Generate energy and force for the snapshots using a ML potential
-    potential = MLPotential(ML_path)
+    potential = mlp.get_mlp(ML_path)
     with open("/dev/null", "w") as f:
         with redirect_stdout(f):
-            system = potential.createSystem(interchange.to_openmm_topology())
+            system = potential.createSystem(
+                interchange.to_openmm_topology(),
+                charge=mol.total_charge.m_as(off_unit.e),
+            )
     integrator = copy.copy(integrator)
     simulation_ml = Simulation(interchange.topology, system, integrator)
     for i in tqdm(
@@ -157,7 +161,7 @@ def get_data_MMMD(
 def get_data_MLMD(
     mol: openff.toolkit.Molecule,
     off: openff.toolkit.ForceField,
-    ML_path: str = "mace-off23-small",
+    ML_path: mlp.AvailableModels = "mace-off23-small",
     temperature: float = 300,
     dt: float = 0.001,
     N: int = 1000,
@@ -183,10 +187,13 @@ def get_data_MLMD(
     integrator = LangevinMiddleIntegrator(
         temperature * _OMM_KELVIN, 1 / _OMM_PS, dt * _OMM_PS
     )
-    potential = MLPotential(ML_path)
+    potential = mlp.get_mlp(ML_path)
     with open("/dev/null", "w") as f:
         with redirect_stdout(f):
-            system = potential.createSystem(interchange.to_openmm_topology())
+            system = potential.createSystem(
+                interchange.to_openmm_topology(),
+                charge=mol.total_charge.m_as(off_unit.e),
+            )
     simulation = Simulation(interchange.topology, system, integrator)
 
     coords, energy, forces, weight = [], [], [], []
@@ -248,7 +255,7 @@ def get_data_MLMD(
 def get_data_cMMMD(
     mol: openff.toolkit.Molecule,
     off: openff.toolkit.ForceField,
-    ML_path: str = "mace-off23-small",
+    ML_path: mlp.AvailableModels = "mace-off23-small",
     temperature: float = 300,
     dt: float = 0.001,
     N: int = 1000,
@@ -333,10 +340,13 @@ def get_data_cMMMD(
     tqdm.write(f"Clustering Summary: {len(conf_ids)} -> {len(cluster_ids)}")
     coords_use = coords_out[cluster_ids, :, :]
     # Generate energy and force for the snapshots using a ML potential
-    potential = MLPotential(ML_path)
+    potential = mlp.get_mlp(ML_path)
     with open("/dev/null", "w") as f:
         with redirect_stdout(f):
-            system = potential.createSystem(interchange.to_openmm_topology())
+            system = potential.createSystem(
+                interchange.to_openmm_topology(),
+                charge=mol.total_charge.m_as(off_unit.e),
+            )
     integrator = copy.copy(integrator)
     simulation_ml = Simulation(interchange.topology, system, integrator)
     for i in tqdm(

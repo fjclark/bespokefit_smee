@@ -5,7 +5,7 @@ channels:
 
 dependencies:
     # Base dependencies
-    - python
+    - python>=3.11
     - pyyaml
     - smee
     - descent
@@ -13,7 +13,7 @@ dependencies:
     - jupyter
     - nglview
     - smirnoff-plugins >=0.0.4
-    - openmm
+    - openmm>=8.2
     - openff-toolkit
     - openff-units
     - openff-interchange

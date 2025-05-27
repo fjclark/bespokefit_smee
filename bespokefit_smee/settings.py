@@ -8,7 +8,7 @@ import torch
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from . import data_maker
+from . import data_maker, mlp
 from .utils.typing import PathLike, TorchDevice
 
 DEFAULT_CONFIG_PATH = Path("training_config.yaml")
@@ -61,7 +61,7 @@ class TrainingConfig(BaseModel):
         description="The force field from which to start. This can be any"
         " OpenFF force field, or your own .offxml file.",
     )
-    ml_potential: str = Field(
+    ml_potential: Literal[mlp.AvailableModels] = Field(
         "mace-off23-small",
         description="The machine learning potential to use for calculating energies and forces,"
         " and test MD trajectory. If the method is 'MLMD', this will also be used to generate the"

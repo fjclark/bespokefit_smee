@@ -19,11 +19,11 @@ def test_integration_cli(tmp_cwd) -> None:
         "--n-epochs",
         "10",
         "--n-train-snapshots",
-        "10",
+        "9",
         "--n-test-snapshots",
-        "5",
+        "6",
         "--n-conformers",
-        "5",
+        "3",
     ]
 
     result = subprocess.run(
