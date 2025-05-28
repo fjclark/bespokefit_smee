@@ -25,6 +25,7 @@ from openff.units import unit as off_unit
 from rdkit import Chem
 from tqdm import tqdm
 
+from . import mlp
 from .utils.typing import TorchDevice
 
 logger = loguru.logger
@@ -495,7 +496,7 @@ def _prepare_potential(
 def build_parameters(
     mol: openff.toolkit.Molecule,
     off: openff.toolkit.ForceField,
-    ML_path: str,
+    ML_path: mlp.AvailableModels,
     linear_harmonics: bool,
     linear_torsions: bool,
     modSem: bool,
@@ -676,7 +677,7 @@ def modSeminario(
     mol: openff.toolkit.Molecule,
     top: smee.TensorTopology,
     off: openff.toolkit.ForceField,
-    ML_path: str,
+    ML_path: mlp.AvailableModels,
     sff: smee.TensorForceField,
     finite_step: float,
     vib_scaling: float,
@@ -687,7 +688,6 @@ def modSeminario(
     """
     from openmm import LangevinMiddleIntegrator
     from openmm.app.simulation import Simulation
-    from openmmml import MLPotential
 
     from .writers import get_potential_comparison
 
@@ -698,10 +698,13 @@ def modSeminario(
         off, openff.toolkit.Topology.from_molecules(molecule)
     )
     integrator = LangevinMiddleIntegrator(0 * _OMM_KELVIN, 1 / _OMM_PS, 0.01 * _OMM_PS)
-    potential = MLPotential(ML_path)
+    potential = mlp.get_mlp(ML_path)
     with open("/dev/null", "w") as f:
         with redirect_stdout(f):
-            system = potential.createSystem(interchange.to_openmm_topology())
+            system = potential.createSystem(
+                interchange.to_openmm_topology(),
+                charge=mol.total_charge.m_as(off_unit.e),
+            )
     simulation = Simulation(interchange.topology, system, integrator)
     #   calculate the ground-state geometry and energy
     interchange.positions = molecule.conformers[0]

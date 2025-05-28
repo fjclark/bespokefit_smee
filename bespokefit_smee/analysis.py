@@ -42,8 +42,8 @@ class OutputData:
 
     @cached_property
     def n_iter(self) -> int:
-        # Count the number of "trained-<i>.offxml" files
-        return len(list(self.path.glob("trained-*.offxml")))
+        # Count the number of "trained-<i>.offxml" files, minus one for the initial force field
+        return len(list(self.path.glob("trained-*.offxml"))) - 1
 
     @cached_property
     def molecule(self) -> Molecule:
@@ -55,13 +55,14 @@ class OutputData:
     @cached_property
     def force_fields(self) -> dict[int, ForceField]:
         return {
-            i: ForceField(self.path / f"trained-{i}.offxml") for i in range(self.n_iter)
+            i: ForceField(self.path / f"trained-{i}.offxml")
+            for i in range(self.n_iter + 1)
         }
 
     @cached_property
     def interchanges(self) -> dict[int, Interchange]:
         interchanges = {}
-        for i in range(self.n_iter):
+        for i in range(self.n_iter + 1):
             interchanges[i] = Interchange.from_smirnoff(
                 force_field=self.force_fields[i], topology=[self.molecule]
             )
@@ -69,7 +70,9 @@ class OutputData:
 
     @cached_property
     def losses(self) -> pd.DataFrame:
-        loss_datafiles = [self.path / f"training-{i}.data" for i in range(self.n_iter)]
+        loss_datafiles = [
+            self.path / f"training-{i}.data" for i in range(1, self.n_iter + 1)
+        ]
         idxs, losses_test, losses_train, iteration = [], [], [], []
 
         for i, loss_datafile in enumerate(loss_datafiles):
@@ -104,7 +107,9 @@ class OutputData:
     def _read_errors(
         self,
     ) -> tuple[dict[int, npt.NDArray[np.float64]], dict[int, npt.NDArray[np.float64]]]:
-        error_datafiles = [self.path / f"trained-{i}.scat" for i in range(self.n_iter)]
+        error_datafiles = [
+            self.path / f"trained-{i}.scat" for i in range(self.n_iter + 1)
+        ]
         energy_errors = {
             # i: np.loadtxt(f)[:, 1] - np.loadtxt(f)[:, 0]
             # for i, f in enumerate(error_datafiles)
@@ -129,7 +134,7 @@ class OutputData:
 
 def plot_loss(fig: Figure, ax: Axes, output_data: OutputData) -> None:
     # Colour by iteration - full line for train, dotted for test
-    for i in range(output_data.n_iter):
+    for i in range(output_data.n_iter + 1):
         ax.plot(
             output_data.losses[output_data.losses["iteration"] == i].index,
             output_data.losses[output_data.losses["iteration"] == i]["loss_train"],
@@ -159,9 +164,9 @@ def plot_distributions_of_errors(
 ) -> None:
     # Colour by iteration
     # Use continuous colourmap for the iterations
-    colours = plt.cm.get_cmap("viridis")(np.linspace(0, 1, output_data.n_iter))
+    colours = plt.cm.get_cmap("viridis")(np.linspace(0, 1, output_data.n_iter + 1))
 
-    for i in range(output_data.n_iter):
+    for i in range(output_data.n_iter + 1):
         ax.hist(
             (
                 output_data.energy_errors[i]
@@ -195,11 +200,11 @@ def plot_mean_errors(
             if error_type == "energy"
             else np.mean(output_data.force_errors[i])
         )
-        for i in range(output_data.n_iter)
+        for i in range(output_data.n_iter + 1)
     ]
 
     ax.plot(
-        range(output_data.n_iter),
+        range(output_data.n_iter + 1),
         mean_errors,
         marker="o",
         color="black",
@@ -225,11 +230,11 @@ def plot_sd_of_errors(
             if error_type == "energy"
             else np.std(output_data.force_errors[i])
         )
-        for i in range(output_data.n_iter)
+        for i in range(output_data.n_iter + 1)
     ]
 
     ax.plot(
-        range(output_data.n_iter),
+        range(output_data.n_iter + 1),
         sd_errors,
         marker="o",
         color="black",
@@ -255,11 +260,11 @@ def plot_rmse_of_errors(
             if error_type == "energy"
             else np.sqrt(np.mean(output_data.force_errors[i] ** 2))
         )
-        for i in range(output_data.n_iter)
+        for i in range(output_data.n_iter + 1)
     ]
 
     ax.plot(
-        range(output_data.n_iter),
+        range(output_data.n_iter + 1),
         rmsd_errors,
         marker="o",
         color="black",
@@ -364,9 +369,9 @@ def plot_ff_values(
     parameter_key: str,
 ) -> None:
     # nice colour map for the iterations
-    colours = plt.cm.get_cmap("viridis")(np.linspace(0, 1, output_data.n_iter))
+    colours = plt.cm.get_cmap("viridis")(np.linspace(0, 1, output_data.n_iter + 1))
 
-    for i in range(output_data.n_iter):
+    for i in range(output_data.n_iter + 1):
         # Get the initial and final potentials
         labeled = output_data.force_fields[i].label_molecules(
             output_data.molecule.to_topology()

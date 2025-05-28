@@ -113,7 +113,7 @@ class TrainingConfig(BaseModel):
         False,
         description="Linearize the Torsion potentials in the Force Field (Default)",
     )
-    use_modified_seminaro: bool = Field(
+    use_modified_seminario: bool = Field(
         False,
         description="Use modified Seminario method to initialize the Force Field",
     )

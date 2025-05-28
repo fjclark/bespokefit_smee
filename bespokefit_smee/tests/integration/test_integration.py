@@ -39,11 +39,11 @@ def test_integration_cli(tmp_cwd) -> None:
     # Check that the expected output is generated
     expected_files = [
         "training_config.yaml",
-        "default.offxml",
-        "default.scat",
         "trained-0.offxml",
+        "trained-1.offxml",
         "trained-0.scat",
-        "training-0.data",
+        "trained-1.scat",
+        "training-1.data",
     ]
     for file_name in expected_files:
         assert (tmp_cwd / file_name).exists(), (

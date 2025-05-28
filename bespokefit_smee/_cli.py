@@ -19,7 +19,7 @@ class TrainFromCli(TrainingConfig):
     """Run the training process with command line arguments."""
 
     def cli_cmd(self) -> None:
-        train(self)
+        train(self, write_config=True)
 
 
 class TrainFromYAML(BaseModel):
@@ -37,7 +37,8 @@ class TrainFromYAML(BaseModel):
             raise ValueError(
                 f"Please change the SMILES string in {self.config_yaml} to a valid value."
             )
-        train(config)
+        # No need to write a config file if we're reading from one already
+        train(config, write_config=False)
 
 
 class WriteDefaultYAML(BaseModel):

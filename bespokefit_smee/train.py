@@ -4,7 +4,6 @@ import copy
 import datetime
 import functools
 import logging
-import pathlib
 from contextlib import redirect_stderr
 
 import datasets
@@ -75,7 +74,7 @@ def _iterate_training_levenberg_marquardt(
     """
     # Some book-keeping
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    experiment_dir = pathlib.Path(f"{timestamp}")
+    experiment_dir = config.output_dir / timestamp
 
     # Run the training with the LM optimiser
     lm_config = descent.optim.LevenbergMarquardtConfig(
@@ -95,7 +94,7 @@ def _iterate_training_levenberg_marquardt(
         trainable=trainable,
         topology=topology,
         dataset_test=dataset_test,
-        metrics_file="training-" + str(iteration) + ".data",
+        metrics_file=config.output_dir / f"training-{iteration}.data",
         experiment_dir=experiment_dir,
     )
 
@@ -143,10 +142,10 @@ def _iterate_training_adam(
     """
     # some book-keeping
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    experiment_dir = pathlib.Path(f"{timestamp}")
+    experiment_dir = config.output_dir / timestamp
 
     # run the ML training
-    with open("training-" + str(iteration) + ".data", "w") as metrics_file:
+    with open(config.output_dir / f"training-{iteration}.data", "w") as metrics_file:
         with open_writer(experiment_dir) as writer:
             optimizer = torch.optim.Adam(
                 [trainable_parameters], lr=config.learning_rate, amsgrad=True
@@ -187,7 +186,7 @@ def _iterate_training_adam(
                 trainable.clamp(trainable_parameters)
                 if i % config.learning_rate_decay_step == 0:
                     scheduler.step()
-        # some book-keeping and outputing
+        # some book-keeping and outputting
         loss_tst = prediction_loss(
             dataset_test,
             trainable.to_force_field(trainable_parameters),
@@ -200,19 +199,26 @@ def _iterate_training_adam(
         return trainable_parameters, trainable
 
 
-def train(config: TrainingConfig) -> None:
+def train(config: TrainingConfig, write_config: bool = True) -> None:
     """
     Train a bespoke force field according to the provided configuration.
 
     Parameters:
         config  : TrainingConfig
             Configuration object containing all the necessary parameters for training.
+        write_config: bool
+            Whether to write the configuration to a YAML file in the output directory. Useful
+            for reproducibility when the config has been read from command line arguments.
     """
     # Summarise input parameters
     logger.info(f"Training settings:\n{config.pretty_string}")
 
+    # Create the output directory
+    config.output_dir.mkdir(parents=True, exist_ok=True)
+
     # Save config to YAML file
-    config.to_yaml(yaml_path=config.output_dir / DEFAULT_CONFIG_PATH)
+    if write_config:
+        config.to_yaml(yaml_path=config.output_dir / DEFAULT_CONFIG_PATH)
 
     timestep_ps = config.timestep / 1000  # Convert to ps
 
@@ -227,7 +233,7 @@ def train(config: TrainingConfig) -> None:
         config.ml_potential,
         config.linear_harmonics,
         config.linear_torsions,
-        config.use_modified_seminaro,
+        config.use_modified_seminario,
         config.modified_seminario_finite_step / 10,  # Convert to nm
         config.modified_seminario_vib_scaling,
         config.modified_seminario_tolerance,
@@ -245,7 +251,7 @@ def train(config: TrainingConfig) -> None:
     off_force_field = convert_to_smirnoff(
         trainable.to_force_field(trainable_parameters), base=VdW_forcefield
     )
-    off_force_field.to_file("default.offxml")
+    off_force_field.to_file(config.output_dir / "trained-0.offxml")
 
     # get the inital training data
     if config.method == "data":
@@ -269,7 +275,7 @@ def train(config: TrainingConfig) -> None:
 
     with open("/dev/null", "w") as f:
         with redirect_stderr(f):
-            dataset.save_to_disk("data_it_0")
+            dataset.save_to_disk(config.output_dir / "data_it_0")
 
     # Generate the test set
     if config.test_data_path is not None:
@@ -295,7 +301,7 @@ def train(config: TrainingConfig) -> None:
 
         with open("/dev/null", "w") as f:
             with redirect_stderr(f):
-                dataset_test.save_to_disk("data_test")
+                dataset_test.save_to_disk(config.output_dir / "data_test")
 
     # Generate the Energy Scatter Plot
     energy_mean, energy_SD, forces_mean, forces_SD = write_scatter(
@@ -303,11 +309,11 @@ def train(config: TrainingConfig) -> None:
         trainable.to_force_field(trainable_parameters),
         topology,
         config.device_type,
-        "default.scat",
+        config.output_dir / "trained-0.scat",
     )
 
     for iteration in tqdm(
-        range(config.n_iterations),
+        range(1, config.n_iterations + 1),  # Start from 1 (0 is untrained)
         leave=False,
         colour="magenta",
         desc="Iterating the Fit",
@@ -326,7 +332,7 @@ def train(config: TrainingConfig) -> None:
             iteration,
         )
 
-        summary_output = f"Summary for Iteration {iteration + 1}".center(88, "=")
+        summary_output = f"Summary for Iteration {iteration}".center(88, "=")
         summary_output += "\n"
         summary_output += "Parameterization".center(88, "=")
         summary_output += "\n"
@@ -347,14 +353,14 @@ def train(config: TrainingConfig) -> None:
         off_force_field = convert_to_smirnoff(
             trainable.to_force_field(trainable_parameters), base=VdW_forcefield
         )
-        off_force_field.to_file("trained-" + str(iteration) + ".offxml")
+        off_force_field.to_file(config.output_dir / f"trained-{iteration}.offxml")
         # Generate the Energy Scatter Plot and summarize convergence
         energy_mean_new, energy_SD_new, forces_mean_new, forces_SD_new = write_scatter(
             dataset_test,
             trainable.to_force_field(trainable_parameters),
             topology,
             config.device_type,
-            "trained-" + str(iteration) + ".scat",
+            config.output_dir / f"trained-{iteration}.scat",
         )
         logger.info("")
         logger.info("")
@@ -377,7 +383,7 @@ def train(config: TrainingConfig) -> None:
         forces_mean, forces_SD = forces_mean_new, forces_SD_new
 
         # Get the next iteration of training data, unless the loop is finished
-        if iteration + 1 < config.n_iterations:
+        if iteration < config.n_iterations:
             get_data_fn = config.run_md_fn if config.method != "data" else get_data_MMMD
 
             new_dataset = get_data_fn(
@@ -403,4 +409,4 @@ def train(config: TrainingConfig) -> None:
 
             with open("/dev/null", "w") as f:
                 with redirect_stderr(f):
-                    dataset.save_to_disk("data_it_" + str(iteration))
+                    dataset.save_to_disk(config.output_dir / f"data_it_{iteration}")

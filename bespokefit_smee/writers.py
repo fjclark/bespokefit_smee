@@ -19,6 +19,7 @@ import tensorboardX
 import torch
 
 from .loss_functions import predict
+from .utils.typing import PathLike
 
 logger = loguru.logger
 
@@ -87,7 +88,7 @@ def write_scatter(
     force_field: smee.TensorForceField,
     topology_in: smee.TensorTopology,
     device_type: str,
-    filename: str,
+    filename: PathLike,
 ) -> tuple[float, float, float, float]:
     energy_ref_all, energy_pred_all, forces_ref_all, forces_pred_all = predict(
         dataset,
@@ -132,7 +133,7 @@ def report(
     trainable: descent.train.Trainable,
     topology: smee.TensorTopology,
     dataset_test: datasets.Dataset,
-    metrics_file: str,
+    metrics_file: PathLike,
     experiment_dir: pathlib.Path,
 ) -> None:
     if step % 1 == 0:
