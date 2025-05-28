@@ -33,7 +33,7 @@ bespokefit_smee = "bespokefit_smee._cli:run_cli"
 [tool.setuptools]
 zip-safe = false
 include-package-data = true
-packages = ["bespokefit_smee"]
+packages = ["bespokefit_smee", "bespokefit_smee.utils"]
 
 [tool.versioneer]
 VCS = "git"
