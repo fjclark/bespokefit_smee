@@ -11,6 +11,7 @@ from typing import Callable
 import datasets
 import datasets.table
 import descent.targets.energy
+import loguru
 import numpy
 import openff.interchange
 import openff.toolkit
@@ -26,6 +27,8 @@ from rdkit.ML.Cluster import Butina
 from tqdm import tqdm
 
 from . import mlp
+
+logger = loguru.logger
 
 _ANGSTROM = off_unit.angstrom
 
@@ -77,6 +80,14 @@ def get_data_MMMD(
     # set up an openmm simulation
     molecule = copy.deepcopy(mol)
     molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * _ANGSTROM)
+
+    n_gen_conformers = len(molecule.conformers)
+    if n_gen_conformers < Nc:
+        logger.warning(
+            f"Only {n_gen_conformers} conformers were generated, which is less than the requested {Nc}."
+        )
+        Nc = n_gen_conformers
+
     interchange = openff.interchange.Interchange.from_smirnoff(
         off, openff.toolkit.Topology.from_molecules(molecule)
     )
@@ -180,6 +191,14 @@ def get_data_MLMD(
     # set up an openmm simulation
     molecule = copy.deepcopy(mol)
     molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * _ANGSTROM)
+
+    n_gen_conformers = len(molecule.conformers)
+    if n_gen_conformers < Nc:
+        logger.warning(
+            f"Only {n_gen_conformers} conformers were generated, which is less than the requested {Nc}."
+        )
+        Nc = n_gen_conformers
+
     force_field = copy.deepcopy(off)
     interchange = openff.interchange.Interchange.from_smirnoff(
         force_field, openff.toolkit.Topology.from_molecules(molecule)
@@ -275,6 +294,14 @@ def get_data_cMMMD(
     # set up an openmm simulation
     molecule = copy.deepcopy(mol)
     molecule.generate_conformers(n_conformers=Nc, rms_cutoff=0.0 * _ANGSTROM)
+
+    n_gen_conformers = len(molecule.conformers)
+    if n_gen_conformers < Nc:
+        logger.warning(
+            f"Only {n_gen_conformers} conformers were generated, which is less than the requested {Nc}."
+        )
+        Nc = n_gen_conformers
+
     interchange = openff.interchange.Interchange.from_smirnoff(
         off, openff.toolkit.Topology.from_molecules(molecule)
     )
