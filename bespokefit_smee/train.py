@@ -254,6 +254,7 @@ def train(config: TrainingConfig, write_config: bool = True) -> None:
     off_force_field.to_file(config.output_dir / "trained-0.offxml")
 
     # get the inital training data
+
     if config.method == "data":
         dataset = datasets.Dataset.load_from_disk(config.data)
     else:
@@ -271,6 +272,8 @@ def train(config: TrainingConfig, write_config: bool = True) -> None:
             config.energy_lower_cutoff,
             config.cluster_tolerance,
             config.cluster_parallel,
+            config.output_dir / "trajectory.pdb",
+            config.output_dir / "bias_output",
         )
 
     with open("/dev/null", "w") as f:
@@ -293,7 +296,7 @@ def train(config: TrainingConfig, write_config: bool = True) -> None:
             timestep_ps,
             config.n_test_snapshots_per_conformer,
             config.n_conformers,
-            config.snapshot_interval,
+            config.snapshot_interval / 100,  # TODO: remove this hack
             config.n_equilibration_steps,
             config.energy_upper_cutoff,
             config.energy_lower_cutoff,

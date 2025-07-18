@@ -14,6 +14,7 @@ from .utils.typing import PathLike, TorchDevice
 DEFAULT_CONFIG_PATH = Path("training_config.yaml")
 
 METHOD_TO_GET_DATA_FN = {
+    "MMMD_torsion_metad": data_maker.get_data_MMMD_torsion_metad,
     "MMMD": data_maker.get_data_MMMD,
     "MLMD": data_maker.get_data_MLMD,
     "cMMMD": data_maker.get_data_cMMMD,
@@ -36,7 +37,7 @@ class TrainingConfig(BaseModel):
     device_type: TorchDevice = Field(
         "cuda", description="Device type for training, either 'cpu' or 'cuda'"
     )
-    method: Literal["MMMD", "MLMD", "cMMMD", "data"] = Field(
+    method: Literal["MMMD_torsion_metad", "MMMD", "MLMD", "cMMMD", "data"] = Field(
         "MMMD", description="Method for generating data"
     )
     optimiser: Literal["adam", "lm"] = Field(
