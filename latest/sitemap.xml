@@ -1,71 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/index.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/changelog/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/changelog.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/development/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/development.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/theory/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/theory.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/index.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/SUMMARY/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/SUMMARY.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/analysis/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/analysis.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/data_maker/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/data_maker.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/loss_functions/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/loss_functions.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/mlp/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/mlp.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/parameterizer/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/parameterizer.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/settings/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/settings.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/train/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/train.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/writers/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/writers.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/utils/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/utils/index.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/utils/aimnet2/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/utils/aimnet2.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
     <url>
-         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/utils/typing/</loc>
-         <lastmod>2025-07-17</lastmod>
+         <loc>https://github.com/fjclark/bespokefit_smee/latest/reference/utils/typing.html</loc>
+         <lastmod>2025-08-05</lastmod>
     </url>
 </urlset>
