@@ -65,6 +65,11 @@ _OMM_KCAL_PER_MOL_ANGS = openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom
 #     )
 
 
+def _reflect_angle(angle: float) -> float:
+    """Reflect an angle (in radians) to be in the range [0, pi)."""
+    return math.pi - abs((angle % (2 * math.pi)) - math.pi)
+
+
 def convert_to_smirnoff(
     ff: smee.TensorForceField, base: openff.toolkit.ForceField | None = None
 ) -> openff.toolkit.ForceField:
@@ -169,8 +174,8 @@ def convert_to_smirnoff(
                 k = k1 + k2
                 # Set k and angle to 0 if very close
                 a = (k1 * a1 + k2 * a2) / k
-                if a < 0 or a > math.pi:
-                    breakpoint()
+                # Ensure that the angle is in the range [0, pi)
+                a = _reflect_angle(a)
                 dt = param.dtype
                 new_params.append([k, a])
             reconstructed_param = torch.tensor(new_params, dtype=dt)
