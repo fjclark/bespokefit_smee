@@ -42,9 +42,6 @@ test-unit:
 test-integration:
 	$(CONDA_ENV_RUN) pytest -v $(TEST_ARGS) $(PACKAGE_NAME)/tests/integration
 
-test-unit:
-	$(CONDA_ENV_RUN) pytest -v $(TEST_ARGS) $(PACKAGE_NAME)/tests/unit
-
 type-check:
 	$(CONDA_ENV_RUN) mypy --follow-imports=silent --ignore-missing-imports --strict $(PACKAGE_NAME)
 
