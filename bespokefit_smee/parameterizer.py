@@ -65,6 +65,11 @@ _OMM_KCAL_PER_MOL_ANGS = openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom
 #     )
 
 
+def _reflect_angle(angle: float) -> float:
+    """Reflect an angle (in radians) to be in the range [0, pi)."""
+    return math.pi - abs((angle % (2 * math.pi)) - math.pi)
+
+
 def convert_to_smirnoff(
     ff: smee.TensorForceField, base: openff.toolkit.ForceField | None = None
 ) -> openff.toolkit.ForceField:
@@ -169,8 +174,8 @@ def convert_to_smirnoff(
                 k = k1 + k2
                 # Set k and angle to 0 if very close
                 a = (k1 * a1 + k2 * a2) / k
-                if a < 0 or a > math.pi:
-                    breakpoint()
+                # Ensure that the angle is in the range [0, pi)
+                a = _reflect_angle(a)
                 dt = param.dtype
                 new_params.append([k, a])
             reconstructed_param = torch.tensor(new_params, dtype=dt)
@@ -503,6 +508,7 @@ def build_parameters(
     modSem_finite_step: float,
     modSem_vib_scaling: float,
     modSem_tolerance: float,
+    expand_torsions: bool = True,
     device_type: TorchDevice = "cuda",
 ) -> tuple[smee.TensorForceField, Trainable, smee.TensorTopology]:
     """Prepare a Trainable object that contains  a force field with
@@ -517,15 +523,24 @@ def build_parameters(
         modSem_finite_step: finite step used in evaluating the hessian - if used
         modSem_vib_scaling: scaling parameter for the modSem parameters
         modSem_tolerance: Tolerance for the geometric minimization before the hessian evaluation - if used
+        expand_torsions: boolean indicating whether to expand the torsion potential to include K0-4 for proper torsions
+        device_type: The device type to use for the force field and topology.
 
     Returns:
         The prepared Traninable object with a smee force_field and topology ready for fitting.
     """
-    del off["Constraints"].parameters["[#1:1]-[*:2]"]
-    force_field, [topology] = smee.converters.convert_interchange(
-        openff.interchange.Interchange.from_smirnoff(
-            expand_torsions(off), mol.to_topology()
+    if "[#1:1]-[*:2]" in off["Constraints"].parameters:
+        logger.warning(
+            "The force field contains a constraint for [#1:1]-[*:2] which is not supported. "
+            "Removing this constraint."
         )
+        del off["Constraints"].parameters["[#1:1]-[*:2]"]
+
+    if expand_torsions:
+        off = _expand_torsions(off)
+
+    force_field, [topology] = smee.converters.convert_interchange(
+        openff.interchange.Interchange.from_smirnoff(off, mol.to_topology())
     )
 
     # Move the force field and topology to the requested device
@@ -649,7 +664,7 @@ def build_parameters(
     )
 
 
-def expand_torsions(ff: openff.toolkit.ForceField) -> openff.toolkit.ForceField:
+def _expand_torsions(ff: openff.toolkit.ForceField) -> openff.toolkit.ForceField:
     """Expand the torsion potential to include K0-4 for proper torsions"""
     ff_copy = copy.deepcopy(ff)
     torsion_handler = ff_copy.get_parameter_handler("ProperTorsions")
