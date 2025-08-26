@@ -579,7 +579,7 @@ def build_parameters(
         parameter_list = {
             "LinearBonds": ParameterConfig(
                 cols=["k1", "k2"],
-                scales={"k1": 0.0024, "k2": 0.0024},
+                scales={"k1": 0.0014, "k2": 0.058},
                 limits={"k1": (None, None), "k2": (None, None)},
             ),
             "LinearAngles": ParameterConfig(
@@ -941,8 +941,8 @@ def linearize_harmonics(
                 k = param[0].item()
                 b = param[1].item()
                 dt = param.dtype
-                b1 = b * 0.9
-                b2 = b * 1.1
+                b1 = 1.5
+                b2 = 6.0
                 d = b2 - b1
                 k1 = k * (b2 - b) / d
                 k2 = k * (b - b1) / d
