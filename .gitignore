@@ -171,5 +171,8 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# VS Code
+.vscode/
+
 # Directories for testing
 tmp/
