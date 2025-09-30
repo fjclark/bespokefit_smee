@@ -14,9 +14,9 @@ dependencies:
     - nglview
     - smirnoff-plugins >=0.0.4
     - openmm>=8.2
-    - openff-toolkit
+    - openff-toolkit>=0.17.0
     - openff-units
-    - openff-interchange
+    - openff-interchange>=0.4.7
     - openmm-ml
     - tensorboardX
     - tensorboard
@@ -24,6 +24,7 @@ dependencies:
     - pytorch-gpu
     - pydantic>=2
     - pydantic-settings
+    - pydantic-units
     - loguru
 
     # Testing/ Development
