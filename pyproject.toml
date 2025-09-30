@@ -1,31 +1,20 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "versioneer"]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
+requires = ["hatchling"]
 
 [project]
 name = "bespokefit_smee"
 description = "Generate a Force-Field Parameterization from Single-Molecule MD."
-authors = [ {name = "Thomas Pope, Finlay Clark"} ]
+authors = [
+  {name = "Thomas Pope"},
+  {name = "Finlay Clark"}
+]
 license = { text = "MIT" }
-dynamic = ["version"]
+# dynamic = ["version"]
+version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = ["Programming Language :: Python :: 3"]
-dependencies = [
- "smee >=0.16.2",
- "datasets",
- "jupyter",
- "nglview",
- "smirnoff-plugins >=0.0.4",
- "openmm",
- "openff-toolkit",
- "openff-units",
- "openff-interchange",
- "openmm-ml",
- "tensorboardX",
- "tensorboard",
- "versioneer",
-]
 
 [project.scripts]
 bespokefit_smee = "bespokefit_smee._cli:run_cli"
@@ -54,16 +43,179 @@ omit = ["**/tests/*", "**/_version.py"]
 [tool.mypy]
 plugins = "numpy.typing.mypy_plugin,pydantic.mypy"
 exclude = [
-    "bespokefit_smee/_version.py",
-    "bespokefit_smee/tests/",
+  "bespokefit_smee/_version.py",
+  "bespokefit_smee/tests/",
 ]
 
 [tool.coverage.report]
 exclude_lines = [
-    "@overload",
-    "pragma: no cover",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "if typing.TYPE_CHECKING:",
+  "@overload",
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+  "if typing.TYPE_CHECKING:",
 ]
+
+# -----------------------------
+# Pixi configuration
+# -----------------------------
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+name = "bespokefit_smee"
+preview = ["pixi-build"]
+
+[tool.pixi.package]
+name = {workspace = true}
+
+[tool.pixi.package.build-dependencies]
+python = "3.11"
+
+[tool.pixi.package.host-dependencies]
+hatchling = "*"
+
+[tool.pixi.package.run-dependencies]
+loguru = "*"
+descent = { git = "https://github.com/SimonBoothroyd/descent.git" }
+
+[tool.pixi.package.build]
+backend = { name = "pixi-build-python", version = "*" }
+channels = ["https://prefix.dev/conda-forge"]
+
+[tool.pixi.environments]
+default = { features = ["common", "smee_descent", "gpu", "dev", "docs", "typing"] }
+cpu = { features = ["common", "smee_descent", "cpu", "dev", "docs", "typing"] }
+runtime = { features = ["common", "smee_descent", "gpu",] }
+
+[tool.pixi.dependencies]
+python = ">=3.11"
+
+# -----------------------------
+# Shared dependencies
+# -----------------------------
+[tool.pixi.feature.common.dependencies]
+pyyaml = "*"
+# descent = "*"
+datasets = "*"
+jupyter = "*"
+nglview = "*"
+"smirnoff-plugins" = ">=0.0.4"
+openmm = ">=8.2"
+"openff-toolkit" = "*"
+"openff-units" = "*"
+"openff-interchange" = "*"
+"openmm-ml" = "*"
+tensorboardX = "*"
+tensorboard = "*"
+versioneer = "*"
+"pydantic" = ">=2"
+"pydantic-settings" = "*"
+loguru = "*"
+
+# Install packages via pip: GitHub smee + mace-torch
+[tool.pixi.feature.common.pypi-dependencies]
+descent = { git = "https://github.com/SimonBoothroyd/descent.git"}
+smee = { git = "https://github.com/thomasjamespope/smee.git" }
+mace-torch = "*"
+bespokefit_smee ={ path = ".", editable = true }
+
+# -----------------------------
+# GPU vs CPU toggle
+# -----------------------------
+[tool.pixi.feature.gpu.system-requirements]
+cuda = "12"
+
+[tool.pixi.feature.gpu.dependencies]
+cuda-version = "12.9.*"
+pytorch-gpu = "*"
+
+[tool.pixi.feature.cpu.dependencies]
+pytorch = "*"
+
+# Temporary descent and smee deps -  this allows installing
+# Tom's custom smee fork from GitHub and will be removed once
+# the changes are merged upstream and available from conda-forge.
+[tool.pixi.feature.smee_descent.dependencies]
+scipy = "*"
+pyarrow = "*"
+datasets = "*"
+openff-units = "*"
+openff-toolkit-base = ">=0.9.2"
+openff-interchange-base = ">=0.3.17"
+nnpops = "*"
+pytorch = "*"
+__unix = "*"
+
+# -----------------------------
+# Dev/test tools
+# -----------------------------
+[tool.pixi.feature.dev.dependencies]
+pre-commit = "*"
+ruff = "*"
+pytest = "*"
+pytest-mock = "*"
+pytest-cov = "*"
+codecov = "*"
+mypy = "*"
+
+# -----------------------------
+# Documentation
+# -----------------------------
+[tool.pixi.feature.docs.dependencies]
+mkdocs = "*"
+"mkdocs-material" = "*"
+"mkdocs-gen-files" = "*"
+"mkdocs-literate-nav" = "*"
+"mkdocs-jupyter" = "*"
+mkdocstrings = "*"
+"mkdocstrings-python" = "*"
+black = "*"
+mike = "*"
+
+[tool.pixi.feature.docs.pypi-dependencies]
+mkdocs-bibtex = "*"
+
+# -----------------------------
+# Typing stubs
+# -----------------------------
+[tool.pixi.feature.typing.pypi-dependencies]
+"types-colorama" = "*"
+"types-decorator" = "*"
+"types-defusedxml" = "*"
+"types-docutils" = "*"
+"types-greenlet" = "*"
+"types-jsonschema" = "*"
+"types-networkx" = "*"
+"types-openpyxl" = "*"
+"types-pexpect" = "*"
+"types-protobuf" = "*"
+"types-Pygments" = "*"
+"types-python-dateutil" = "*"
+"types-pytz" = "*"
+"types-PyYAML" = "*"
+"types-requests" = "*"
+"types-tabulate" = "*"
+"types-tqdm" = "*"
+"pandas-stubs" = "*"
+
+# -----------------------------
+# Tasks (run in proper environment/feature context)
+# -----------------------------
+[tool.pixi.tasks]
+install-pre-commit = { cmd = "pre-commit install" }
+
+# Linting requires dev
+lint = { cmd = "ruff check bespokefit_smee" }
+format = { cmd = "ruff format bespokefit_smee && ruff check --fix --select I bespokefit_smee" }
+
+# Testing requires dev + common + GPU/CPU
+test = { cmd = "pytest -v --cov=bespokefit_smee --cov-report=term --cov-report=xml --junitxml=unit.xml --color=yes bespokefit_smee/tests" }
+"test-unit" = { cmd = "pytest -v --cov=bespokefit_smee --cov-report=term --cov-report=xml --junitxml=unit.xml --color=yes bespokefit_smee/tests/unit" }
+"test-integration" = { cmd = "pytest -v --cov=bespokefit_smee --cov-report=term --cov-report=xml --junitxml=unit.xml --color=yes bespokefit_smee/tests/integration" }
+
+type-check = { cmd = "mypy --follow-imports=silent --ignore-missing-imports --strict bespokefit_smee" }
+
+# Docs tasks require docs feature
+docs = { cmd = "mkdocs build" }
+"docs-deploy" = { cmd = "mike deploy --push --update-aliases $VERSION" }

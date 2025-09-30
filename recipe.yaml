@@ -1,0 +1,11 @@
+name: bespokefit_smee            # your package name
+version: 0.1.0              # package version
+source:
+  path: .                   # path to your project root (where pyproject.toml lives)
+build:
+  type: python               # tells Rattler to use a Python build
+  backend: null              # null means use pyproject.toml backend automatically
+  dependencies: []           # optional: additional build-time dependencies
+  build_args: []             # optional: args to pass to build backend
+install:
+  dependencies: []           # optional runtime deps if you want extra ones
