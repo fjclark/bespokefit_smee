@@ -1,12 +1,13 @@
 """Functionality for finding and sampling torsions in a molecule."""
 
-# SMARTS pattern to find rotatable bonds in a molecule
-_TORSIONS_TO_INCLUDE_SMARTS = ["[!#1:1]~[!$(*#*)&!D1:2]-!@[!$(*#*)&!D1:3]~[!#1:4]"]
-# _TORSIONS_TO_EXCLUDE_SMARTS = ["[#6X3:1](=[#8X1])-[#7X3:2]"]  # Amides
-_TORSIONS_TO_EXCLUDE_SMARTS = []
-
 from openff.toolkit.topology import Molecule
-from openff.toolkit.utils.toolkits import RDKitToolkitWrapper, ToolkitRegistry
+
+# SMARTS pattern to find rotatable bonds in a molecule
+_TORSIONS_TO_INCLUDE_SMARTS: list[str] = [
+    "[!#1:1]~[!$(*#*)&!D1:2]-!@[!$(*#*)&!D1:3]~[!#1:4]"
+]
+# _TORSIONS_TO_EXCLUDE_SMARTS = ["[#6X3:1](=[#8X1])-[#7X3:2]"]  # Amides
+_TORSIONS_TO_EXCLUDE_SMARTS: list[str] = []
 
 
 def get_single_torsion_by_rot_bond(
@@ -78,7 +79,7 @@ def get_unwanted_bonds(mol: Molecule, smarts: str) -> set[tuple[int, int]]:
                 " Ensure the SMARTS pattern matches only the rotatable bond."
             )
 
-    return set(tuple(sorted(bond)) for bond in bonds)
+    return {tuple(sorted(bond)) for bond in bonds}
 
 
 def get_rot_torsions_by_rot_bond(

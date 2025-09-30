@@ -42,7 +42,7 @@ import openmm.unit as unit
 
 try:
     import numpy as np
-except:
+except ImportError:
     pass
 
 
@@ -171,7 +171,7 @@ class Metadynamics(object):
             )
         else:
             self._force = mm.CustomCVForce("table(%s)" % ", ".join(varNames))
-        for name, var in zip(varNames, variables):
+        for name, var in zip(varNames, variables, strict=False):
             self._force.addCollectiveVariable(name, var.force)
         self._widths = [v.gridWidth for v in variables]
         self._limits = sum(([v.minValue, v.maxValue] for v in variables), [])
@@ -185,7 +185,7 @@ class Metadynamics(object):
         if self._independentCVs:
             self._tables = []
 
-            for i, var in enumerate(variables):
+            for i, _ in enumerate(variables):
                 table = mm.Continuous1DFunction(
                     self._totalBias[i].flatten(),
                     self._limits[i * 2],
@@ -217,9 +217,9 @@ class Metadynamics(object):
 
             self._force.addTabulatedFunction("table", self._table)
 
-        freeGroups = set(range(32)) - set(
+        freeGroups = {range(32)} - {
             force.getForceGroup() for force in system.getForces()
-        )
+        }
         if len(freeGroups) == 0:
             raise RuntimeError(
                 "Cannot assign a force group to the metadynamics force. "

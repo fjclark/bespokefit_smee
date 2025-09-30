@@ -39,6 +39,22 @@ def prediction_loss(
         device_type=device_type,
         normalize=False,
     )
+    # Loss as the JS-divergence between the two distributions
+    # beta = 1.987204259e-3 * 500  # kcal/mol/K
+
+    # def _kl_div(p: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
+    #     return (p * (p / q).clamp(min=1e-10).log()).sum()
+
+    # distribution_ref = torch.exp(-energy_ref_all / beta)
+    # distribution_ref = distribution_ref / distribution_ref.sum()
+    # distribution_pred = torch.exp(-energy_pred_all / beta)
+    # distribution_pred = distribution_pred / distribution_pred.sum()
+    # m = 0.5 * (distribution_ref + distribution_pred)
+    # loss_distribution = 0.5 * (
+    #     _kl_div(distribution_ref, m) + _kl_div(distribution_pred, m)
+    # )
+    # return loss_distribution
+
     loss_energy: torch.Tensor = ((energy_ref_all - energy_pred_all) ** 2).mean()
     loss_forces: torch.Tensor = ((forces_ref_all - forces_pred_all) ** 2).mean()
     return loss_energy + loss_forces * loss_force_weight

@@ -1,35 +1,25 @@
-"""
-PARAMETERIZE:
-
-force-field parameterization functions
-"""
+"""Functionality for generating the initial parameterisation."""
 
 import collections
 import copy
 import math
-from contextlib import redirect_stdout
-from typing import cast
 
 import loguru
-import numpy as np
 import openff.interchange
 import openff.toolkit
-import openmm.unit
 import smee
 import smee.converters
 import torch
 from descent.train import ParameterConfig, Trainable
-from numpy import typing as npt
 from openff.units import Quantity
 from openff.units import unit as off_unit
 from rdkit import Chem
-from tqdm import tqdm
 
-from . import mlp
+from .msm import apply_msm
+from .settings import ParameterisationSettings
 from .utils.typing import TorchDevice
 
 logger = loguru.logger
-
 
 _UNITLESS = off_unit.dimensionless
 _ANGSTROM = off_unit.angstrom
@@ -37,32 +27,6 @@ _RADIANS = off_unit.radians
 _KCAL_PER_MOL = off_unit.kilocalories_per_mole
 _KCAL_PER_MOL_ANGSQ = off_unit.kilocalories_per_mole / off_unit.angstrom**2
 _KCAL_PER_MOL_RADSQ = off_unit.kilocalories_per_mole / off_unit.radians**2
-
-_OMM_KELVIN = openmm.unit.kelvin
-_OMM_PS = openmm.unit.picosecond
-_OMM_NM = openmm.unit.nanometer
-_OMM_ANGS = openmm.unit.angstrom
-_OMM_KCAL_PER_MOL = openmm.unit.kilocalorie_per_mole
-_OMM_KCAL_PER_MOL_ANGS = openmm.unit.kilocalorie_per_mole / openmm.unit.angstrom
-
-# class ParameterConfig(pydantic.BaseModel):
-#     """Configuration for how a potential's parameters should be trained."""
-
-#     cols: list[str] = pydantic.Field(
-#         description="The parameters to train, e.g. 'k', 'length', 'epsilon'."
-#     )
-
-#     scales: dict[str, float] = pydantic.Field(
-#         {},
-#         description="The scales to apply to each parameter, e.g. 'k': 1.0, "
-#         "'length': 1.0, 'epsilon': 1.0.",
-#     )
-#     constraints: dict[str, tuple[float | None, float | None]] = pydantic.Field(
-#         {},
-#         description="The min and max values to clamp each parameter within, e.g. "
-#         "'k': (0.0, None), 'angle': (0.0, pi), 'epsilon': (0.0, None), where "
-#         "none indicates no constraint.",
-#     )
 
 
 def _reflect_angle(angle: float) -> float:
@@ -314,80 +278,6 @@ def convert_to_smirnoff(
     return ff_smirnoff
 
 
-# class TrainableParameters:
-#     """A wrapper around a SMEE force field that handles zeroing out gradients of
-#     fixed parameters and applying parameter constraints."""
-
-#     def __init__(
-#         self,
-#         force_field: smee.TensorForceField,
-#         parameters: dict[str, ParameterConfig],
-#     ):
-#         self.potential_types = [*parameters]
-#         self._force_field = force_field
-
-#         potentials = [
-#             force_field.potentials_by_type[potential_type]
-#             for potential_type in self.potential_types
-#         ]
-
-#         self._frozen_cols = [
-#             [
-#                 i
-#                 for i, col in enumerate(potential.parameter_cols)
-#                 if col not in parameters[potential_type].cols
-#             ]
-#             for potential_type, potential in zip(self.potential_types, potentials)
-#         ]
-
-#         self._scales = [
-#             torch.tensor(
-#                 [
-#                     parameters[potential_type].scales.get(col, 1.0)
-#                     for col in potential.parameter_cols
-#                 ]
-#             ).reshape(1, -1)
-#             for potential_type, potential in zip(self.potential_types, potentials)
-#         ]
-#         self._constraints = [
-#             {
-#                 i: parameters[potential_type].constraints[col]
-#                 for i, col in enumerate(potential.parameter_cols)
-#                 if col in parameters[potential_type].constraints
-#             }
-#             for potential_type, potential in zip(self.potential_types, potentials)
-#         ]
-
-#         self.parameters = [
-#             (potential.parameters.detach().clone() * scale).requires_grad_()
-#             for potential, scale in zip(potentials, self._scales)
-#         ]
-
-#     @property
-#     def force_field(self) -> smee.TensorForceField:
-#         for potential_type, parameter, scale in zip(
-#             self.potential_types, self.parameters, self._scales
-#         ):
-#             potential = self._force_field.potentials_by_type[potential_type]
-#             potential.parameters = parameter / scale
-
-#         return self._force_field
-
-#     @torch.no_grad()
-#     def clamp(self):
-#         for parameter, constraints in zip(self.parameters, self._constraints):
-#             for i, (min_value, max_value) in constraints.items():
-#                 if min_value is not None:
-#                     parameter[:, i].clamp_(min=min_value)
-#                 if max_value is not None:
-#                     parameter[:, i].clamp_(max=max_value)
-
-#     @torch.no_grad()
-#     def freeze_grad(self):
-#         for parameter, col_idxs in zip(self.parameters, self._frozen_cols):
-#             parameter.grad[:, col_idxs] = 0.0
-
-
 def _create_smarts(mol: openff.toolkit.Molecule, idxs: torch.Tensor) -> str:
     """Create a mapped SMARTS representation of a molecule."""
     from rdkit import Chem
@@ -498,54 +388,63 @@ def _prepare_potential(
     parameter_map.assignment_matrix = assignment_matrix.to_sparse()
 
 
-def build_parameters(
-    mol: openff.toolkit.Molecule,
-    off: openff.toolkit.ForceField,
-    ML_path: mlp.AvailableModels,
-    linear_harmonics: bool,
-    linear_torsions: bool,
-    modSem: bool,
-    modSem_finite_step: float,
-    modSem_vib_scaling: float,
-    modSem_tolerance: float,
-    expand_torsions: bool = True,
-    device_type: TorchDevice = "cuda",
-) -> tuple[smee.TensorForceField, Trainable, smee.TensorTopology]:
-    """Prepare a Trainable object that contains  a force field with
+# TODO: Break this up into smaller functions
+def parameterise(
+    settings: ParameterisationSettings,
+    device: TorchDevice = "cuda",
+) -> tuple[
+    openff.toolkit.Molecule,
+    openff.toolkit.ForceField,
+    smee.TensorTopology,
+    smee.TensorForceField,
+    Trainable,
+]:
+    """Prepare a Trainable object that contains a force field with
     unique parameters for each topologically symmetric term of a molecule.
-    Args:
-        mol: The molecule to prepare bespoke parameters for.
-        off: The base force field to copy the parameters from.
-        ML_path: Path to the MLMD potential used to evalutate the hessian - if used
-        linear_harmonics: boolean indicating whether to use linearized harmonic potentials
-        linear_torsions: boolean indicating whether to use linearized torsion potentials
-        modSem: boolean indicating whether to use the moedified Seminario method to initialize the force-field
-        modSem_finite_step: finite step used in evaluating the hessian - if used
-        modSem_vib_scaling: scaling parameter for the modSem parameters
-        modSem_tolerance: Tolerance for the geometric minimization before the hessian evaluation - if used
-        expand_torsions: boolean indicating whether to expand the torsion potential to include K0-4 for proper torsions
-        device_type: The device type to use for the force field and topology.
 
-    Returns:
-        The prepared Traninable object with a smee force_field and topology ready for fitting.
+    Parameters
+    ----------
+    settings: ParameterisationSettings
+        The settings for the parameterisation.
+
+    device: TorchDevice, default "cuda"
+        The device to use for the force field and topology.
+
+    Returns
+    -------
+    mol: openff.toolkit.Molecule
+        The molecule that has been parameterised.
+    off_ff: openff.toolkit.ForceField
+        The original force field, used as a base for the bespoke force field.
+    tensor_top: smee.TensorTopology
+        The topology of the molecule.
+    tensor_ff: smee.TensorForceField
+        The force field with unique parameters for each topologically symmetric term.
+    trainable: descent.train.Trainable
+        The trainable object that contains the force field and parameter configuration.
     """
-    if "[#1:1]-[*:2]" in off["Constraints"].parameters:
+    mol = openff.toolkit.Molecule.from_smiles(
+        settings.smiles, allow_undefined_stereo=True, hydrogens_are_explicit=False
+    )
+    off_ff = openff.toolkit.ForceField(settings.initial_force_field)
+
+    if "[#1:1]-[*:2]" in off_ff["Constraints"].parameters:
         logger.warning(
             "The force field contains a constraint for [#1:1]-[*:2] which is not supported. "
             "Removing this constraint."
         )
-        del off["Constraints"].parameters["[#1:1]-[*:2]"]
+        del off_ff["Constraints"].parameters["[#1:1]-[*:2]"]
 
-    if expand_torsions:
-        off = _expand_torsions(off)
+    if settings.expand_torsions:
+        off_ff = _expand_torsions(off_ff)
 
     force_field, [topology] = smee.converters.convert_interchange(
-        openff.interchange.Interchange.from_smirnoff(off, mol.to_topology())
+        openff.interchange.Interchange.from_smirnoff(off_ff, mol.to_topology())
     )
 
     # Move the force field and topology to the requested device
-    force_field = force_field.to(device_type)
-    topology = topology.to(device_type)
+    force_field = force_field.to(device)
+    topology = topology.to(device)
 
     symmetries = list(Chem.CanonicalRankAtoms(mol.to_rdkit(), breakTies=False))
     if topology.n_v_sites != 0:
@@ -554,28 +453,31 @@ def build_parameters(
         parameter_map = topology.parameters[potential.type]
         if isinstance(parameter_map, smee.NonbondedParameterMap):
             continue
+        # TODO: Check Tom's comment below
         _prepare_potential(
             mol, symmetries, potential, parameter_map
         )  ### ??? is it re-ordering the atoms and bonds?
-    if modSem:
-        force_field = modSeminario(
-            mol,
-            topology,
-            off,
-            ML_path,
-            force_field,
-            modSem_finite_step,
-            modSem_vib_scaling,
-            modSem_tolerance,
+
+    if settings.msm_settings is not None:
+        raise NotImplementedError("MSM is not supported yet.")
+
+        force_field = apply_msm(
+            mol=mol,
+            off_ff=off_ff,
+            tensor_top=topology,
+            tensor_ff=force_field,
+            device=device,
+            settings=settings.msm_settings,
         )
+
     # Parameter scales obtained from trained force field - but only for linearised bonds and
     # angles and unlinearised harmonics.
-    if linear_harmonics:
+    if settings.linear_harmonics:
         topology.parameters["LinearBonds"] = copy.deepcopy(topology.parameters["Bonds"])
         topology.parameters["LinearAngles"] = copy.deepcopy(
             topology.parameters["Angles"]
         )
-        force_field = linearize_harmonics(force_field, device_type)
+        force_field = linearize_harmonics(force_field, device)
         parameter_list = {
             "LinearBonds": ParameterConfig(
                 cols=["k1", "k2"],
@@ -603,11 +505,11 @@ def build_parameters(
         }
     for potential in force_field.potentials:
         if potential.type == "ProperTorsions":
-            if linear_torsions:
+            if settings.linear_torsions:
                 topology.parameters["LinearProperTorsions"] = copy.deepcopy(
                     topology.parameters["ProperTorsions"]
                 )
-                force_field = linearize_propertorsions(force_field, device_type)
+                force_field = linearize_propertorsions(force_field, device)
                 parameter_list.update(
                     {
                         "LinearProperTorsions": ParameterConfig(
@@ -630,11 +532,11 @@ def build_parameters(
                     }
                 )
         elif potential.type == "ImproperTorsions":
-            if linear_torsions:
+            if settings.linear_torsions:
                 topology.parameters["LinearImproperTorsions"] = copy.deepcopy(
                     topology.parameters["ImproperTorsions"]
                 )
-                force_field = linearize_impropertorsions(force_field, device_type)
+                force_field = linearize_impropertorsions(force_field, device)
                 parameter_list.update(
                     {
                         "LinearImproperTorsions": ParameterConfig(
@@ -658,9 +560,11 @@ def build_parameters(
                 )
 
     return (
-        copy.deepcopy(force_field),
-        Trainable(force_field, parameter_list, {}),
+        copy.deepcopy(mol),
+        copy.deepcopy(off_ff),
         topology,
+        force_field,
+        Trainable(force_field, parameter_list, {}),
     )
 
 
@@ -686,242 +590,6 @@ def _expand_torsions(ff: openff.toolkit.ForceField) -> openff.toolkit.ForceField
         parameter.phase = default_phase
         parameter.periodicity = default_p
     return ff_copy
-
-
-def modSeminario(
-    mol: openff.toolkit.Molecule,
-    top: smee.TensorTopology,
-    off: openff.toolkit.ForceField,
-    ML_path: mlp.AvailableModels,
-    sff: smee.TensorForceField,
-    finite_step: float,
-    vib_scaling: float,
-    minimize_tol: float,
-) -> smee.TensorForceField:
-    """Generate modified Seminario parameters for the bond and angle terms in the
-    force-field. see doi: 10.1021/acs.jctc.7b00785
-    """
-    from openmm import LangevinMiddleIntegrator
-    from openmm.app.simulation import Simulation
-
-    from .writers import get_potential_comparison
-
-    #   set up an MD sim with the ML potential
-    molecule = copy.deepcopy(mol)
-    molecule.generate_conformers(n_conformers=1)
-    interchange = openff.interchange.Interchange.from_smirnoff(
-        off, openff.toolkit.Topology.from_molecules(molecule)
-    )
-    integrator = LangevinMiddleIntegrator(0 * _OMM_KELVIN, 1 / _OMM_PS, 0.01 * _OMM_PS)
-    potential = mlp.get_mlp(ML_path)
-    with open("/dev/null", "w") as f:
-        with redirect_stdout(f):
-            system = potential.createSystem(
-                interchange.to_openmm_topology(),
-                charge=mol.total_charge.m_as(off_unit.e),
-            )
-    simulation = Simulation(interchange.topology, system, integrator)
-    #   calculate the ground-state geometry and energy
-    interchange.positions = molecule.conformers[0]
-    simulation.context.setPositions(interchange.positions.to_openmm())
-    simulation.minimizeEnergy(
-        maxIterations=0, tolerance=minimize_tol * _OMM_KCAL_PER_MOL_ANGS
-    )
-    position = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
-    crd0 = position.value_in_unit(_OMM_NM).reshape(3 * molecule.n_atoms)
-    #   extract bond info from the smee tensor
-    bonds_obj = cast(smee.ValenceParameterMap, copy.deepcopy(top.parameters["Bonds"]))
-    n_bonds = len(bonds_obj.assignment_matrix.indices()[0].detach().flatten().tolist())
-    n_bond_types = (
-        max(bonds_obj.assignment_matrix.indices()[-1].detach().flatten().tolist()) + 1
-    )
-    bond_types = [
-        [
-            i
-            for i, x in enumerate(bonds_obj.assignment_matrix.indices()[-1].tolist())
-            if x == j
-        ]
-        for j in range(n_bond_types)
-    ]
-    bond_indxs = bonds_obj.particle_idxs.tolist()
-    #   extract angle info from the smee tensor
-    angles_obj = cast(smee.ValenceParameterMap, copy.deepcopy(top.parameters["Angles"]))
-    n_angles = len(
-        angles_obj.assignment_matrix.indices()[0].detach().flatten().tolist()
-    )
-    n_angle_types = (
-        max(angles_obj.assignment_matrix.indices()[-1].detach().flatten().tolist()) + 1
-    )
-    angle_types = [
-        [
-            i
-            for i, x in enumerate(angles_obj.assignment_matrix.indices()[-1].tolist())
-            if x == j
-        ]
-        for j in range(n_angle_types)
-    ]
-    angle_indxs = angles_obj.particle_idxs.tolist()
-    #   calculate hessian elements with finite difference, ignoring the diagonal and all below
-    hessian = np.zeros((3 * molecule.n_atoms, 3 * molecule.n_atoms))
-    for i in tqdm(
-        range(n_bonds), leave=False, colour="green", desc="Generating Hessian Fragments"
-    ):
-        i1, i2 = bond_indxs[i][0] * 3, bond_indxs[i][1] * 3
-        for j1 in range(i1, i1 + 3):
-            crd = crd0
-            crd[j1] += finite_step
-            simulation.context.setPositions(
-                crd.reshape(molecule.n_atoms, 3)
-            )  # coords +
-            f1 = (
-                simulation.context.getState(getForces=True)
-                .getForces(asNumpy=True)
-                .value_in_unit(_OMM_KCAL_PER_MOL_ANGS)
-            )
-            dEp = -f1[i2 // 3]
-            crd[j1] -= 2 * finite_step
-            simulation.context.setPositions(
-                crd.reshape(molecule.n_atoms, 3)
-            )  # coords -
-            f1 = (
-                simulation.context.getState(getForces=True)
-                .getForces(asNumpy=True)
-                .value_in_unit(_OMM_KCAL_PER_MOL_ANGS)
-            )
-            dEm = -f1[i2 // 3]
-            hessian[j1, range(i2, i2 + 3)] = (dEp - dEm) / (2 * finite_step)
-    #   calculate mod-seminario force constants along the bonds and group by bond-type, as given in the smee tensors
-    bond_k, bond_l = [], []
-    for j in range(n_bond_types):
-        k_sum, l_sum = 0.0, 0.0
-        for i in bond_types[j]:
-            iA, iB = bond_indxs[i][0], bond_indxs[i][1]
-            jA, jB = iA * 3, iB * 3
-            b = (
-                position.value_in_unit(_OMM_ANGS)[iA]
-                - position.value_in_unit(_OMM_ANGS)[iB]
-            )
-            norm_b = np.linalg.norm(b)
-            k_sum += modSem_projection(-hessian[jA : jA + 3, jB : jB + 3], b / norm_b)
-            l_sum += float(norm_b)
-        bond_k.append(k_sum * vib_scaling**2 * 0.1 / len(bond_types[j]))
-        bond_l.append(l_sum / len(bond_types[j]))
-    #   calculate mod-seminario force constants along around the angles and group by angle-type, as given in the smee tensors
-    angle_k, angle_t = [], []
-    for j in range(n_angle_types):
-        k_sum, t_sum = 0.0, 0.0
-        for i in angle_types[j]:
-            iA, iB, iC = angle_indxs[i][0], angle_indxs[i][1], angle_indxs[i][2]
-            jA, jB, jC = iA * 3, iB * 3, iC * 3
-            bAB = (
-                position.value_in_unit(_OMM_ANGS)[iA]
-                - position.value_in_unit(_OMM_ANGS)[iB]
-            )
-            bCB = (
-                position.value_in_unit(_OMM_ANGS)[iC]
-                - position.value_in_unit(_OMM_ANGS)[iB]
-            )
-            if iA > iB:
-                HAB = -hessian[jB : jB + 3, jA : jA + 3]
-            else:
-                HAB = -hessian[jA : jA + 3, jB : jB + 3]
-            if iC > iB:
-                HCB = -hessian[jB : jB + 3, jC : jC + 3]
-            else:
-                HCB = -hessian[jC : jC + 3, jB : jB + 3]
-            lAB, lCB = np.linalg.norm(bAB), np.linalg.norm(bCB)
-            uAB, uCB = bAB / lAB, bCB / lCB
-            uN = unit_normal_vector(uAB, uCB)
-            uPA, uPC = unit_normal_vector(uN, uAB), unit_normal_vector(uCB, uN)
-            kPA, kPC = modSem_projection(HAB, uPA), modSem_projection(HCB, uPC)
-            fixA, fixC = 0.0, 0.0
-            NfA, NfC = 0.0, 0.0
-            for jj in range(n_angles):
-                iiA, iiB, iiC = (
-                    angle_indxs[jj][0],
-                    angle_indxs[jj][1],
-                    angle_indxs[jj][2],
-                )
-                if iiB == iB & jj != i:
-                    if iiA == iA:
-                        bCBp = (
-                            position.value_in_unit(_OMM_ANGS)[iiC]
-                            - position.value_in_unit(_OMM_ANGS)[iiB]
-                        )
-                        uPAp = unit_normal_vector(
-                            unit_normal_vector(uAB, bCBp / np.linalg.norm(bCBp)), uAB
-                        )
-                        fixA += np.dot(uPA, uPAp) ** 2
-                        NfA += 1
-                    elif iiC == iC:
-                        bABp = (
-                            position.value_in_unit(_OMM_ANGS)[iiA]
-                            - position.value_in_unit(_OMM_ANGS)[iiB]
-                        )
-                        uPCp = unit_normal_vector(
-                            unit_normal_vector(uCB, bABp / np.linalg.norm(bABp)), uCB
-                        )
-                        fixC += np.dot(uPC, uPCp) ** 2
-                        NfC += 1
-            if NfA > 0:
-                fixA = fixA / NfA
-            if NfC > 0:
-                fixC = fixC / NfC
-            k_sum += float(
-                1 / (((1 + fixA) / (lAB**2 * kPA)) + ((1 + fixC) / (lCB**2 * kPC)))
-            )
-            t_sum += np.arccos(np.dot(uAB, uCB))
-        angle_k.append(k_sum * vib_scaling**2 * 0.1 / len(angle_types[j]))
-        angle_t.append(t_sum / len(angle_types[j]))
-    #   put the new constants into the force-field object and report!
-    sff_out = copy.deepcopy(sff)
-    sff_out.potentials_by_type["Bonds"].parameters = torch.tensor(
-        [[bond_k[j], bond_l[j]] for j in range(n_bond_types)]
-    )
-    sff_out.potentials_by_type["Angles"].parameters = torch.tensor(
-        [[angle_k[j], angle_t[j]] for j in range(n_angle_types)]
-    )
-    bond_potential_comparison = get_potential_comparison(
-        sff.potentials_by_type["Bonds"],
-        sff_out.potentials_by_type["Bonds"],
-    )
-    angle_potential_comparison = get_potential_comparison(
-        sff.potentials_by_type["Angles"],
-        sff_out.potentials_by_type["Angles"],
-    )
-
-    logger.info(
-        "Modified Seminario Summary:"
-        f"{bond_potential_comparison}"
-        f"{angle_potential_comparison}"
-    )
-
-    return sff_out
-
-
-def unit_normal_vector(
-    u1: npt.NDArray[np.float64], u2: npt.NDArray[np.float64]
-) -> npt.NDArray[np.float64]:
-    """Return a unit vector perpendicular to the two input vectors"""
-    cross = np.cross(u1, u2)
-    return cross / np.linalg.norm(cross)
-
-
-def modSem_projection(
-    parhess: npt.NDArray[np.float64], unit_vector: npt.NDArray[np.float64]
-) -> float:
-    """Return a spring constant projected out of a partial hessian onto a unit vector"""
-    vals, vecs = np.linalg.eig(parhess)
-    kab1 = sum(abs(np.dot(unit_vector, vecs[:, i])) * vals[i] for i in range(3)).real
-    kba1 = sum(
-        abs(np.dot(unit_vector[::-1], vecs[:, i])) * vals[i] for i in range(3)
-    ).real
-    vals, vecs = np.linalg.eig(parhess.transpose())
-    kab2 = sum(abs(np.dot(unit_vector, vecs[:, i])) * vals[i] for i in range(3)).real
-    kba2 = sum(
-        abs(np.dot(unit_vector[::-1], vecs[:, i])) * vals[i] for i in range(3)
-    ).real
-    return float(0.25 * (kab1 + kba1 + kab2 + kba2))
 
 
 def linearize_harmonics(

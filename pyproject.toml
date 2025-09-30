@@ -56,6 +56,7 @@ plugins = "numpy.typing.mypy_plugin,pydantic.mypy"
 exclude = [
     "bespokefit_smee/_version.py",
     "bespokefit_smee/tests/",
+    "bespokefit_smee/metadynamics.py", # As mostly lifted from OpenMM
 ]
 
 [tool.coverage.report]

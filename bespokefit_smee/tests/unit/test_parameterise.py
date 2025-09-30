@@ -4,10 +4,11 @@ import pytest
 from openff.toolkit import ForceField
 from pint import Quantity
 
-from ...parameterizer import (
-    build_parameters,
+from ...parameterise import (
     convert_to_smirnoff,
+    parameterise,
 )
+from ...settings import ParameterisationSettings
 
 
 @pytest.mark.parametrize(
@@ -17,29 +18,22 @@ from ...parameterizer import (
         False,
     ],
 )
-def test_round_trip(linear_harmonics: bool, jnk1_lig):
+def test_round_trip(linear_harmonics: bool, jnk1_lig_smiles):
     """
     Check that we can convert a general force field to and from a
     molecule-specific TensorForceField while still assigning the same\
     parameters.
     """
-    base_ff = ForceField("openff_unconstrained-2.2.1.offxml")
-    mol = jnk1_lig
-
-    # Build a TensorForceField from the base force field and molecule
-    tff, _, _ = build_parameters(
-        mol=mol,
-        off=base_ff,
-        ML_path="egret-1",  # Should always be available
+    # base_ff = ForceField("openff_unconstrained-2.2.1.offxml")
+    base_ff = ForceField("openff_unconstrained-2.3.0-rc1.offxml")
+    settings = ParameterisationSettings(
         linear_harmonics=linear_harmonics,
-        linear_torsions=False,
-        modSem=False,  # Want to test round trip - modSem arguments below are ignored
-        modSem_finite_step=0.005291772,
-        modSem_vib_scaling=0.957,
-        modSem_tolerance=0.0001,
+        smiles=jnk1_lig_smiles,
+        msm_settings=None,
+        initial_force_field="openff_unconstrained-2.3.0-rc1.offxml",
         expand_torsions=False,
-        device_type="cpu",
     )
+    mol, _, _, tff, _ = parameterise(settings=settings)
 
     # Convert the TensorForceField back to a SMIRNOFF force field
     recreated_ff = convert_to_smirnoff(tff, base=base_ff)

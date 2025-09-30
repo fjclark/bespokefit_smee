@@ -173,3 +173,9 @@ cython_debug/
 
 # Directories for testing
 tmp/
+
+# VS Code
+.vscode/
+
+# Ruff
+.ruff-cache/

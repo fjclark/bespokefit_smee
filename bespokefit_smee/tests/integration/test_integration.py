@@ -2,6 +2,8 @@
 
 import subprocess
 
+from ...settings import WorkflowSettings
+
 
 def test_integration_cli(tmp_cwd) -> None:
     """Test running bespokefit smee via CLI with ethanol, and analysing."""
@@ -10,21 +12,28 @@ def test_integration_cli(tmp_cwd) -> None:
     args = [
         "bespokefit_smee",
         "train",
-        "--smiles",
-        "CCO",  # Ethanol
         "--device-type",
         "cpu",  # So we can run on GH actions
         "--n-iterations",
         "1",  # Super short run for testing
-        "--n-epochs",
+        "--parameterisation-settings.smiles",
+        "CCO",  # Ethanol
+        "--training-settings.n-epochs",
         "10",
-        "--n-train-snapshots",
-        "9",
-        "--n-test-snapshots",
-        "6",
-        "--n-conformers",
-        "3",
+        "--training-sampling-settings.sampling-protocol",
+        "mm_md",
+        "--training-sampling-settings.n-conformers",
+        "1",
+        "--training-sampling-settings.production-sampling-time-per-conformer",
+        "5 ps",
+        "--testing-sampling-settings.sampling-protocol",
+        "mm_md",
+        "--testing-sampling-settings.n-conformers",
+        "1",
+        "--testing-sampling-settings.production-sampling-time-per-conformer",
+        "1 ps",
     ]
+    print(" ".join(args))
 
     result = subprocess.run(
         args,
@@ -36,44 +45,17 @@ def test_integration_cli(tmp_cwd) -> None:
     # Check the command executed successfully
     assert result.returncode == 0, f"Command failed: {result.stderr}"
 
-    # Check that the expected output is generated
-    expected_files = [
-        "training_config.yaml",
-        "trained-0.offxml",
-        "trained-1.offxml",
-        "trained-0.scat",
-        "trained-1.scat",
-        "training-1.data",
-    ]
-    for file_name in expected_files:
-        assert (tmp_cwd / file_name).exists(), (
-            f"Expected file '{file_name}' not found in the current working directory."
-        )
+    # Create the Path manager and make sure all the expected files have been created
+    # and are in the right places
+    workflow_settings_yaml = tmp_cwd / "workflow_settings.yaml"
+    assert workflow_settings_yaml.exists(), "Workflow settings YAML not found."
 
-    directories_found = [d for d in tmp_cwd.iterdir() if d.is_dir()]
-    assert len(directories_found) == 3, (
-        "Expected exactly three directories in the current working directory."
-    )
+    settings = WorkflowSettings.from_yaml(workflow_settings_yaml)
+    path_manager = settings.get_path_manager()
 
-    # Now, analyse
-    args = [
-        "bespokefit_smee",
-        "analyse",
-    ]
-
-    result = subprocess.run(
-        args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-
-    # Check the command executed successfully
-    assert result.returncode == 0, f"Analysis command failed: {result.stderr}"
-
-    # Check that the expected output is generated
-    expected_plots = ["loss.png", "error_distributions.png"]
-    for plot_name in expected_plots:
-        assert (tmp_cwd / plot_name).exists(), (
-            f"Expected plot '{plot_name}' not found in the current working directory."
-        )
+    expected_output_files = path_manager.get_all_output_paths(only_if_exists=False)
+    for stage, outputs in expected_output_files.items():
+        for output_type, path in outputs.items():
+            assert path.exists(), (
+                f"Expected output {output_type} in stage {stage} not found at {path}."
+            )
