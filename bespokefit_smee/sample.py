@@ -467,6 +467,9 @@ def sample_mmmd_metadynamics(
 
     system = interchange.to_openmm_system()
 
+    bias_dir = output_paths[OutputType.METADYNAMICS_BIAS]
+    bias_dir.mkdir()
+
     metad = Metadynamics(  # type: ignore[no-untyped-call]
         system=system,
         variables=bias_variables,
@@ -475,7 +478,7 @@ def sample_mmmd_metadynamics(
         height=settings.bias_height,
         frequency=settings.n_steps_per_bias,
         saveFrequency=settings.n_steps_per_bias_save,
-        biasDir=output_paths[OutputType.METADYNAMICS_BIAS],
+        biasDir=bias_dir,
         independentCVs=True,
     )
 

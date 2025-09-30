@@ -217,7 +217,7 @@ class Metadynamics(object):
 
             self._force.addTabulatedFunction("table", self._table)
 
-        freeGroups = {range(32)} - {
+        freeGroups = set(range(32)) - {
             force.getForceGroup() for force in system.getForces()
         }
         if len(freeGroups) == 0:

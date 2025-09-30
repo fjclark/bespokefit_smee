@@ -51,12 +51,8 @@ def get_bespoke_force_field(
     suppress_unwanted_output()
 
     path_manager = settings.get_path_manager()
-    from pprint import pformat
-
-    logger.info(
-        f"Expected outputs by stage:\n{pformat(path_manager.get_all_output_paths(only_if_exists=False))}"
-    )
     stage = OutputStage(StageKind.BASE)
+    path_manager.mk_stage_dir(stage)
 
     if write_settings:
         settings_output_path = path_manager.get_output_path(
