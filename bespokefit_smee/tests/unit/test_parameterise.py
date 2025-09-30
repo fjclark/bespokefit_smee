@@ -33,7 +33,7 @@ def test_round_trip(linear_harmonics: bool, jnk1_lig_smiles):
         initial_force_field="openff_unconstrained-2.3.0-rc1.offxml",
         expand_torsions=False,
     )
-    mol, _, _, tff, _ = parameterise(settings=settings)
+    mol, _, _, tff, _ = parameterise(settings=settings, device="cpu")
 
     # Convert the TensorForceField back to a SMIRNOFF force field
     recreated_ff = convert_to_smirnoff(tff, base=base_ff)
