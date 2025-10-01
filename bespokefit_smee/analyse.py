@@ -51,7 +51,7 @@ def read_losses(paths_by_iter: dict[int, Path]) -> pd.DataFrame:
     for i, loss_datafile in paths_by_iter.items():
         df = pd.read_csv(
             loss_datafile,
-            delim_whitespace=True,
+            sep=r"\s+",
             header=None,
             names=["idx", "loss_train", "loss_test"],
         )
