@@ -14,10 +14,12 @@ import torch
 from openff.units import Quantity
 from openff.units import unit as off_unit
 
+from ._exceptions import MoleculeParameterisationError
 from .create_types import (
     _add_parameter_with_overwrite,
     add_types_to_forcefield,
 )
+from .load_molecules import _molecule_description
 from .msm import apply_msm_to_molecules
 from .settings import ParamSettings
 from .utils.typing import TorchDevice
@@ -214,6 +216,12 @@ def parameterise(
     tensor_ff: smee.TensorForceField
         The force field with unique parameters for each topologically
         symmetric term.
+
+    Raises:
+    ------
+    MoleculeParameterisationError
+        If any molecule could not be parameterised. Every molecule is attempted, so a
+        single error reports all of the failures.
     """
     # Create molecules from SMILES
     mols = settings.openff_molecules
@@ -247,19 +255,52 @@ def parameterise(
         settings.type_generation_settings,
     )
 
+    # Molecules which cannot be parameterised are collected rather than raised on
+    # immediately, so that a single run reports every offending molecule and the user
+    # only has to queue one more job. `bespoke_ff` is incomplete if anything failed, but
+    # we always raise below before it is used.
+    failures: dict[int, list[str]] = collections.defaultdict(list)
+
     if settings.msm_settings is not None:
-        bespoke_ff = apply_msm_to_molecules(
+        bespoke_ff, msm_failures = apply_msm_to_molecules(
             mols=mols,
             off_ff=bespoke_ff,
             settings=settings.msm_settings,
             device=torch.device(device),
         )
+        for index, message in msm_failures.items():
+            failures[index].append(message)
 
-    # Create separate Interchange objects for each molecule
-    interchanges = [
-        openff.interchange.Interchange.from_smirnoff(bespoke_ff, mol.to_topology())
-        for mol in mols
-    ]
+    # Create separate Interchange objects for each molecule. This is also where OpenFF
+    # applies its configured charge model. Molecules which already failed the modified
+    # Seminario method are still attempted here, so that a molecule with problems at
+    # both stages reports both at once, but their interchange is discarded.
+    interchanges = []
+    for index, mol in enumerate(mols):
+        try:
+            interchange = openff.interchange.Interchange.from_smirnoff(
+                bespoke_ff, mol.to_topology()
+            )
+        except Exception as exc:
+            logger.opt(exception=True).error(
+                f"Parameterisation failed for molecule {index}: {exc}"
+            )
+            failures[index].append(f"{type(exc).__name__}: {exc}")
+            continue
+
+        if index not in failures:
+            interchanges.append(interchange)
+
+    if failures:
+        report = "\n".join(
+            f"  - {_molecule_description(mols[index], index)}: "
+            + "; ".join(failures[index])
+            for index in sorted(failures)
+        )
+        raise MoleculeParameterisationError(
+            f"Parameterisation failed for {len(failures)} of {len(mols)} molecules:\n"
+            f"{report}"
+        )
 
     # Convert all interchanges at once to get a shared force field
     # and separate topologies that all reference the same parameters

@@ -6,7 +6,10 @@ from openff.toolkit import Molecule
 from openff.units import unit
 from scipy.spatial.distance import pdist
 
-from presto.load_molecules import load_conformers_for_molecule
+from presto.load_molecules import (
+    find_problematic_functional_groups,
+    load_conformers_for_molecule,
+)
 
 
 def _sorted_pairwise_distances(conformer: unit.Quantity) -> np.ndarray:
@@ -22,6 +25,45 @@ def _structures_match(loaded, originals, tol: float = 1e-2) -> bool:
         if not any(np.max(np.abs(fp - o)) < tol for o in original_fps):
             return False
     return True
+
+
+class TestFindProblematicFunctionalGroups:
+    """Tests for evidence-backed problematic functional-group matching."""
+
+    @pytest.mark.parametrize(
+        ("smiles", "pattern"),
+        [
+            ("COP(=O)(O)O", "[#15]"),
+            ("CS(=O)(=O)N", "[SX4](=[OX1])(=[OX1])[NX3]"),
+            ("CS(=O)(=O)[NH-]", "[SX4](=[OX1])(=[OX1])[NX2]"),
+        ],
+    )
+    def test_matches_supported_patterns(self, smiles, pattern):
+        """Each supported chemical environment matches its intended SMARTS."""
+        molecule = Molecule.from_smiles(smiles, allow_undefined_stereo=True)
+        assert pattern in find_problematic_functional_groups([molecule])
+
+    @pytest.mark.parametrize("smiles", ["CCO", "[O-]c1ccccc1"])
+    def test_does_not_match_unrelated_or_long_range_examples(self, smiles):
+        """Unrelated and geometry-dependent examples do not cause warnings."""
+        molecule = Molecule.from_smiles(smiles, allow_undefined_stereo=True)
+        assert find_problematic_functional_groups([molecule]) == {}
+
+    def test_aggregates_indices_names_and_smiles(self):
+        """Descriptions identify all matches by index, name, and SMILES."""
+        molecules = [
+            Molecule.from_smiles("COP(=O)(O)O"),
+            Molecule.from_smiles("CP(=O)(O)O"),
+        ]
+        molecules[1].name = "phosphonate-2"
+
+        matches = find_problematic_functional_groups(molecules)["[#15]"]
+
+        assert len(matches) == 2
+        assert "molecule 0" in matches[0]
+        assert "COP(=O)(O)O" in matches[0]
+        assert "molecule 1" in matches[1]
+        assert "phosphonate-2" in matches[1]
 
 
 @pytest.fixture

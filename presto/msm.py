@@ -731,51 +731,53 @@ def apply_msm_to_molecule(
         defaultdict(list)
     )
 
-    for conformer in track(
-        mol_with_conformers.conformers,
-        description="Finding MSM parameters for conformers",
-    ):
-        # Set positions for this conformer
-        simulation.context.setPositions(conformer.to_openmm())
+    try:
+        for conformer in track(
+            mol_with_conformers.conformers,
+            description="Finding MSM parameters for conformers",
+        ):
+            # Set positions for this conformer
+            simulation.context.setPositions(conformer.to_openmm())
 
-        # Minimize to local energy minimum
-        simulation.minimizeEnergy(maxIterations=0, tolerance=settings.tolerance)
-        positions = simulation.context.getState(getPositions=True).getPositions(
-            asNumpy=True
-        )
+            # Minimize to local energy minimum
+            simulation.minimizeEnergy(maxIterations=0, tolerance=settings.tolerance)
+            positions = simulation.context.getState(getPositions=True).getPositions(
+                asNumpy=True
+            )
 
-        # Convert positions to internal units (nm)
-        coords = positions.value_in_unit(_INTERNAL_LENGTH_UNIT)
+            # Convert positions to internal units (nm)
+            coords = positions.value_in_unit(_INTERNAL_LENGTH_UNIT)
 
-        # Compute Hessian at the minimum and convert to internal units (kcal/mol/nm²)
-        # The hessian is returned with OpenMM units attached, so we use automatic
-        # unit conversion to our internal standard units
-        hessian_with_units = calculate_hessian(
-            simulation,
-            positions,
-            finite_step=settings.finite_step,
-        )
-        hessian = hessian_with_units.value_in_unit(_INTERNAL_HESSIAN_UNIT)
+            # Compute Hessian at the minimum and convert to internal units (kcal/mol/nm²)
+            # The hessian is returned with OpenMM units attached, so we use automatic
+            # unit conversion to our internal standard units
+            hessian_with_units = calculate_hessian(
+                simulation,
+                positions,
+                finite_step=settings.finite_step,
+            )
+            hessian = hessian_with_units.value_in_unit(_INTERNAL_HESSIAN_UNIT)
 
-        # Decompose Hessian (works with unitless numpy arrays in internal units)
-        hessian_decomposer = HessianDecomposer(hessian, coords)
+            # Decompose Hessian (works with unitless numpy arrays in internal units)
+            hessian_decomposer = HessianDecomposer(hessian, coords)
 
-        # Calculate bond and angle parameters for this conformer
-        conformer_bond_params = calculate_bond_params(
-            bond_indices, hessian_decomposer, settings.vib_scaling
-        )
-        conformer_angle_params = calculate_angle_params(
-            angle_indices, hessian_decomposer, settings.vib_scaling
-        )
+            # Calculate bond and angle parameters for this conformer
+            conformer_bond_params = calculate_bond_params(
+                bond_indices, hessian_decomposer, settings.vib_scaling
+            )
+            conformer_angle_params = calculate_angle_params(
+                angle_indices, hessian_decomposer, settings.vib_scaling
+            )
 
-        # Collect parameters
-        for bond_idx, bond_param in conformer_bond_params.items():
-            all_bond_params[bond_idx].append(bond_param)
-        for angle_idx, angle_param in conformer_angle_params.items():
-            all_angle_params[angle_idx].append(angle_param)
-
-    # Clean up OpenMM objects to free GPU memory
-    cleanup_simulation(simulation, integrator)
+            # Collect parameters
+            for bond_idx, bond_param in conformer_bond_params.items():
+                all_bond_params[bond_idx].append(bond_param)
+            for angle_idx, angle_param in conformer_angle_params.items():
+                all_angle_params[angle_idx].append(angle_param)
+    finally:
+        # Clean up OpenMM objects to free GPU memory, even if this molecule failed,
+        # as the caller carries on with the next molecule
+        cleanup_simulation(simulation, integrator)
 
     # Average parameters over all conformers
     bond_params = {
@@ -815,11 +817,16 @@ def apply_msm_to_molecules(
     off_ff: openff.toolkit.ForceField,
     settings: MSMSettings,
     device: torch.device,
-) -> openff.toolkit.ForceField:
+) -> tuple[openff.toolkit.ForceField, dict[int, str]]:
     """Apply Modified Seminario Method to molecules and update force field.
 
     Calculates bond and angle parameters for all molecules, averages parameters
     that share the same SMIRKS pattern, and updates the force field accordingly.
+
+    Molecules which fail (most commonly because RDKit cannot generate a conformer for
+    them) are skipped and reported rather than aborting the run, so that the caller can
+    report every problematic molecule at once. The returned force field is only valid if
+    no molecule failed.
 
     Args:
         mols: List of molecules to parameterize.
@@ -828,7 +835,8 @@ def apply_msm_to_molecules(
         device: Torch device for ML potential calculations.
 
     Returns:
-        Modified ForceField with MSM-derived parameters.
+        Tuple of (modified ForceField with MSM-derived parameters, mapping of index in
+        ``mols`` to the error for each molecule which failed).
 
     Reference:
         AEA Allen, MC Payne, DJ Cole, J. Chem. Theory Comput. (2018),
@@ -840,28 +848,36 @@ def apply_msm_to_molecules(
     # Collect parameters by SMIRKS across all molecules
     bond_params_by_smirks: defaultdict[str, list[BondParams]] = defaultdict(list)
     angle_params_by_smirks: defaultdict[str, list[AngleParams]] = defaultdict(list)
+    failures: dict[int, str] = {}
 
-    for mol in track(mols, description="Applying MSM to molecules", transient=True):
-        # Get parameter labels for this molecule
-        labels = off_ff.label_molecules(mol.to_topology())[0]
+    for index, mol in enumerate(
+        track(mols, description="Applying MSM to molecules", transient=True)
+    ):
+        try:
+            # Get parameter labels for this molecule
+            labels = off_ff.label_molecules(mol.to_topology())[0]
 
-        # Build index-to-SMIRKS mappings
-        bond_indices_to_smirks = {
-            bond_indices: bond_param.smirks
-            for (bond_indices, bond_param) in labels["Bonds"].items()
-        }
-        angle_indices_to_smirks = {
-            angle_indices: angle_param.smirks
-            for (angle_indices, angle_param) in labels["Angles"].items()
-        }
+            # Build index-to-SMIRKS mappings
+            bond_indices_to_smirks = {
+                bond_indices: bond_param.smirks
+                for (bond_indices, bond_param) in labels["Bonds"].items()
+            }
+            angle_indices_to_smirks = {
+                angle_indices: angle_param.smirks
+                for (angle_indices, angle_param) in labels["Angles"].items()
+            }
 
-        bond_indices = list(bond_indices_to_smirks.keys())
-        angle_indices = list(angle_indices_to_smirks.keys())
+            bond_indices = list(bond_indices_to_smirks.keys())
+            angle_indices = list(angle_indices_to_smirks.keys())
 
-        # Calculate MSM parameters for this molecule
-        mol_bond_params, mol_angle_params = apply_msm_to_molecule(
-            mol, bond_indices, angle_indices, settings, device
-        )
+            # Calculate MSM parameters for this molecule
+            mol_bond_params, mol_angle_params = apply_msm_to_molecule(
+                mol, bond_indices, angle_indices, settings, device
+            )
+        except Exception as exc:
+            logger.opt(exception=True).error(f"MSM failed for molecule {index}: {exc}")
+            failures[index] = f"{type(exc).__name__}: {exc}"
+            continue
 
         # Collect parameters by SMIRKS
         for bond_idx, bond_params in mol_bond_params.items():
@@ -907,4 +923,4 @@ def apply_msm_to_molecules(
             f"Updated angle {smirks}: k={angle_param.k}, angle={angle_param.angle}"
         )
 
-    return off_ff
+    return off_ff, failures

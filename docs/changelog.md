@@ -2,9 +2,15 @@
 
 ## 0.9.0
 
+### Breaking changes
+
+- Refuse to start a fit when the output directory already holds generated output from an earlier fit; run `presto clean` or choose a new `output_dir` first. This stops an interrupted run from silently reusing an old trajectory or metadynamics bias. In [#84](https://github.com/cole-group/presto/pull/84).
+
 ### Features
 
+- Warn without rejecting or changing settings when input molecules contain phosphorus or sulfonamide environments known to cause MLP-minimisation or modified Seminario initialisation failures. The warnings identify every matching molecule and recommend safer sampling/MSM settings. Addresses [#63](https://github.com/cole-group/presto/issues/63).
 - Add an optional `starting_conformers` setting to each sampling stage (`training_sampling_settings`, `testing_sampling_settings`) and to `msm_settings`. When set to an SDF path, that stage starts from the supplied conformers (matched to each molecule by graph isomorphism and realigned automatically) instead of generating them with ETKDG; `n_conformers` is ignored for that stage. The default remains ETKDG.In [#78](https://github.com/cole-group/presto/pull/78).
+- Add `n_sampling_processes` to `WorkflowSettings` (`--n-sampling-processes` on `presto train`) to sample independent ligands in parallel worker processes on one node, assigned round-robin across the visible CUDA devices. The default of `1` keeps the previous serial behaviour. Addresses [#77](https://github.com/cole-group/presto/issues/77) in [#84](https://github.com/cole-group/presto/pull/84).
 - Add `presto.create_types.add_library_charges_to_forcefield` to write custom partial charges from OpenFF `Molecule` objects into a force field as library charges, addressing [#64](https://github.com/cole-group/presto/issues/64).
 
 ### Fixes
@@ -12,11 +18,14 @@
 - Correct linear and near-linear MSM angle force constants that were half their
   intended SMIRNOFF / OpenMM values due to an uncancelled intermediate QUBEKit
   convention factor.
+- Attempt parameterisation for every molecule instead of aborting on the first failure, then raise a single `MoleculeParameterisationError` listing every molecule which could not be parameterised (whether the modified Seminario step could not generate a conformer for it, or OpenFF could not assign its charges/parameters). Addresses [#80](https://github.com/cole-group/presto/issues/80).
 - Fix a latent `IndexError` in the MSM step when fewer conformers were available than `n_conformers`; the conformer loop now iterates the conformers actually present.
 
 ### Documentation
 
+- Document the aggregated parameterisation error in [Troubleshooting](reference/troubleshooting.md).
 - Add [Use custom charges](how-to/use-custom-charges.md) how-to guide.
+- Add [Speed up fitting with parallelism](how-to/speed-up-with-parallelism.md) how-to guide, and update [Wipe output and rerun](how-to/clean-rerun.md) for the new cleaning behaviour. In [#84](https://github.com/cole-group/presto/pull/84).
 - Add [Use your own starting conformers](how-to/use-starting-conformers.md) how-to guide.
 - Add a `CITATION.cff` file and cite the presto preprint in the README and docs, and point users to the OpenFF publications to cite, in [#76](https://github.com/cole-group/presto/pull/76).
 - Document installing `presto` from `conda-forge` as `presto-fit` (note this comes without the MLP dependencies, which must be installed separately) in [#70](https://github.com/cole-group/presto/pull/70).

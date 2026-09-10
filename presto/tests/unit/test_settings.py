@@ -580,6 +580,57 @@ class TestParamSettings:
                 molecule_input_type="smiles", molecules=_DEFAULT_INPUT_PLACEHOLDER
             )
 
+    def test_phosphorus_warning_is_actionable_and_non_fatal(self):
+        """Phosphorus warns about both minimisation-enabled code paths."""
+        with pytest.warns(UserWarning) as caught:
+            settings = ParamSettings(
+                molecule_input_type="smiles", molecules="COP(=O)(O)O"
+            )
+
+        assert settings.openff_molecules
+        message = str(caught[0].message)
+        assert "molecule 0" in message
+        assert "mm_md_metadynamics" in message
+        assert "param_settings.msm_settings" in message
+        assert "null" in message and "None" in message
+
+    def test_every_matching_smiles_is_aggregated_in_one_warning(self):
+        """A warning for one SMARTS lists all matching input molecules."""
+        with pytest.warns(UserWarning) as caught:
+            ParamSettings(
+                molecule_input_type="smiles",
+                molecules=["COP(=O)(O)O", "CP(=O)(O)O"],
+            )
+
+        assert len(caught) == 1
+        message = str(caught[0].message)
+        assert "molecule 0" in message and "COP(=O)(O)O" in message
+        assert "molecule 1" in message and "CP(=O)(O)O" in message
+
+    def test_different_warning_classes_are_distinct(self):
+        """A molecule can independently trigger phosphorus and sulfonamide advice."""
+        with pytest.warns(UserWarning) as caught:
+            ParamSettings(
+                molecule_input_type="smiles", molecules="OP(=O)(O)CS(=O)(=O)N"
+            )
+
+        assert len(caught) == 2
+        assert any("[#15]" in str(item.message) for item in caught)
+        assert any("[SX4]" in str(item.message) for item in caught)
+
+    def test_sdf_warning_includes_record_name(self, tmp_path):
+        """SDF inputs use their record name in a non-fatal warning."""
+        sdf = tmp_path / "phosphorus.sdf"
+        molecule = Chem.AddHs(Chem.MolFromSmiles("COP(=O)(O)O"))
+        molecule.SetProp("_Name", "phosphorus-ligand")
+        with Chem.SDWriter(str(sdf)) as writer:
+            writer.write(molecule)
+
+        with pytest.warns(UserWarning, match="phosphorus-ligand"):
+            settings = ParamSettings(molecule_input_type="sdf", molecules=str(sdf))
+
+        assert settings.openff_molecules[0].name == "phosphorus-ligand"
+
     def test_valid_single_molecule_sdf(self, tmp_path):
         """Test that valid SDF paths are accepted."""
         sdf = tmp_path / "ethanol.sdf"
@@ -848,6 +899,16 @@ class TestWorkflowSettings:
         )
         assert settings.n_iterations == n_iterations
         assert settings.memory == memory
+
+    def test_workflow_requires_at_least_one_iteration(self):
+        """A workflow must have a final training iteration."""
+        with pytest.raises(ValidationError, match="n_iterations"):
+            WorkflowSettings(
+                param_settings=ParamSettings(
+                    molecule_input_type="smiles", molecules="CCO"
+                ),
+                n_iterations=0,
+            )
 
     def test_outlier_filter_settings_has_default(self, valid_workflow_settings):
         """Test that outlier_filter_settings has default values."""
