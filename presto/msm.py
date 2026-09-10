@@ -378,9 +378,9 @@ def _calculate_linear_angle_force_constant(
             + (1 / ((bond_lens[1] ** 2) * sum_second))
         )
         # QUBEKit multiplies this intermediate value by 0.5, then multiplies
-        # angle force constants by 2 when exporting them. Presto returns the
-        # final SMIRNOFF / OpenMM force constant directly, so those factors
-        # cancel here, as they do in the non-linear angle path above.
+        # it by 2 when storing the OpenMM HarmonicAngleForce parameter. Presto
+        # returns the final SMIRNOFF / OpenMM force constant directly, so those
+        # factors cancel here, as they do in the non-linear angle path above.
         k_theta_array[theta_idx] = abs(float(np.real(k_theta_i)))
 
     k_theta = float(np.mean(k_theta_array))
