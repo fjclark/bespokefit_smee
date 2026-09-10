@@ -1,6 +1,7 @@
 """Unit tests for the sampling coordinator."""
 
 import multiprocessing
+import os
 import threading
 from concurrent.futures import Future
 from pathlib import Path
@@ -39,8 +40,8 @@ def _generated_inputs(tmp_path: Path, n_mols: int = 2) -> dict:
     }
 
 
-def _successful_worker(molecule_json, molecule_index, *args) -> datasets.Dataset:
-    return datasets.Dataset.from_dict({"molecule": [molecule_index]})
+def _successful_worker(molecule_json, molecule_index, *args) -> tuple:
+    return datasets.Dataset.from_dict({"molecule": [molecule_index]}), []
 
 
 class _InlineExecutor:
@@ -142,12 +143,17 @@ def test_samples_processes_and_saves_every_molecule(tmp_path, monkeypatch, n_pro
     )
     worker = MagicMock(side_effect=_successful_worker)
     monkeypatch.setattr(sampling_coordinator, "_sample_worker", worker)
+    warm = MagicMock()
+    monkeypatch.setattr(sampling_coordinator, "_warm_ml_potential", warm)
     if n_processes > 1:
         monkeypatch.setattr(
             sampling_coordinator, "ProcessPoolExecutor", _InlineExecutor
         )
 
     result = sample_ligands(**inputs)
+
+    # The weight cache is warmed once in the parent, never on the serial path.
+    assert warm.call_count == (1 if n_processes > 1 else 0)
 
     assert [dataset["molecule"][0] for dataset in result] == [0, 1]
     assert [dataset["processed"][0] for dataset in result] == [0, 1]
@@ -201,9 +207,15 @@ def test_parallel_sampling_rejects_unpicklable_settings(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "devices", [["cuda:0", "cuda:1"], ["cuda:0", "cuda:0"], ["cpu", "cpu"]]
+    ("devices", "expected"),
+    [
+        # A CUDA worker hides every other GPU, so its own is always index 0.
+        (["cuda:0", "cuda:1"], ["cuda:0", "cuda:0"]),
+        (["cuda:0", "cuda:0"], ["cuda:0", "cuda:0"]),
+        (["cpu", "cpu"], ["cpu", "cpu"]),
+    ],
 )
-def test_each_worker_claims_one_device(monkeypatch, devices):
+def test_each_worker_claims_one_device(monkeypatch, devices, expected):
     """Workers claim a device each at start-up, oversubscribed GPUs included."""
     # _init_worker silences the process it runs in, so undo that for the test session.
     monkeypatch.setattr(sampling_coordinator, "logger", MagicMock())
@@ -218,4 +230,70 @@ def test_each_worker_claims_one_device(monkeypatch, devices):
         sampling_coordinator._init_worker(queue)
         claimed.append(sampling_coordinator._WORKER_DEVICE)
 
-    assert claimed == devices
+    assert claimed == expected
+
+
+def test_warms_the_weight_cache_before_spawning_workers(tmp_path, monkeypatch):
+    """One system is built in the parent so workers never race a first download."""
+    inputs = _generated_inputs(tmp_path)
+    inputs["n_processes"] = 2
+    monkeypatch.setattr(sampling_coordinator, "_WARMED_POTENTIALS", set())
+    monkeypatch.setattr(
+        sampling_coordinator,
+        "_sample_worker",
+        MagicMock(side_effect=_successful_worker),
+    )
+    monkeypatch.setattr(sampling_coordinator, "ProcessPoolExecutor", _InlineExecutor)
+    get_system = MagicMock()
+    monkeypatch.setattr(sampling_coordinator.mlp, "get_ml_omm_system", get_system)
+
+    sample_ligands(**inputs)
+    sample_ligands(**inputs)
+
+    # Warmed once per process, not once per sampling call.
+    assert get_system.call_count == 1
+    assert get_system.call_args.args[1] is inputs["sampling_settings"].mlp_settings
+
+
+def test_worker_logs_are_replayed_by_the_parent(tmp_path, monkeypatch):
+    """Warnings raised inside a worker reach the parent, tagged by molecule."""
+    inputs = _generated_inputs(tmp_path)
+    inputs["n_processes"] = 2
+
+    def worker(molecule_json, molecule_index, *args):
+        return (
+            datasets.Dataset.from_dict({"molecule": [molecule_index]}),
+            [("WARNING", "No rotatable bonds found")],
+        )
+
+    monkeypatch.setattr(sampling_coordinator, "_sample_worker", worker)
+    monkeypatch.setattr(sampling_coordinator, "_warm_ml_potential", MagicMock())
+    monkeypatch.setattr(sampling_coordinator, "ProcessPoolExecutor", _InlineExecutor)
+    replayed = []
+    monkeypatch.setattr(
+        sampling_coordinator,
+        "logger",
+        MagicMock(log=lambda level, message: replayed.append((level, message))),
+    )
+
+    sample_ligands(**inputs)
+
+    assert replayed == [
+        ("WARNING", "[molecule 0] No rotatable bonds found"),
+        ("WARNING", "[molecule 1] No rotatable bonds found"),
+    ]
+
+
+def test_worker_claims_one_visible_gpu(monkeypatch):
+    """A CUDA worker sees only its own device, remapped through the parent's list."""
+    monkeypatch.setattr(sampling_coordinator, "_PARENT_VISIBLE_DEVICES", "4,5")
+    monkeypatch.setattr(sampling_coordinator, "logger", MagicMock())
+    monkeypatch.setattr(sampling_coordinator, "_WORKER_DEVICE", "cpu")
+    queue = multiprocessing.get_context("spawn").Queue()
+    queue.put("cuda:1")
+
+    sampling_coordinator._init_worker(queue)
+
+    assert os.environ["CUDA_VISIBLE_DEVICES"] == "5"
+    # The claimed device is now the only one visible, so it is index 0 everywhere.
+    assert sampling_coordinator._WORKER_DEVICE == "cuda:0"
