@@ -4,22 +4,28 @@ How to wipe output and rerun.
 
 ## Clean a directory
 
-`presto clean` removes every Presto-owned generated stage directory, but **keeps the settings YAML**:
+`presto clean` removes the stage directories the settings predict, but **keeps the settings YAML**:
 
 ```bash
 presto clean workflow_settings.yaml
 ```
 
-The directories `initial_statistics/`, `test_data/`, `plots/`, and every
-`training_iteration_*/` directory are reserved for Presto and are removed recursively.
-Keep personal notes outside those directories. Unrelated files at the output root are
-left alone.
+The settings file is the single source of truth: `initial_statistics/`, `test_data/`,
+`plots/`, and `training_iteration_1` through `training_iteration_<n_iterations>` are
+reserved for Presto and are removed recursively. Nothing else is touched, so files at
+the output root and iteration directories beyond `n_iterations` are left alone.
+
+If one of those directories holds a path the settings do not predict, such as your own
+notes or a plot you made, `presto clean` refuses and deletes nothing. Move the file
+out, or use a different `output_dir`. The only way your own input is deleted is by
+placing it at a path Presto generates, for example a pre-computed dataset saved to
+`test_data/energy_and_force_data_mol0/`.
 
 The output manager reports a fit as:
 
-- `clean` when none of the generated stage directories exists;
-- `partial` when a generated stage exists without the final fitted force field; or
-- `complete` when the final iteration's `bespoke_ff.offxml` exists.
+- `clean` when none of the predicted stage directories exists;
+- `partial` when one exists without the final fitted force field; or
+- `complete` when `training_iteration_<n_iterations>/bespoke_ff.offxml` exists.
 
 Both partial and complete output must be cleaned before another fit can start. This
 prevents an interrupted run from silently reusing an old trajectory or metadynamics

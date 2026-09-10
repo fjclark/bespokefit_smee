@@ -932,7 +932,7 @@ class WorkflowSettings(_DefaultSettings):
         1,
         ge=1,
         description="Number of spawned worker processes used to sample independent "
-        "ligands on this node.",
+        "ligands.",
     )
 
     param_settings: ParamSettings = Field(

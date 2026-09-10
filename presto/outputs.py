@@ -1,7 +1,5 @@
 """Functionality for handling the outputs of a workflow."""
 
-import os
-import re
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum, StrEnum
@@ -104,20 +102,6 @@ PER_MOLECULE_OUTPUT_TYPES: set[OutputType] = {
     OutputType.TORSION_SAMPLING_PLOT,
 }
 
-# Every generated path is an OutputType name, optionally with a per-molecule suffix.
-_MOL_SUFFIX = re.compile(r"_mol\d+(?=\.|$)")
-_GENERATED_NAMES = {output_type.value for output_type in OutputType}
-
-
-def _foreign_children(stage_path: Path) -> list[Path]:
-    """Return stage directory entries which presto did not generate."""
-    return [
-        child
-        for child in stage_path.iterdir()
-        if not child.name.startswith(".")
-        and _MOL_SUFFIX.sub("", child.name) not in _GENERATED_NAMES
-    ]
-
 
 class StageKind(StrEnum):
     """Enumeration of output directory names for each stage of the workflow."""
@@ -164,33 +148,47 @@ class WorkflowPathManager:
     training_sampling_settings: "SamplingSettings | None" = None
     testing_sampling_settings: "SamplingSettings | None" = None
 
-    def _generated_stage_paths(self) -> list[Path]:
-        """Return all existing Presto-owned generated stage paths."""
-        candidates = [
-            self.output_dir / kind.value
-            for kind in (
-                StageKind.INITIAL_STATISTICS,
-                StageKind.TESTING,
-                StageKind.PLOTS,
+    def _generated_stages(self) -> list[OutputStage]:
+        """Return every stage these settings predict whose directory exists."""
+        return [
+            stage
+            for stage in self.outputs_by_stage
+            if stage.kind is not StageKind.BASE
+            and (
+                (stage_path := self.get_stage_path(stage)).is_dir()
+                or stage_path.is_symlink()
             )
         ]
-        # Globbing a missing directory yields nothing, so needs no existence check.
-        candidates += self.output_dir.glob(f"{StageKind.TRAINING.value}_*")
-        return sorted(
-            {path for path in candidates if path.is_dir() or path.is_symlink()}, key=str
+
+    def _foreign_children(self, stage: OutputStage) -> list[Path]:
+        """Return entries in a stage directory which these settings do not predict."""
+        predicted = {
+            path
+            for paths in self.get_all_output_paths(only_if_exists=False)
+            .get(stage, {})
+            .values()
+            for path in (paths if isinstance(paths, list) else [paths])
+        }
+        return [
+            child
+            for child in self.get_stage_path(stage).iterdir()
+            if child not in predicted
+        ]
+
+    @property
+    def final_force_field(self) -> Path:
+        """The bespoke force field written by the last training iteration."""
+        return self.get_output_path(
+            OutputStage(StageKind.TRAINING, self.n_iterations), OutputType.OFFXML
         )
 
     @property
     def status(self) -> WorkflowStatus:
         """Return whether generated fit output is clean, partial, or complete."""
-        final_force_field = (
-            self.output_dir
-            / f"{StageKind.TRAINING.value}_{self.n_iterations}"
-            / OutputType.OFFXML.value
-        )
-        if os.path.lexists(final_force_field):
+        # is_symlink covers a broken link, which exists() reports as missing.
+        if self.final_force_field.exists() or self.final_force_field.is_symlink():
             return WorkflowStatus.COMPLETE
-        if self._generated_stage_paths():
+        if self._generated_stages():
             return WorkflowStatus.PARTIAL
         return WorkflowStatus.CLEAN
 
@@ -438,18 +436,22 @@ class WorkflowPathManager:
         return 0  # Default for backward compatibility
 
     def clean(self) -> None:
-        """Remove every Presto-owned generated stage directory.
+        """Remove every stage directory these settings predict.
+
+        Stages beyond the predicted ones, such as an iteration past
+        ``n_iterations``, are left alone, as is anything outside a stage directory.
 
         Raises:
         ------
         RuntimeError
-            If a stage directory holds files presto did not generate. Nothing is
-            deleted in that case.
+            If a predicted stage directory holds a path these settings do not
+            predict. Nothing is deleted in that case.
         """
-        stage_paths = self._generated_stage_paths()
-        for stage_path in stage_paths:
+        stages = self._generated_stages()
+        for stage in stages:
+            stage_path = self.get_stage_path(stage)
             if stage_path.is_symlink() or not (
-                foreign := _foreign_children(stage_path)
+                foreign := self._foreign_children(stage)
             ):
                 continue
             raise RuntimeError(
@@ -457,8 +459,8 @@ class WorkflowPathManager:
                 f"({', '.join(child.name for child in foreign[:3])}). Delete it "
                 "yourself or use a different output_dir."
             )
-        for stage_path in stage_paths:
-            delete_path(stage_path, recursive=True)
+        for stage in stages:
+            delete_path(self.get_stage_path(stage), recursive=True)
 
 
 def delete_path(path: Path, recursive: bool = False) -> None:

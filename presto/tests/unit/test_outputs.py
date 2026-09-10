@@ -155,18 +155,31 @@ class TestWorkflowPathManager:
             "initial_statistics",
             "test_data",
             "plots",
-            "training_iteration_7",
-            "training_iteration_legacy",
+            "training_iteration_1",
+            "training_iteration_2",
         ],
     )
-    def test_status_partial_for_any_generated_stage(self, tmp_path, stage_name):
-        """Empty, fixed, and obsolete generated stages all mark a partial fit."""
+    def test_status_partial_for_any_predicted_stage(self, tmp_path, stage_name):
+        """Every stage the settings predict marks a partial fit, even when empty."""
         path_manager = WorkflowPathManager(output_dir=tmp_path, n_iterations=2)
         (tmp_path / stage_name).mkdir()
 
         assert path_manager.status == WorkflowStatus.PARTIAL
         with pytest.raises(RuntimeError, match=r"partial.*presto clean"):
             path_manager.require_clean()
+
+    def test_unpredicted_iterations_are_not_presto_output(self, tmp_path):
+        """Iterations past `n_iterations` are neither owned nor deleted."""
+        path_manager = WorkflowPathManager(output_dir=tmp_path, n_iterations=1)
+        stale_iteration = tmp_path / "training_iteration_9"
+        stale_iteration.mkdir()
+        (stale_iteration / "trajectory_mol0.pdb").write_text("trajectory")
+
+        assert path_manager.status == WorkflowStatus.CLEAN
+
+        path_manager.clean()
+
+        assert (stale_iteration / "trajectory_mol0.pdb").read_text() == "trajectory"
 
     @pytest.mark.parametrize(
         "file_name",
@@ -190,19 +203,26 @@ class TestWorkflowPathManager:
 
         assert unrelated_file.read_text() == "keep me"
 
-    def test_clean_refuses_stage_directories_holding_foreign_files(self, tmp_path):
-        """A user's own directory sharing a stage name is never deleted."""
+    @pytest.mark.parametrize("file_name", ["figure.png", "trajectory_mol0.pdb"])
+    def test_clean_refuses_stage_directories_holding_foreign_files(
+        self, tmp_path, file_name
+    ):
+        """A stage keeps only the outputs predicted for that stage, not any output.
+
+        `trajectory_mol0.pdb` is a real output name, but sampling writes it to a
+        training or testing stage, never to `plots/`, so there it is the user's.
+        """
         path_manager = WorkflowPathManager(output_dir=tmp_path, n_iterations=2)
-        user_plot = tmp_path / "plots" / "figure.png"
-        user_plot.parent.mkdir()
-        user_plot.write_text("keep me")
+        user_file = tmp_path / "plots" / file_name
+        user_file.parent.mkdir()
+        user_file.write_text("keep me")
         stale_stage = tmp_path / "test_data"
         stale_stage.mkdir()
 
-        with pytest.raises(RuntimeError, match=r"figure\.png.*different output_dir"):
+        with pytest.raises(RuntimeError, match=rf"{file_name}.*different output_dir"):
             path_manager.clean()
 
-        assert user_plot.read_text() == "keep me"
+        assert user_file.read_text() == "keep me"
         assert stale_stage.exists()
 
     def test_clean_unlinks_stage_symlinks_without_deleting_targets(self, tmp_path):
@@ -213,7 +233,7 @@ class TestWorkflowPathManager:
         external_stage.mkdir()
         sentinel = external_stage / "sentinel.txt"
         sentinel.write_text("keep me")
-        live_link = output_dir / "training_iteration_legacy"
+        live_link = output_dir / "training_iteration_1"
         live_link.symlink_to(external_stage, target_is_directory=True)
         broken_link = output_dir / "plots"
         broken_link.symlink_to(tmp_path / "missing-stage", target_is_directory=True)
@@ -404,8 +424,8 @@ class TestWorkflowPathManager:
 
         assert not stage_path.exists()
 
-    def test_clean_removes_all_sampling_preflight_artifacts(self, tmp_path):
-        """Clean removes canonical, side, cache, and interrupted atomic outputs."""
+    def test_clean_removes_every_sampling_output(self, tmp_path):
+        """Every side output the sampling protocol produces is predicted, so removed."""
         sampling_settings = MMMDMetadynamicsTorsionMinimisationSamplingSettings()
         path_manager = WorkflowPathManager(
             output_dir=tmp_path,
@@ -430,38 +450,26 @@ class TestWorkflowPathManager:
                 path.write_text("sampling output")
             else:
                 path.mkdir()
-        cache_path = stage_path / ".sampling_cache" / "raw_mol0"
-        cache_path.mkdir(parents=True)
-        atomic_path = stage_path / ".energy_and_force_data_mol0.tmp-interrupted"
-        atomic_path.mkdir()
 
         path_manager.clean()
 
         assert all(not path.exists() for path in paths)
-        assert not cache_path.parent.exists()
-        assert not atomic_path.exists()
         assert not stage_path.exists()
 
-    def test_clean_removes_stages_independent_of_current_settings(self, tmp_path):
-        """Cleanup discovers old iterations without relying on current settings."""
+    def test_clean_keeps_everything_outside_a_predicted_stage(self, tmp_path):
+        """The settings yaml and unrelated root files survive a clean."""
         path_manager = WorkflowPathManager(output_dir=tmp_path, n_iterations=1)
         settings_path = tmp_path / OutputType.WORKFLOW_SETTINGS.value
         notes_path = tmp_path / "notes.txt"
         settings_path.write_text("settings")
         notes_path.write_text("keep me")
-        old_cache = tmp_path / "training_iteration_9" / ".sampling_cache"
-        old_cache.mkdir(parents=True)
-        (old_cache / "raw_mol0").mkdir()
-        (tmp_path / "training_iteration_9" / "trajectory_mol0.pdb").write_text(
-            "trajectory"
-        )
+        path_manager.mk_stage_dir(OutputStage(StageKind.TRAINING, 1))
 
         path_manager.clean()
 
         assert path_manager.status == WorkflowStatus.CLEAN
         assert settings_path.exists()
-        assert notes_path.exists()
-        assert not (tmp_path / "training_iteration_9").exists()
+        assert notes_path.read_text() == "keep me"
 
 
 class TestDeletePath:

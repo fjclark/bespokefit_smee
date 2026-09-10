@@ -24,16 +24,16 @@ from .settings import PreComputedDatasetSettings, SamplingSettings
 from .utils._suppress_output import suppress_unwanted_output
 from .utils.gpu import free_gpu_memory
 
-# The torch device this worker samples on, set once it has claimed a GPU; the
-# parent never reads it.
 _WORKER_DEVICE = "cpu"
+"""The torch device this worker samples on, set once it has claimed a GPU.
+The parent never reads it."""
 
-# Records logged while sampling one molecule, replayed by the parent in order.
-# Stays empty in the parent, where logging reaches the real sinks directly.
 _WORKER_LOGS: list[tuple[str, str]] = []
+"""Records logged while sampling one molecule, replayed by the parent in order.
+Stays empty in the parent, where logging reaches the real sinks directly."""
 
-# Potentials this process has already pulled weights for; see _warm_ml_potential.
 _WARMED_POTENTIALS: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
+"""Potentials this process has already pulled weights for; see `_warm_ml_potential`."""
 
 
 def sampling_devices(device_type: str, n_workers: int) -> list[str]:
@@ -68,8 +68,9 @@ def _init_worker(devices: multiprocessing.Queue) -> None:  # type: ignore[type-a
     suppress_unwanted_output()
     logger.remove()
     logger.add(_capture_log)
-    # Workers share one terminal, so per-molecule bars would interleave; the parent
-    # renders the only progress bar.
+    # Workers share one terminal, so per-molecule bars would interleave. Replace the
+    # progress-bar helper sample.py calls with a pass-through, so this worker renders
+    # no bar of its own and the parent's ligand bar is the only one on screen.
     sample_module.track = lambda sequence, *args, **kwargs: sequence  # type: ignore[attr-defined]
 
 
@@ -108,7 +109,7 @@ def sample_ligands(
     device_type: str,
     sampling_settings: SamplingSettings,
     output_paths: dict[OutputType, Path],
-    canonical_paths: list[Path],
+    dataset_output_paths: list[Path],
     n_processes: int,
     process_dataset: Callable[[int, datasets.Dataset], datasets.Dataset] | None = None,
 ) -> list[datasets.Dataset]:
@@ -141,7 +142,7 @@ def sample_ligands(
         for mol_idx, dataset in enumerate(raw)
     ]
     if not precomputed:
-        for dataset, path in zip(results, canonical_paths, strict=True):
+        for dataset, path in zip(results, dataset_output_paths, strict=True):
             dataset.save_to_disk(str(path))
     return results
 
@@ -179,9 +180,11 @@ def _sample_every_ligand(
 ) -> list[datasets.Dataset]:
     """Sample every molecule, reporting all per-ligand failures together."""
     workers = max(1, min(n_processes, len(mols)))
-    devices = sampling_devices(device_type, workers)
+
     # Each worker claims one GPU at start-up and keeps it, so oversubscribing a GPU
     # stays deliberate rather than depending on which worker picks up a molecule.
+    assigned_devices = sampling_devices(device_type, workers)
+
     worker_args = [
         (
             mol.to_json(),
@@ -197,6 +200,7 @@ def _sample_every_ligand(
     sampled: dict[int, datasets.Dataset] = {}
     worker_logs: dict[int, list[tuple[str, str]]] = {}
     failures: dict[int, Exception] = {}
+
     if workers == 1:
         for mol_idx, args in enumerate(worker_args):
             try:
@@ -212,11 +216,19 @@ def _sample_every_ligand(
                 "objects such as custom ASE calculators require "
                 "n_sampling_processes: 1."
             ) from exc
+
         _warm_ml_potential(mols[0], sampling_settings, device_type)
+
+        # Spawn, never fork: a forked child inherits the parent's initialised CUDA
+        # context, which CUDA does not support, and CUDA_VISIBLE_DEVICES is only read
+        # while CUDA initialises, so _init_worker could no longer pin the child to the
+        # one GPU it claimed.
         context = multiprocessing.get_context("spawn")
+
         device_queue = context.Queue()
-        for device in devices:
+        for device in assigned_devices:
             device_queue.put(device)
+
         with ProcessPoolExecutor(
             max_workers=workers,
             mp_context=context,
@@ -238,6 +250,7 @@ def _sample_every_ligand(
                 except Exception as exc:
                     failures[futures[future]] = exc
 
+    # Replay every worker's records in molecule order, not completion order.
     for mol_idx in sorted(worker_logs):
         for level, message in worker_logs[mol_idx]:
             logger.log(level, f"[molecule {mol_idx}] {message}")

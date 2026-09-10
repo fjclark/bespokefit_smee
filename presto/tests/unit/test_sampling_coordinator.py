@@ -14,13 +14,13 @@ from loguru import logger as loguru_logger
 from openff.toolkit import ForceField, Molecule
 
 from presto import sample, sampling_coordinator
-from presto.tests.unit._pooled_sampler import PooledSamplingSettings
 from presto.sampling_coordinator import sample_ligands, sampling_devices
 from presto.settings import (
     MLPSettings,
     MMMDSamplingSettings,
     PreComputedDatasetSettings,
 )
+from presto.tests.unit._pooled_sampler import PooledSamplingSettings
 
 
 def _precomputed_settings(n_datasets: int) -> PreComputedDatasetSettings:
@@ -40,7 +40,7 @@ def _generated_inputs(tmp_path: Path, n_mols: int = 2) -> dict:
             output_type: tmp_path / output_type.value
             for output_type in settings.output_types
         },
-        "canonical_paths": [
+        "dataset_output_paths": [
             tmp_path / f"energy_and_force_data_mol{i}" for i in range(n_mols)
         ],
         "n_processes": 1,
@@ -150,7 +150,7 @@ def test_processes_each_precomputed_dataset(monkeypatch):
             device_type="cpu",
             sampling_settings=_precomputed_settings(len(loaded)),
             output_paths={},
-            canonical_paths=[Path("canonical-0"), Path("canonical-1")],
+            dataset_output_paths=[Path("dataset-out-0"), Path("dataset-out-1")],
             n_processes=1,
             process_dataset=process_dataset,
         )
@@ -178,7 +178,7 @@ def test_returns_precomputed_datasets_without_callback(monkeypatch):
             device_type="cpu",
             sampling_settings=_precomputed_settings(len(loaded)),
             output_paths={},
-            canonical_paths=[Path("canonical-0")],
+            dataset_output_paths=[Path("dataset-out-0")],
             n_processes=1,
         )
 
@@ -213,7 +213,9 @@ def test_samples_processes_and_saves_every_molecule(tmp_path, monkeypatch, n_pro
     # A lone worker samples on the parent's device; a pooled one uses what it claimed.
     expected_device = inputs["device_type"] if n_processes == 1 else None
     assert [call.args[3] for call in worker.call_args_list] == [expected_device] * 2
-    committed = [datasets.load_from_disk(path) for path in inputs["canonical_paths"]]
+    committed = [
+        datasets.load_from_disk(path) for path in inputs["dataset_output_paths"]
+    ]
     assert [dataset["processed"][0] for dataset in committed] == [0, 1]
 
 
@@ -237,7 +239,7 @@ def test_worker_failures_are_aggregated_after_all_ligands(
     assert "molecule 0: first failed" in str(exc_info.value)
     assert "molecule 1: second failed" in str(exc_info.value)
     assert worker.call_count == 2
-    assert not any(path.exists() for path in inputs["canonical_paths"])
+    assert not any(path.exists() for path in inputs["dataset_output_paths"])
 
 
 @pytest.mark.parametrize("process_control_exception", [KeyboardInterrupt, SystemExit])
@@ -262,7 +264,11 @@ def test_process_control_exception_escapes_immediately(
 
 
 def test_parallel_sampling_rejects_unpicklable_settings(tmp_path):
-    """Runtime objects which cannot cross to a spawned worker fail up front."""
+    """Runtime objects which cannot cross to a spawned worker fail up front.
+
+    In practice these are ASE calculators, which can only be injected from Python
+    and so never round-trip through a spawned worker's pickled settings.
+    """
     inputs = _generated_inputs(tmp_path)
     inputs["n_processes"] = 2
     inputs["sampling_settings"].mlp_settings.ml_system_kwargs = {
@@ -524,7 +530,7 @@ def test_the_weight_cache_is_warmed_once_per_potential(tmp_path, monkeypatch):
 def test_a_real_pool_samples_every_ligand_in_a_worker(tmp_path, monkeypatch):
     """A spawned pool round-trips every argument and dataset, keeping molecule order."""
     mols = [Molecule.from_smiles(smiles) for smiles in ["C", "CC", "CCC", "CCCC"]]
-    canonical_paths = [tmp_path / f"mol{mol_idx}" for mol_idx in range(len(mols))]
+    dataset_output_paths = [tmp_path / f"mol{mol_idx}" for mol_idx in range(len(mols))]
     # Warming downloads reference weights, which this protocol never uses.
     monkeypatch.setattr(sampling_coordinator, "_warm_ml_potential", MagicMock())
 
@@ -534,7 +540,7 @@ def test_a_real_pool_samples_every_ligand_in_a_worker(tmp_path, monkeypatch):
         device_type="cpu",
         sampling_settings=PooledSamplingSettings(),
         output_paths={},
-        canonical_paths=canonical_paths,
+        dataset_output_paths=dataset_output_paths,
         n_processes=2,
     )
 
@@ -552,4 +558,4 @@ def test_a_real_pool_samples_every_ligand_in_a_worker(tmp_path, monkeypatch):
     assert os.getpid() not in worker_pids
     assert len(worker_pids) <= 2
     assert [dataset["device"][0] for dataset in result] == ["cpu"] * len(mols)
-    assert all(path.exists() for path in canonical_paths)
+    assert all(path.exists() for path in dataset_output_paths)

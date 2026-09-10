@@ -21,7 +21,7 @@ from presto.convert import convert_to_smirnoff
 from .analyse import analyse_workflow
 from .convert import parameterise
 from .data_utils import filter_dataset_outliers
-from .outputs import OutputStage, OutputType, StageKind, WorkflowPathManager
+from .outputs import OutputStage, OutputType, StageKind
 from .sampling_coordinator import sample_ligands
 from .settings import WorkflowSettings
 from .train import _TRAINING_FNS_REGISTRY
@@ -57,11 +57,9 @@ def get_bespoke_force_field(
     ForceField
         The fitted bespoke force field.
     """
-    WorkflowPathManager(
-        output_dir=settings.output_dir,
-        n_iterations=settings.n_iterations,
-    ).require_clean()
     path_manager = settings.get_path_manager()
+    # Refuse to run if generated output from an earlier fit is still present.
+    path_manager.require_clean()
     stage = OutputStage(StageKind.BASE)
     path_manager.mk_stage_dir(stage)
 
@@ -98,7 +96,7 @@ def get_bespoke_force_field(
     # Get a copy of the initial trainable parameters for regularisation
     initial_parameters = trainable_parameters.clone().detach()
 
-    # Persist the parameterised force field before sampling so spawned workers
+    # Persist the initial force field before sampling so spawned workers
     # reconstruct their own OpenFF/OpenMM state from disk.
     initial_stage = OutputStage(StageKind.INITIAL_STATISTICS)
     path_manager.mk_stage_dir(initial_stage)
@@ -119,7 +117,7 @@ def get_bespoke_force_field(
         device_type=settings.device_type,
         sampling_settings=settings.testing_sampling_settings,
         output_paths=test_output_paths,
-        canonical_paths=[
+        dataset_output_paths=[
             path_manager.get_output_path_for_mol(
                 stage, OutputType.ENERGIES_AND_FORCES, i
             )
@@ -195,7 +193,7 @@ def get_bespoke_force_field(
             stage = OutputStage(StageKind.TRAINING, iteration)
             path_manager.mk_stage_dir(stage)
 
-            train_output_paths_sampling = {
+            sampling_output_paths = {
                 output_type: path_manager.get_output_path(stage, output_type)
                 for output_type in settings.training_sampling_settings.output_types
             }
@@ -213,8 +211,8 @@ def get_bespoke_force_field(
                 offxml_path=sampling_offxml_path,
                 device_type=settings.device_type,
                 sampling_settings=settings.training_sampling_settings,
-                output_paths=train_output_paths_sampling,
-                canonical_paths=[
+                output_paths=sampling_output_paths,
+                dataset_output_paths=[
                     path_manager.get_output_path_for_mol(
                         stage, OutputType.ENERGIES_AND_FORCES, i
                     )

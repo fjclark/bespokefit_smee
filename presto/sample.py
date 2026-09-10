@@ -74,9 +74,9 @@ _SAMPLING_FNS_REGISTRY: dict[type[settings.SamplingSettings], SampleFn] = {}
 
 _register_sampling_fn = get_registry_decorator(_SAMPLING_FNS_REGISTRY)
 
-# Set only by a coordinator worker sampling one molecule in isolation, so that its
-# per-molecule output filenames keep the molecule's index in the whole workflow.
 _MOL_INDEX_OFFSET: int = 0
+"""Set only by a coordinator worker sampling one molecule in isolation, so that its
+per-molecule output filenames keep the molecule's index in the whole workflow."""
 
 
 def _copy_mol_and_add_conformers(
