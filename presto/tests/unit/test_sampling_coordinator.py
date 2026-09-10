@@ -65,13 +65,26 @@ class _InlineExecutor:
         return future
 
 
-def test_sampling_devices_round_robin():
+def test_sampling_devices_round_robin(monkeypatch):
     """Workers share the visible CUDA devices round-robin, or all run on the CPU."""
+    monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
     assert sampling_devices("cpu", 3) == ["cpu"] * 3
     with patch("torch.cuda.device_count", return_value=2):
-        assert sampling_devices("cuda", 3) == ["cuda:0", "cuda:1", "cuda:0"]
+        assert sampling_devices("cuda", 3) == ["0", "1", "0"]
     with patch("torch.cuda.device_count", return_value=0):
-        assert sampling_devices("cuda", 2) == ["cuda:0", "cuda:0"]
+        assert sampling_devices("cuda", 2) == ["0", "0"]
+
+
+def test_sampling_devices_names_the_parents_gpus(monkeypatch):
+    """Workers are handed the parent's device ids, not indices into its visible list."""
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "4,5")
+    with patch("torch.cuda.device_count", return_value=2):
+        assert sampling_devices("cuda", 3) == ["4", "5", "4"]
+    # CUDA truncates the visible list at the first entry it rejects, so a worker is
+    # never handed an id past the count torch reports.
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "4,99")
+    with patch("torch.cuda.device_count", return_value=1):
+        assert sampling_devices("cuda", 2) == ["4", "4"]
 
 
 def test_processes_each_precomputed_dataset(monkeypatch):
@@ -210,8 +223,8 @@ def test_parallel_sampling_rejects_unpicklable_settings(tmp_path):
     ("devices", "expected"),
     [
         # A CUDA worker hides every other GPU, so its own is always index 0.
-        (["cuda:0", "cuda:1"], ["cuda:0", "cuda:0"]),
-        (["cuda:0", "cuda:0"], ["cuda:0", "cuda:0"]),
+        (["0", "1"], ["cuda:0", "cuda:0"]),
+        (["0", "0"], ["cuda:0", "cuda:0"]),
         (["cpu", "cpu"], ["cpu", "cpu"]),
     ],
 )
@@ -219,6 +232,8 @@ def test_each_worker_claims_one_device(monkeypatch, devices, expected):
     """Workers claim a device each at start-up, oversubscribed GPUs included."""
     # _init_worker silences the process it runs in, so undo that for the test session.
     monkeypatch.setattr(sampling_coordinator, "logger", MagicMock())
+    # _init_worker narrows this process's own CUDA_VISIBLE_DEVICES; setenv restores it.
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "0,1")
     monkeypatch.setattr(sample, "track", sample.track)
     monkeypatch.setattr(sampling_coordinator, "_WORKER_DEVICE", "cpu")
     queue = multiprocessing.get_context("spawn").Queue()
@@ -285,12 +300,12 @@ def test_worker_logs_are_replayed_by_the_parent(tmp_path, monkeypatch):
 
 
 def test_worker_claims_one_visible_gpu(monkeypatch):
-    """A CUDA worker sees only its own device, remapped through the parent's list."""
-    monkeypatch.setattr(sampling_coordinator, "_PARENT_VISIBLE_DEVICES", "4,5")
+    """A CUDA worker sees only the one device it claimed."""
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "4,5")
     monkeypatch.setattr(sampling_coordinator, "logger", MagicMock())
     monkeypatch.setattr(sampling_coordinator, "_WORKER_DEVICE", "cpu")
     queue = multiprocessing.get_context("spawn").Queue()
-    queue.put("cuda:1")
+    queue.put("5")
 
     sampling_coordinator._init_worker(queue)
 

@@ -16,34 +16,36 @@ from loguru import logger
 from openff.toolkit import ForceField, Molecule
 from rich.progress import track
 
-from . import mlp, sample as sample_module
+from . import mlp
+from . import sample as sample_module
 from .outputs import OutputType
 from .sample import _SAMPLING_FNS_REGISTRY
 from .settings import PreComputedDatasetSettings, SamplingSettings
 from .utils._suppress_output import suppress_unwanted_output
 from .utils.gpu import free_gpu_memory
 
-# The device this worker process claimed at start-up; unused in the parent.
+# The torch device this worker samples on, set once it has claimed a GPU; the
+# parent never reads it.
 _WORKER_DEVICE = "cpu"
 
 # Records logged while sampling one molecule, replayed by the parent in order.
 # Stays empty in the parent, where logging reaches the real sinks directly.
 _WORKER_LOGS: list[tuple[str, str]] = []
 
-# The GPUs visible to the parent, read before _init_worker narrows them to one.
-_PARENT_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES")
-
 # Potentials this process has already pulled weights for; see _warm_ml_potential.
 _WARMED_POTENTIALS: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
 
 
 def sampling_devices(device_type: str, n_workers: int) -> list[str]:
-    """Return round-robin logical devices for the requested workers."""
+    """Return the CUDA_VISIBLE_DEVICES entry each worker should claim, or "cpu"."""
     if device_type != "cuda":
         return ["cpu"] * n_workers
-    # torch.cuda.device_count() already reports only CUDA_VISIBLE_DEVICES.
-    n_devices = max(1, torch.cuda.device_count())
-    return [f"cuda:{i % n_devices}" for i in range(n_workers)]
+    # Identities come from the env var, which may name UUIDs or MIG devices; the count
+    # comes from torch, which reports only the leading entries CUDA actually accepted.
+    visible = os.environ.get("CUDA_VISIBLE_DEVICES")
+    n_gpus = max(1, torch.cuda.device_count())
+    ids = visible.split(",")[:n_gpus] if visible else [str(i) for i in range(n_gpus)]
+    return [ids[i % len(ids)] for i in range(n_workers)]
 
 
 def _capture_log(message: loguru.Message) -> None:
@@ -54,20 +56,20 @@ def _capture_log(message: loguru.Message) -> None:
 def _init_worker(devices: multiprocessing.Queue) -> None:  # type: ignore[type-arg]
     """Claim one device for this worker and buffer its logs for the parent."""
     global _WORKER_DEVICE
-    _WORKER_DEVICE = devices.get()
-    # Hide every other GPU so that OpenMM's DeviceIndex, torch's cuda:0, and any
-    # backend which picks its own device all resolve to the one device claimed here.
-    # Must run before torch initialises CUDA in this process: spawn imports alone
-    # do not, but a future import calling torch.cuda.* would break this.
-    if _WORKER_DEVICE.startswith("cuda:"):
-        # sampling_devices() indexes into the parent's visible list, not the machine.
-        ids = _PARENT_VISIBLE_DEVICES.split(",") if _PARENT_VISIBLE_DEVICES else None
-        claimed = int(_WORKER_DEVICE.split(":")[1])
-        os.environ["CUDA_VISIBLE_DEVICES"] = ids[claimed] if ids else str(claimed)
-        _WORKER_DEVICE = "cuda:0"
+    claimed = devices.get()
+    if claimed != "cpu":
+        # Hide every other GPU so that OpenMM's DeviceIndex, torch's cuda:0, and any
+        # backend which picks its own device all resolve to the claimed one. Must run
+        # before torch initialises CUDA in this process: spawn imports alone do not,
+        # but a future import calling torch.cuda.* would break this.
+        os.environ["CUDA_VISIBLE_DEVICES"] = claimed
+        claimed = "cuda:0"
+    _WORKER_DEVICE = claimed
     suppress_unwanted_output()
     logger.remove()
     logger.add(_capture_log)
+    # Workers share one terminal, so per-molecule bars would interleave; the parent
+    # renders the only progress bar.
     sample_module.track = lambda sequence, *args, **kwargs: sequence  # type: ignore[attr-defined]
 
 
@@ -178,8 +180,8 @@ def _sample_every_ligand(
     """Sample every molecule, reporting all per-ligand failures together."""
     workers = max(1, min(n_processes, len(mols)))
     devices = sampling_devices(device_type, workers)
-    # Each worker claims one device at start-up and keeps it, so oversubscribing a
-    # GPU stays deliberate rather than depending on which worker picks up a molecule.
+    # Each worker claims one GPU at start-up and keeps it, so oversubscribing a GPU
+    # stays deliberate rather than depending on which worker picks up a molecule.
     worker_args = [
         (
             mol.to_json(),
