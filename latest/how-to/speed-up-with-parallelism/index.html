@@ -10,25 +10,31 @@
       
       
       
+        <link rel="canonical" href="https://github.com/cole-group/presto/latest/how-to/speed-up-with-parallelism/">
       
+      
+        <link rel="prev" href="../use-ase-calculator/">
+      
+      
+        <link rel="next" href="../inspect-outputs/">
       
       
         
       
       
-      <link rel="icon" href="/cole-group/presto/latest/assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>presto</title>
+        <title>Speed up fitting with parallelism - presto</title>
       
     
     
-      <link rel="stylesheet" href="/cole-group/presto/latest/assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="/cole-group/presto/latest/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -47,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="/cole-group/presto/latest/assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("/cole-group/presto/latest",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -73,6 +79,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#speed-up-fitting-with-parallelism" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -89,7 +100,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/cole-group/presto/latest/." title="presto" class="md-header__button md-logo" aria-label="presto" data-md-component="logo">
+    <a href="../.." title="presto" class="md-header__button md-logo" aria-label="presto" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -109,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              Speed up fitting with parallelism
             
           </span>
         </div>
@@ -216,7 +227,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/cole-group/presto/latest/." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -237,7 +248,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/cole-group/presto/latest/get-started/" class="md-tabs__link">
+        <a href="../../get-started/" class="md-tabs__link">
           
   
   
@@ -255,11 +266,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="/cole-group/presto/latest/how-to/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -281,7 +294,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/cole-group/presto/latest/concepts/" class="md-tabs__link">
+        <a href="../../concepts/" class="md-tabs__link">
           
   
   
@@ -303,7 +316,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/cole-group/presto/latest/reference/" class="md-tabs__link">
+        <a href="../../reference/" class="md-tabs__link">
           
   
   
@@ -325,7 +338,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/cole-group/presto/latest/development/" class="md-tabs__link">
+        <a href="../../development/" class="md-tabs__link">
           
   
   
@@ -345,7 +358,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/cole-group/presto/latest/citing/" class="md-tabs__link">
+      <a href="../../citing/" class="md-tabs__link">
         
   
   
@@ -364,7 +377,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/cole-group/presto/latest/changelog/" class="md-tabs__link">
+      <a href="../../changelog/" class="md-tabs__link">
         
   
   
@@ -405,7 +418,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/cole-group/presto/latest/." title="presto" class="md-nav__button md-logo" aria-label="presto" data-md-component="logo">
+    <a href="../.." title="presto" class="md-nav__button md-logo" aria-label="presto" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -435,7 +448,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -493,7 +506,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/cole-group/presto/latest/get-started/" class="md-nav__link ">
+            <a href="../../get-started/" class="md-nav__link ">
               
   
   
@@ -537,7 +550,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/get-started/installation/" class="md-nav__link">
+      <a href="../../get-started/installation/" class="md-nav__link">
         
   
   
@@ -565,7 +578,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/get-started/quickstart/" class="md-nav__link">
+      <a href="../../get-started/quickstart/" class="md-nav__link">
         
   
   
@@ -593,7 +606,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/examples/basic-walk-through-cli/" class="md-nav__link">
+      <a href="../../examples/basic-walk-through-cli/" class="md-nav__link">
         
   
   
@@ -621,7 +634,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/examples/basic-walk-through-python-api/" class="md-nav__link">
+      <a href="../../examples/basic-walk-through-python-api/" class="md-nav__link">
         
   
   
@@ -653,6 +666,8 @@
       
   
   
+    
+  
   
   
     
@@ -686,20 +701,23 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/cole-group/presto/latest/how-to/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -717,13 +735,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -743,7 +761,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/fit-single-molecule/" class="md-nav__link">
+      <a href="../fit-single-molecule/" class="md-nav__link">
         
   
   
@@ -771,7 +789,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/fit-congeneric-series/" class="md-nav__link">
+      <a href="../fit-congeneric-series/" class="md-nav__link">
         
   
   
@@ -799,7 +817,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/use-sdf-inputs/" class="md-nav__link">
+      <a href="../use-sdf-inputs/" class="md-nav__link">
         
   
   
@@ -827,7 +845,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/use-custom-charges/" class="md-nav__link">
+      <a href="../use-custom-charges/" class="md-nav__link">
         
   
   
@@ -855,7 +873,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/clean-rerun/" class="md-nav__link">
+      <a href="../clean-rerun/" class="md-nav__link">
         
   
   
@@ -883,7 +901,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/choose-an-mlp/" class="md-nav__link">
+      <a href="../choose-an-mlp/" class="md-nav__link">
         
   
   
@@ -911,7 +929,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/use-ase-calculator/" class="md-nav__link">
+      <a href="../use-ase-calculator/" class="md-nav__link">
         
   
   
@@ -936,10 +954,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/speed-up-with-parallelism/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speed up fitting with parallelism
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -955,6 +1000,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#turn-it-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Turn it on
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choose-a-number-of-processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choose a number of processes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cap-the-threads-per-worker-on-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cap the threads per worker on CPU
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guard-your-python-entry-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guard your Python entry point
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-run-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the run looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-it-wont-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When it won't help
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -967,7 +1098,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/inspect-outputs/" class="md-nav__link">
+      <a href="../inspect-outputs/" class="md-nav__link">
         
   
   
@@ -995,7 +1126,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/how-to/run-from-python/" class="md-nav__link">
+      <a href="../run-from-python/" class="md-nav__link">
         
   
   
@@ -1065,7 +1196,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/cole-group/presto/latest/concepts/" class="md-nav__link ">
+            <a href="../../concepts/" class="md-nav__link ">
               
   
   
@@ -1109,7 +1240,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/concepts/bespoke-smirnoff-primer/" class="md-nav__link">
+      <a href="../../concepts/bespoke-smirnoff-primer/" class="md-nav__link">
         
   
   
@@ -1137,7 +1268,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/concepts/method-overview/" class="md-nav__link">
+      <a href="../../concepts/method-overview/" class="md-nav__link">
         
   
   
@@ -1165,7 +1296,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/concepts/sampling-protocols/" class="md-nav__link">
+      <a href="../../concepts/sampling-protocols/" class="md-nav__link">
         
   
   
@@ -1193,7 +1324,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/concepts/type-generation/" class="md-nav__link">
+      <a href="../../concepts/type-generation/" class="md-nav__link">
         
   
   
@@ -1221,7 +1352,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/concepts/mlps/" class="md-nav__link">
+      <a href="../../concepts/mlps/" class="md-nav__link">
         
   
   
@@ -1249,7 +1380,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/concepts/output-layout/" class="md-nav__link">
+      <a href="../../concepts/output-layout/" class="md-nav__link">
         
   
   
@@ -1313,7 +1444,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/cole-group/presto/latest/reference/" class="md-nav__link ">
+            <a href="../../reference/" class="md-nav__link ">
               
   
   
@@ -1357,7 +1488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/troubleshooting/" class="md-nav__link">
+      <a href="../../reference/troubleshooting/" class="md-nav__link">
         
   
   
@@ -1385,7 +1516,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/glossary/" class="md-nav__link">
+      <a href="../../reference/glossary/" class="md-nav__link">
         
   
   
@@ -1530,7 +1661,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/cole-group/presto/latest/reference/api/" class="md-nav__link ">
+            <a href="../../reference/api/" class="md-nav__link ">
               
   
   
@@ -1574,7 +1705,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/analyse/" class="md-nav__link">
+      <a href="../../reference/api/analyse/" class="md-nav__link">
         
   
   
@@ -1602,7 +1733,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/convert/" class="md-nav__link">
+      <a href="../../reference/api/convert/" class="md-nav__link">
         
   
   
@@ -1630,7 +1761,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/create_types/" class="md-nav__link">
+      <a href="../../reference/api/create_types/" class="md-nav__link">
         
   
   
@@ -1658,7 +1789,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/find_torsions/" class="md-nav__link">
+      <a href="../../reference/api/find_torsions/" class="md-nav__link">
         
   
   
@@ -1686,7 +1817,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/hessian/" class="md-nav__link">
+      <a href="../../reference/api/hessian/" class="md-nav__link">
         
   
   
@@ -1714,7 +1845,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/load_molecules/" class="md-nav__link">
+      <a href="../../reference/api/load_molecules/" class="md-nav__link">
         
   
   
@@ -1742,7 +1873,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/loss/" class="md-nav__link">
+      <a href="../../reference/api/loss/" class="md-nav__link">
         
   
   
@@ -1770,7 +1901,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/metadynamics/" class="md-nav__link">
+      <a href="../../reference/api/metadynamics/" class="md-nav__link">
         
   
   
@@ -1798,7 +1929,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/mlp/" class="md-nav__link">
+      <a href="../../reference/api/mlp/" class="md-nav__link">
         
   
   
@@ -1826,7 +1957,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/models/" class="md-nav__link">
+      <a href="../../reference/api/models/" class="md-nav__link">
         
   
   
@@ -1854,7 +1985,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/msm/" class="md-nav__link">
+      <a href="../../reference/api/msm/" class="md-nav__link">
         
   
   
@@ -1882,7 +2013,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/outputs/" class="md-nav__link">
+      <a href="../../reference/api/outputs/" class="md-nav__link">
         
   
   
@@ -1910,7 +2041,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/sample/" class="md-nav__link">
+      <a href="../../reference/api/sample/" class="md-nav__link">
         
   
   
@@ -1938,7 +2069,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/sampling_coordinator/" class="md-nav__link">
+      <a href="../../reference/api/sampling_coordinator/" class="md-nav__link">
         
   
   
@@ -1966,7 +2097,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/settings/" class="md-nav__link">
+      <a href="../../reference/api/settings/" class="md-nav__link">
         
   
   
@@ -1994,7 +2125,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/train/" class="md-nav__link">
+      <a href="../../reference/api/train/" class="md-nav__link">
         
   
   
@@ -2055,7 +2186,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/cole-group/presto/latest/reference/api/utils/" class="md-nav__link ">
+            <a href="../../reference/api/utils/" class="md-nav__link ">
               
   
   
@@ -2099,7 +2230,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/utils/dicts/" class="md-nav__link">
+      <a href="../../reference/api/utils/dicts/" class="md-nav__link">
         
   
   
@@ -2127,7 +2258,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/utils/gpu/" class="md-nav__link">
+      <a href="../../reference/api/utils/gpu/" class="md-nav__link">
         
   
   
@@ -2155,7 +2286,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/utils/rdkit_toolkit/" class="md-nav__link">
+      <a href="../../reference/api/utils/rdkit_toolkit/" class="md-nav__link">
         
   
   
@@ -2183,7 +2314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/utils/register/" class="md-nav__link">
+      <a href="../../reference/api/utils/register/" class="md-nav__link">
         
   
   
@@ -2211,7 +2342,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/utils/typing/" class="md-nav__link">
+      <a href="../../reference/api/utils/typing/" class="md-nav__link">
         
   
   
@@ -2247,7 +2378,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/workflow/" class="md-nav__link">
+      <a href="../../reference/api/workflow/" class="md-nav__link">
         
   
   
@@ -2275,7 +2406,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/reference/api/writers/" class="md-nav__link">
+      <a href="../../reference/api/writers/" class="md-nav__link">
         
   
   
@@ -2355,7 +2486,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/cole-group/presto/latest/development/" class="md-nav__link ">
+            <a href="../../development/" class="md-nav__link ">
               
   
   
@@ -2399,7 +2530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/development/contributing/" class="md-nav__link">
+      <a href="../../development/contributing/" class="md-nav__link">
         
   
   
@@ -2427,7 +2558,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/development/docs/" class="md-nav__link">
+      <a href="../../development/docs/" class="md-nav__link">
         
   
   
@@ -2455,7 +2586,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/development/releasing/" class="md-nav__link">
+      <a href="../../development/releasing/" class="md-nav__link">
         
   
   
@@ -2490,7 +2621,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/citing/" class="md-nav__link">
+      <a href="../../citing/" class="md-nav__link">
         
   
   
@@ -2517,7 +2648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/cole-group/presto/latest/changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   
@@ -2554,6 +2685,82 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#turn-it-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Turn it on
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choose-a-number-of-processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choose a number of processes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cap-the-threads-per-worker-on-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cap the threads per worker on CPU
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guard-your-python-entry-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guard your Python entry point
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-run-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the run looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-it-wont-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When it won't help
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -2566,8 +2773,68 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+  
+  
+
+
+<h1 id="speed-up-fitting-with-parallelism">Speed up fitting with parallelism<a class="headerlink" href="#speed-up-fitting-with-parallelism" title="Permanent link">#</a></h1>
+<p>Sampling dominates the wall-clock time of a fit. When you're fitting more than one ligand, <code>presto</code> can sample them concurrently in worker processes on a single node, which is usually the cheapest speed-up available.</p>
+<h2 id="turn-it-on">Turn it on<a class="headerlink" href="#turn-it-on" title="Permanent link">#</a></h2>
+<p><code>n_sampling_processes</code> sets the number of worker processes. The default of <code>1</code> keeps the previous serial behaviour.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>presto<span class="w"> </span>train<span class="w"> </span>--param-settings.molecules<span class="w"> </span><span class="s2">&quot;CCO&quot;</span><span class="w"> </span>--n-sampling-processes<span class="w"> </span><span class="m">4</span>
+</span></code></pre></div>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># workflow_settings.yaml</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">n_sampling_processes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+</span></code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">WorkflowSettings</span><span class="p">(</span><span class="n">param_settings</span><span class="o">=...</span><span class="p">,</span> <span class="n">n_sampling_processes</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Only sampling is parallelised: test-data generation and the sampling half of each training iteration. Parameterisation, training, and analysis stay in the parent process, so the speed-up is bounded by how much of your fit is spent sampling.</p>
+<h2 id="choose-a-number-of-processes">Choose a number of processes<a class="headerlink" href="#choose-a-number-of-processes" title="Permanent link">#</a></h2>
+<p>Ligands are the unit of work, so the worker count is capped at the number of input molecules. Asking for more processes than you have ligands does nothing, and a single-molecule fit gains nothing at all. The feature pays off for a <strong><a href="../fit-congeneric-series/">congeneric series</a></strong>.</p>
+<p>Beyond that, the limit is hardware:</p>
+<ul>
+<li><strong>On GPU</strong>, the best case is one worker per GPU. Workers are assigned round-robin across the devices in <code>CUDA_VISIBLE_DEVICES</code> and each keeps the device it claimed for the whole run, so <code>n_sampling_processes</code> equal to the number of visible GPUs gives one ligand per GPU. Every worker loads its own force field and ML model, so GPU memory scales with the worker count.</li>
+<li><strong>Sharing one GPU</strong> between workers requires <a href="https://docs.nvidia.com/deploy/mps/">NVIDIA MPS</a>, which is configured outside <code>presto</code>. Without it, the workers' kernels are time-sliced rather than run concurrently. Even with it, extra workers can be slower once one already saturates the card.</li>
+<li><strong>On CPU</strong>, cap the threads each worker uses (see below). Note that fitting on CPU is very slow regardless of the worker count.</li>
+</ul>
+<h2 id="cap-the-threads-per-worker-on-cpu">Cap the threads per worker on CPU<a class="headerlink" href="#cap-the-threads-per-worker-on-cpu" title="Permanent link">#</a></h2>
+<p>OpenMM and PyTorch each size their thread pools to the whole machine, so without a cap every worker claims all cores and the processes fight over them. Divide the cores you have by the number of workers and export the limits in the launching shell, which the workers inherit:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENMM_CPU_THREADS</span><span class="o">=</span><span class="m">6</span><span class="w"> </span><span class="nv">OMP_NUM_THREADS</span><span class="o">=</span><span class="m">6</span><span class="w">  </span><span class="c1"># 24 cores, 4 workers</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>presto<span class="w"> </span>train-from-yaml<span class="w"> </span>workflow_settings.yaml
+</span></code></pre></div>
+<p>Without this, raising <code>n_sampling_processes</code> on CPU can make the fit slower rather than faster.</p>
+<h2 id="guard-your-python-entry-point">Guard your Python entry point<a class="headerlink" href="#guard-your-python-entry-point" title="Permanent link">#</a></h2>
+<p>Workers are spawned as fresh Python processes which re-import your script, so if you drive <code>presto</code> from Python rather than the CLI, <code>get_bespoke_force_field</code> must sit behind an <code>if __name__ == "__main__":</code> guard, as in <strong><a href="../run-from-python/">Run from Python</a></strong>. Without it every worker re-runs the script, and may spawn workers recursively or fail with a multiprocessing bootstrap error.</p>
+<div class="admonition warning">
+<p class="admonition-title">Notebooks and interactive sessions</p>
+<p>A REPL or notebook has no importable entry point to guard, so <code>n_sampling_processes &gt; 1</code> cannot work there. Use <code>n_sampling_processes=1</code>, a guarded <code>.py</code> script, or the CLI.</p>
+</div>
+<h2 id="what-the-run-looks-like">What the run looks like<a class="headerlink" href="#what-the-run-looks-like" title="Permanent link">#</a></h2>
+<p>Per-ligand progress bars are replaced by a single <code>Ligands sampled</code> bar counting completed ligands, because the workers share one terminal. Log records from the workers are buffered and replayed by the parent once the batch is sampled, in molecule order and prefixed with <code>[molecule N]</code>, so they do not appear live as they would with a single process.</p>
+<p>Every ligand is attempted even if one fails; a single error at the end lists each ligand that could not be sampled.</p>
+<h2 id="when-it-wont-help">When it won't help<a class="headerlink" href="#when-it-wont-help" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>One ligand.</strong> The worker count is capped at the number of molecules.</li>
+<li><strong>A pre-computed dataset.</strong> <code>PreComputedDatasetSettings</code> loads from disk in the parent process, so it ignores <code>n_sampling_processes</code>.</li>
+<li><strong>Settings holding runtime objects.</strong> Settings are sent to the workers by pickle, so a custom ASE calculator passed through <code>ml_system_kwargs</code> cannot be. <code>presto</code> fails with an error asking for <code>n_sampling_processes: 1</code> when it reaches the sampling stage. See <strong><a href="../use-ase-calculator/">Use an ASE calculator</a></strong>.</li>
+<li><strong>Across nodes.</strong> This is <code>multiprocessing</code> on one node, not a split across SLURM jobs. To use several nodes, fit disjoint subsets of your ligands as separate jobs.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -2585,6 +2852,44 @@
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../use-ase-calculator/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Use an ASE calculator">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Use an ASE calculator
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../inspect-outputs/" class="md-footer__link md-footer__link--next" aria-label="Next: Inspect outputs and plots">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Inspect outputs and plots
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
     
   
   <div class="md-footer-meta md-typeset">
@@ -2616,12 +2921,12 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/cole-group/presto/latest", "features": ["announce.dismiss", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.highlight", "search.suggest", "toc.follow"], "search": "/cole-group/presto/latest/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["announce.dismiss", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.highlight", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="/cole-group/presto/latest/assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="/cole-group/presto/latest/javascripts/mathjax.js"></script>
+        <script src="../../javascripts/mathjax.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

@@ -695,6 +695,8 @@
       
         
       
+        
+      
     
     
     
@@ -955,6 +957,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../speed-up-with-parallelism/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speed up fitting with parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../inspect-outputs/" class="md-nav__link">
         
   
@@ -1058,6 +1088,17 @@
     <span class="md-ellipsis">
       
         Override individual fields after load
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parallel-ligand-sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallel ligand sampling
       
     </span>
   </a>
@@ -1579,6 +1620,8 @@
       
         
       
+        
+      
     
     
     
@@ -2004,6 +2047,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/api/sampling_coordinator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    sampling_coordinator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/api/settings/" class="md-nav__link">
         
   
@@ -2089,7 +2160,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_1_17" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_1_18" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2111,14 +2182,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_4_1_17" id="__nav_5_4_1_17_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5_4_1_18" id="__nav_5_4_1_18_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_4_1_17_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_4_1_17">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_4_1_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_1_18">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2624,6 +2695,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#parallel-ligand-sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallel ligand sampling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#reference" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2660,15 +2742,16 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">presto.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParamSettings</span><span class="p">,</span> <span class="n">WorkflowSettings</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">presto.workflow</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_bespoke_force_field</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">WorkflowSettings</span><span class="p">(</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">param_settings</span><span class="o">=</span><span class="n">ParamSettings</span><span class="p">(</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="n">molecule_input_type</span><span class="o">=</span><span class="s2">&quot;smiles&quot;</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="n">molecules</span><span class="o">=</span><span class="s2">&quot;CCO&quot;</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="p">),</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">device_type</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">bespoke_ff</span> <span class="o">=</span> <span class="n">get_bespoke_force_field</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">settings</span> <span class="o">=</span> <span class="n">WorkflowSettings</span><span class="p">(</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="n">param_settings</span><span class="o">=</span><span class="n">ParamSettings</span><span class="p">(</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>            <span class="n">molecule_input_type</span><span class="o">=</span><span class="s2">&quot;smiles&quot;</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>            <span class="n">molecules</span><span class="o">=</span><span class="s2">&quot;CCO&quot;</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="p">),</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="n">device_type</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="p">)</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">bespoke_ff</span> <span class="o">=</span> <span class="n">get_bespoke_force_field</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 </span></code></pre></div>
 <p><code>get_bespoke_force_field</code> returns the final fitted <code>openff.toolkit.ForceField</code> and writes the same output tree the CLI would. Pass <code>write_settings=False</code> to skip writing <code>workflow_settings.yaml</code> (useful when you've loaded settings from a YAML file already).</p>
 <h2 id="override-individual-fields-after-load">Override individual fields after load<a class="headerlink" href="#override-individual-fields-after-load" title="Permanent link">#</a></h2>
@@ -2679,6 +2762,18 @@
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
 </span></code></pre></div>
 <p>This is the recommended way to inject runtime objects (e.g. an ASE calculator) that can't round-trip through YAML — see <strong><a href="../use-ase-calculator/">Use an ASE calculator</a></strong>.</p>
+<h2 id="parallel-ligand-sampling">Parallel ligand sampling<a class="headerlink" href="#parallel-ligand-sampling" title="Permanent link">#</a></h2>
+<p>Set <code>n_sampling_processes</code> on <code>WorkflowSettings</code> (or <code>--n-sampling-processes</code> on <code>presto train</code>) to sample independent ligands concurrently on one node. The default of one process keeps the serial behaviour. For how to size it, and for the CPU thread limits it needs, see <strong><a href="../speed-up-with-parallelism/">Speed up fitting with parallelism</a></strong>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Guard the Python entry point</p>
+<p>Workers are fresh Python processes that re-import your script. With
+<code>n_sampling_processes &gt; 1</code>, call <code>get_bespoke_force_field</code> behind an
+<code>if __name__ == "__main__":</code> guard, as in the example above; without it every
+worker re-runs the script and may spawn workers recursively or fail with a
+multiprocessing bootstrap error. Interactive sessions and notebooks have no
+importable guard, so use <code>n_sampling_processes=1</code> there, a guarded <code>.py</code> script,
+or the <code>presto</code> CLI.</p>
+</div>
 <h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">#</a></h2>
 <ul>
 <li>API reference: <a href="../../reference/api/settings/#presto.settings.WorkflowSettings"><code>WorkflowSettings</code></a>, <a href="../../reference/api/workflow/#presto.workflow.get_bespoke_force_field"><code>get_bespoke_force_field</code></a>.</li>

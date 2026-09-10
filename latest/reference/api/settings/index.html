@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://github.com/cole-group/presto/latest/reference/api/settings/">
       
       
-        <link rel="prev" href="../sample/">
+        <link rel="prev" href="../sampling_coordinator/">
       
       
         <link rel="next" href="../train/">
@@ -693,6 +693,8 @@
       
         
       
+        
+      
     
     
     
@@ -930,6 +932,34 @@
     
   
     Use an ASE calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how-to/speed-up-with-parallelism/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speed up fitting with parallelism
   
 
     
@@ -1506,6 +1536,8 @@
       
         
       
+        
+      
     
     
     
@@ -1911,6 +1943,34 @@
     
   
     sample
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sampling_coordinator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    sampling_coordinator
   
 
     
@@ -4149,6 +4209,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#presto.settings.WorkflowSettings.n_sampling_processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;n_sampling_processes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#presto.settings.WorkflowSettings.param_settings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4435,7 +4506,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_1_17" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_1_18" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -4457,14 +4528,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_4_1_17" id="__nav_5_4_1_17_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5_4_1_18" id="__nav_5_4_1_18_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_4_1_17_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_4_1_17">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_4_1_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_1_18">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -7099,6 +7170,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;memory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#presto.settings.WorkflowSettings.n_sampling_processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;n_sampling_processes
       
     </span>
   </a>
@@ -17169,7 +17251,7 @@ the molecular Hessian — here computed using the reference MLP. See
 </span><span id="__span-0-995"><a id="__codelineno-0-995" name="__codelineno-0-995" href="#__codelineno-0-995"></a><span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Overall settings for the full fitting workflow.&quot;</span><span class="p">,</span>
 </span><span id="__span-0-996"><a id="__codelineno-0-996" name="__codelineno-0-996" href="#__codelineno-0-996"></a><span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-997"><a id="__codelineno-0-997" name="__codelineno-0-997" href="#__codelineno-0-997"></a><span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-998"><a id="__codelineno-0-998" name="__codelineno-0-998" href="#__codelineno-0-998"></a><span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.1.dev1+gae0ebce34&quot;</span><span class="p">,</span>
+</span><span id="__span-0-998"><a id="__codelineno-0-998" name="__codelineno-0-998" href="#__codelineno-0-998"></a><span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.1.dev1+gfbdeea14d&quot;</span><span class="p">,</span>
 </span><span id="__span-0-999"><a id="__codelineno-0-999" name="__codelineno-0-999" href="#__codelineno-0-999"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Version of presto used to create these settings&quot;</span><span class="p">,</span>
 </span><span id="__span-0-1000"><a id="__codelineno-0-1000" name="__codelineno-0-1000" href="#__codelineno-0-1000"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Version&quot;</span><span class="p">,</span>
 </span><span id="__span-0-1001"><a id="__codelineno-0-1001" name="__codelineno-0-1001" href="#__codelineno-0-1001"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
@@ -17194,103 +17276,111 @@ the molecular Hessian — here computed using the reference MLP. See
 </span><span id="__span-0-1020"><a id="__codelineno-0-1020" name="__codelineno-0-1020" href="#__codelineno-0-1020"></a><span class="w">    </span><span class="nt">&quot;n_iterations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-1021"><a id="__codelineno-0-1021" name="__codelineno-0-1021" href="#__codelineno-0-1021"></a><span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
 </span><span id="__span-0-1022"><a id="__codelineno-0-1022" name="__codelineno-0-1022" href="#__codelineno-0-1022"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Number of (sample, train) iterations to run. Iteration 1 samples with the initial force field; later iterations sample with the bespoke force field produced by the previous iteration, which usually improves test loss.&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1023"><a id="__codelineno-0-1023" name="__codelineno-0-1023" href="#__codelineno-0-1023"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;N Iterations&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1024"><a id="__codelineno-0-1024" name="__codelineno-0-1024" href="#__codelineno-0-1024"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span>
-</span><span id="__span-0-1025"><a id="__codelineno-0-1025" name="__codelineno-0-1025" href="#__codelineno-0-1025"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-0-1026"><a id="__codelineno-0-1026" name="__codelineno-0-1026" href="#__codelineno-0-1026"></a><span class="w">    </span><span class="nt">&quot;memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1027"><a id="__codelineno-0-1027" name="__codelineno-0-1027" href="#__codelineno-0-1027"></a><span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-0-1028"><a id="__codelineno-0-1028" name="__codelineno-0-1028" href="#__codelineno-0-1028"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;If True, each iteration appends its newly sampled training data to the data from previous iterations (growing dataset). If False (default), each iteration replaces the previous training dataset. Enabling memory increases peak GPU memory usage with each iteration.&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1029"><a id="__codelineno-0-1029" name="__codelineno-0-1029" href="#__codelineno-0-1029"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Memory&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1030"><a id="__codelineno-0-1030" name="__codelineno-0-1030" href="#__codelineno-0-1030"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span>
-</span><span id="__span-0-1031"><a id="__codelineno-0-1031" name="__codelineno-0-1031" href="#__codelineno-0-1031"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-0-1032"><a id="__codelineno-0-1032" name="__codelineno-0-1032" href="#__codelineno-0-1032"></a><span class="w">    </span><span class="nt">&quot;param_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1033"><a id="__codelineno-0-1033" name="__codelineno-0-1033" href="#__codelineno-0-1033"></a><span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/ParamSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1034"><a id="__codelineno-0-1034" name="__codelineno-0-1034" href="#__codelineno-0-1034"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings controlling the initial parameterisation&quot;</span>
-</span><span id="__span-0-1035"><a id="__codelineno-0-1035" name="__codelineno-0-1035" href="#__codelineno-0-1035"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-0-1036"><a id="__codelineno-0-1036" name="__codelineno-0-1036" href="#__codelineno-0-1036"></a><span class="w">    </span><span class="nt">&quot;training_sampling_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1037"><a id="__codelineno-0-1037" name="__codelineno-0-1037" href="#__codelineno-0-1037"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings for sampling for generating the training data (usually molecular dynamics)&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1038"><a id="__codelineno-0-1038" name="__codelineno-0-1038" href="#__codelineno-0-1038"></a><span class="w">      </span><span class="nt">&quot;discriminator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1039"><a id="__codelineno-0-1039" name="__codelineno-0-1039" href="#__codelineno-0-1039"></a><span class="w">        </span><span class="nt">&quot;mapping&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1040"><a id="__codelineno-0-1040" name="__codelineno-0-1040" href="#__codelineno-0-1040"></a><span class="w">          </span><span class="nt">&quot;ml_md&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MLMDSamplingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1041"><a id="__codelineno-0-1041" name="__codelineno-0-1041" href="#__codelineno-0-1041"></a><span class="w">          </span><span class="nt">&quot;mm_md&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDSamplingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1042"><a id="__codelineno-0-1042" name="__codelineno-0-1042" href="#__codelineno-0-1042"></a><span class="w">          </span><span class="nt">&quot;mm_md_metadynamics&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsSamplingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1043"><a id="__codelineno-0-1043" name="__codelineno-0-1043" href="#__codelineno-0-1043"></a><span class="w">          </span><span class="nt">&quot;mm_md_metadynamics_torsion_minimisation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsTorsionMinimisationSamplingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1044"><a id="__codelineno-0-1044" name="__codelineno-0-1044" href="#__codelineno-0-1044"></a><span class="w">          </span><span class="nt">&quot;pre_computed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/PreComputedDatasetSettings&quot;</span>
-</span><span id="__span-0-1045"><a id="__codelineno-0-1045" name="__codelineno-0-1045" href="#__codelineno-0-1045"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1046"><a id="__codelineno-0-1046" name="__codelineno-0-1046" href="#__codelineno-0-1046"></a><span class="w">        </span><span class="nt">&quot;propertyName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sampling_protocol&quot;</span>
-</span><span id="__span-0-1047"><a id="__codelineno-0-1047" name="__codelineno-0-1047" href="#__codelineno-0-1047"></a><span class="w">      </span><span class="p">},</span>
-</span><span id="__span-0-1048"><a id="__codelineno-0-1048" name="__codelineno-0-1048" href="#__codelineno-0-1048"></a><span class="w">      </span><span class="nt">&quot;oneOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-0-1049"><a id="__codelineno-0-1049" name="__codelineno-0-1049" href="#__codelineno-0-1049"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1050"><a id="__codelineno-0-1050" name="__codelineno-0-1050" href="#__codelineno-0-1050"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDSamplingSettings&quot;</span>
-</span><span id="__span-0-1051"><a id="__codelineno-0-1051" name="__codelineno-0-1051" href="#__codelineno-0-1051"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1052"><a id="__codelineno-0-1052" name="__codelineno-0-1052" href="#__codelineno-0-1052"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1053"><a id="__codelineno-0-1053" name="__codelineno-0-1053" href="#__codelineno-0-1053"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MLMDSamplingSettings&quot;</span>
-</span><span id="__span-0-1054"><a id="__codelineno-0-1054" name="__codelineno-0-1054" href="#__codelineno-0-1054"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1055"><a id="__codelineno-0-1055" name="__codelineno-0-1055" href="#__codelineno-0-1055"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1056"><a id="__codelineno-0-1056" name="__codelineno-0-1056" href="#__codelineno-0-1056"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsSamplingSettings&quot;</span>
-</span><span id="__span-0-1057"><a id="__codelineno-0-1057" name="__codelineno-0-1057" href="#__codelineno-0-1057"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1058"><a id="__codelineno-0-1058" name="__codelineno-0-1058" href="#__codelineno-0-1058"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1059"><a id="__codelineno-0-1059" name="__codelineno-0-1059" href="#__codelineno-0-1059"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsTorsionMinimisationSamplingSettings&quot;</span>
-</span><span id="__span-0-1060"><a id="__codelineno-0-1060" name="__codelineno-0-1060" href="#__codelineno-0-1060"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1061"><a id="__codelineno-0-1061" name="__codelineno-0-1061" href="#__codelineno-0-1061"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1062"><a id="__codelineno-0-1062" name="__codelineno-0-1062" href="#__codelineno-0-1062"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/PreComputedDatasetSettings&quot;</span>
-</span><span id="__span-0-1063"><a id="__codelineno-0-1063" name="__codelineno-0-1063" href="#__codelineno-0-1063"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-0-1064"><a id="__codelineno-0-1064" name="__codelineno-0-1064" href="#__codelineno-0-1064"></a><span class="w">      </span><span class="p">],</span>
-</span><span id="__span-0-1065"><a id="__codelineno-0-1065" name="__codelineno-0-1065" href="#__codelineno-0-1065"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Training Sampling Settings&quot;</span>
-</span><span id="__span-0-1066"><a id="__codelineno-0-1066" name="__codelineno-0-1066" href="#__codelineno-0-1066"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-0-1067"><a id="__codelineno-0-1067" name="__codelineno-0-1067" href="#__codelineno-0-1067"></a><span class="w">    </span><span class="nt">&quot;testing_sampling_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1068"><a id="__codelineno-0-1068" name="__codelineno-0-1068" href="#__codelineno-0-1068"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings for sampling for generating the testing data (usually molecular dynamics)&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1069"><a id="__codelineno-0-1069" name="__codelineno-0-1069" href="#__codelineno-0-1069"></a><span class="w">      </span><span class="nt">&quot;discriminator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1070"><a id="__codelineno-0-1070" name="__codelineno-0-1070" href="#__codelineno-0-1070"></a><span class="w">        </span><span class="nt">&quot;mapping&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1071"><a id="__codelineno-0-1071" name="__codelineno-0-1071" href="#__codelineno-0-1071"></a><span class="w">          </span><span class="nt">&quot;ml_md&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MLMDSamplingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1072"><a id="__codelineno-0-1072" name="__codelineno-0-1072" href="#__codelineno-0-1072"></a><span class="w">          </span><span class="nt">&quot;mm_md&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDSamplingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1073"><a id="__codelineno-0-1073" name="__codelineno-0-1073" href="#__codelineno-0-1073"></a><span class="w">          </span><span class="nt">&quot;mm_md_metadynamics&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsSamplingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1074"><a id="__codelineno-0-1074" name="__codelineno-0-1074" href="#__codelineno-0-1074"></a><span class="w">          </span><span class="nt">&quot;mm_md_metadynamics_torsion_minimisation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsTorsionMinimisationSamplingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1075"><a id="__codelineno-0-1075" name="__codelineno-0-1075" href="#__codelineno-0-1075"></a><span class="w">          </span><span class="nt">&quot;pre_computed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/PreComputedDatasetSettings&quot;</span>
-</span><span id="__span-0-1076"><a id="__codelineno-0-1076" name="__codelineno-0-1076" href="#__codelineno-0-1076"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1077"><a id="__codelineno-0-1077" name="__codelineno-0-1077" href="#__codelineno-0-1077"></a><span class="w">        </span><span class="nt">&quot;propertyName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sampling_protocol&quot;</span>
-</span><span id="__span-0-1078"><a id="__codelineno-0-1078" name="__codelineno-0-1078" href="#__codelineno-0-1078"></a><span class="w">      </span><span class="p">},</span>
-</span><span id="__span-0-1079"><a id="__codelineno-0-1079" name="__codelineno-0-1079" href="#__codelineno-0-1079"></a><span class="w">      </span><span class="nt">&quot;oneOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-0-1080"><a id="__codelineno-0-1080" name="__codelineno-0-1080" href="#__codelineno-0-1080"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1081"><a id="__codelineno-0-1081" name="__codelineno-0-1081" href="#__codelineno-0-1081"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDSamplingSettings&quot;</span>
-</span><span id="__span-0-1082"><a id="__codelineno-0-1082" name="__codelineno-0-1082" href="#__codelineno-0-1082"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1083"><a id="__codelineno-0-1083" name="__codelineno-0-1083" href="#__codelineno-0-1083"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1084"><a id="__codelineno-0-1084" name="__codelineno-0-1084" href="#__codelineno-0-1084"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MLMDSamplingSettings&quot;</span>
-</span><span id="__span-0-1085"><a id="__codelineno-0-1085" name="__codelineno-0-1085" href="#__codelineno-0-1085"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1086"><a id="__codelineno-0-1086" name="__codelineno-0-1086" href="#__codelineno-0-1086"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1087"><a id="__codelineno-0-1087" name="__codelineno-0-1087" href="#__codelineno-0-1087"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsSamplingSettings&quot;</span>
-</span><span id="__span-0-1088"><a id="__codelineno-0-1088" name="__codelineno-0-1088" href="#__codelineno-0-1088"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1089"><a id="__codelineno-0-1089" name="__codelineno-0-1089" href="#__codelineno-0-1089"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1090"><a id="__codelineno-0-1090" name="__codelineno-0-1090" href="#__codelineno-0-1090"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsTorsionMinimisationSamplingSettings&quot;</span>
-</span><span id="__span-0-1091"><a id="__codelineno-0-1091" name="__codelineno-0-1091" href="#__codelineno-0-1091"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1092"><a id="__codelineno-0-1092" name="__codelineno-0-1092" href="#__codelineno-0-1092"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1093"><a id="__codelineno-0-1093" name="__codelineno-0-1093" href="#__codelineno-0-1093"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/PreComputedDatasetSettings&quot;</span>
-</span><span id="__span-0-1094"><a id="__codelineno-0-1094" name="__codelineno-0-1094" href="#__codelineno-0-1094"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-0-1095"><a id="__codelineno-0-1095" name="__codelineno-0-1095" href="#__codelineno-0-1095"></a><span class="w">      </span><span class="p">],</span>
-</span><span id="__span-0-1096"><a id="__codelineno-0-1096" name="__codelineno-0-1096" href="#__codelineno-0-1096"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Testing Sampling Settings&quot;</span>
-</span><span id="__span-0-1097"><a id="__codelineno-0-1097" name="__codelineno-0-1097" href="#__codelineno-0-1097"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-0-1098"><a id="__codelineno-0-1098" name="__codelineno-0-1098" href="#__codelineno-0-1098"></a><span class="w">    </span><span class="nt">&quot;training_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1099"><a id="__codelineno-0-1099" name="__codelineno-0-1099" href="#__codelineno-0-1099"></a><span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/TrainingSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1100"><a id="__codelineno-0-1100" name="__codelineno-0-1100" href="#__codelineno-0-1100"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings for the training process&quot;</span>
-</span><span id="__span-0-1101"><a id="__codelineno-0-1101" name="__codelineno-0-1101" href="#__codelineno-0-1101"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-0-1102"><a id="__codelineno-0-1102" name="__codelineno-0-1102" href="#__codelineno-0-1102"></a><span class="w">    </span><span class="nt">&quot;outlier_filter_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-1103"><a id="__codelineno-0-1103" name="__codelineno-0-1103" href="#__codelineno-0-1103"></a><span class="w">      </span><span class="nt">&quot;anyOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-0-1104"><a id="__codelineno-0-1104" name="__codelineno-0-1104" href="#__codelineno-0-1104"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1105"><a id="__codelineno-0-1105" name="__codelineno-0-1105" href="#__codelineno-0-1105"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/OutlierFilterSettings&quot;</span>
-</span><span id="__span-0-1106"><a id="__codelineno-0-1106" name="__codelineno-0-1106" href="#__codelineno-0-1106"></a><span class="w">        </span><span class="p">},</span>
-</span><span id="__span-0-1107"><a id="__codelineno-0-1107" name="__codelineno-0-1107" href="#__codelineno-0-1107"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-0-1108"><a id="__codelineno-0-1108" name="__codelineno-0-1108" href="#__codelineno-0-1108"></a><span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;null&quot;</span>
-</span><span id="__span-0-1109"><a id="__codelineno-0-1109" name="__codelineno-0-1109" href="#__codelineno-0-1109"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-0-1110"><a id="__codelineno-0-1110" name="__codelineno-0-1110" href="#__codelineno-0-1110"></a><span class="w">      </span><span class="p">],</span>
-</span><span id="__span-0-1111"><a id="__codelineno-0-1111" name="__codelineno-0-1111" href="#__codelineno-0-1111"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings for filtering outliers from training data. Set to None to disable outlier filtering.&quot;</span>
-</span><span id="__span-0-1112"><a id="__codelineno-0-1112" name="__codelineno-0-1112" href="#__codelineno-0-1112"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-0-1113"><a id="__codelineno-0-1113" name="__codelineno-0-1113" href="#__codelineno-0-1113"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-0-1114"><a id="__codelineno-0-1114" name="__codelineno-0-1114" href="#__codelineno-0-1114"></a><span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-0-1115"><a id="__codelineno-0-1115" name="__codelineno-0-1115" href="#__codelineno-0-1115"></a><span class="w">    </span><span class="s2">&quot;param_settings&quot;</span>
-</span><span id="__span-0-1116"><a id="__codelineno-0-1116" name="__codelineno-0-1116" href="#__codelineno-0-1116"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-0-1117"><a id="__codelineno-0-1117" name="__codelineno-0-1117" href="#__codelineno-0-1117"></a><span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;WorkflowSettings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1118"><a id="__codelineno-0-1118" name="__codelineno-0-1118" href="#__codelineno-0-1118"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span>
-</span><span id="__span-0-1119"><a id="__codelineno-0-1119" name="__codelineno-0-1119" href="#__codelineno-0-1119"></a><span class="p">}</span>
+</span><span id="__span-0-1023"><a id="__codelineno-0-1023" name="__codelineno-0-1023" href="#__codelineno-0-1023"></a><span class="w">      </span><span class="nt">&quot;minimum&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-1024"><a id="__codelineno-0-1024" name="__codelineno-0-1024" href="#__codelineno-0-1024"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;N Iterations&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1025"><a id="__codelineno-0-1025" name="__codelineno-0-1025" href="#__codelineno-0-1025"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span>
+</span><span id="__span-0-1026"><a id="__codelineno-0-1026" name="__codelineno-0-1026" href="#__codelineno-0-1026"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-0-1027"><a id="__codelineno-0-1027" name="__codelineno-0-1027" href="#__codelineno-0-1027"></a><span class="w">    </span><span class="nt">&quot;memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1028"><a id="__codelineno-0-1028" name="__codelineno-0-1028" href="#__codelineno-0-1028"></a><span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-0-1029"><a id="__codelineno-0-1029" name="__codelineno-0-1029" href="#__codelineno-0-1029"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;If True, each iteration appends its newly sampled training data to the data from previous iterations (growing dataset). If False (default), each iteration replaces the previous training dataset. Enabling memory increases peak GPU memory usage with each iteration.&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1030"><a id="__codelineno-0-1030" name="__codelineno-0-1030" href="#__codelineno-0-1030"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Memory&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1031"><a id="__codelineno-0-1031" name="__codelineno-0-1031" href="#__codelineno-0-1031"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span>
+</span><span id="__span-0-1032"><a id="__codelineno-0-1032" name="__codelineno-0-1032" href="#__codelineno-0-1032"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-0-1033"><a id="__codelineno-0-1033" name="__codelineno-0-1033" href="#__codelineno-0-1033"></a><span class="w">    </span><span class="nt">&quot;n_sampling_processes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1034"><a id="__codelineno-0-1034" name="__codelineno-0-1034" href="#__codelineno-0-1034"></a><span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-1035"><a id="__codelineno-0-1035" name="__codelineno-0-1035" href="#__codelineno-0-1035"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Number of spawned worker processes used to sample independent ligands.&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1036"><a id="__codelineno-0-1036" name="__codelineno-0-1036" href="#__codelineno-0-1036"></a><span class="w">      </span><span class="nt">&quot;minimum&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-1037"><a id="__codelineno-0-1037" name="__codelineno-0-1037" href="#__codelineno-0-1037"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;N Sampling Processes&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1038"><a id="__codelineno-0-1038" name="__codelineno-0-1038" href="#__codelineno-0-1038"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span>
+</span><span id="__span-0-1039"><a id="__codelineno-0-1039" name="__codelineno-0-1039" href="#__codelineno-0-1039"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-0-1040"><a id="__codelineno-0-1040" name="__codelineno-0-1040" href="#__codelineno-0-1040"></a><span class="w">    </span><span class="nt">&quot;param_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1041"><a id="__codelineno-0-1041" name="__codelineno-0-1041" href="#__codelineno-0-1041"></a><span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/ParamSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1042"><a id="__codelineno-0-1042" name="__codelineno-0-1042" href="#__codelineno-0-1042"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings controlling the initial parameterisation&quot;</span>
+</span><span id="__span-0-1043"><a id="__codelineno-0-1043" name="__codelineno-0-1043" href="#__codelineno-0-1043"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-0-1044"><a id="__codelineno-0-1044" name="__codelineno-0-1044" href="#__codelineno-0-1044"></a><span class="w">    </span><span class="nt">&quot;training_sampling_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1045"><a id="__codelineno-0-1045" name="__codelineno-0-1045" href="#__codelineno-0-1045"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings for sampling for generating the training data (usually molecular dynamics)&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1046"><a id="__codelineno-0-1046" name="__codelineno-0-1046" href="#__codelineno-0-1046"></a><span class="w">      </span><span class="nt">&quot;discriminator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1047"><a id="__codelineno-0-1047" name="__codelineno-0-1047" href="#__codelineno-0-1047"></a><span class="w">        </span><span class="nt">&quot;mapping&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1048"><a id="__codelineno-0-1048" name="__codelineno-0-1048" href="#__codelineno-0-1048"></a><span class="w">          </span><span class="nt">&quot;ml_md&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MLMDSamplingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1049"><a id="__codelineno-0-1049" name="__codelineno-0-1049" href="#__codelineno-0-1049"></a><span class="w">          </span><span class="nt">&quot;mm_md&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDSamplingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1050"><a id="__codelineno-0-1050" name="__codelineno-0-1050" href="#__codelineno-0-1050"></a><span class="w">          </span><span class="nt">&quot;mm_md_metadynamics&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsSamplingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1051"><a id="__codelineno-0-1051" name="__codelineno-0-1051" href="#__codelineno-0-1051"></a><span class="w">          </span><span class="nt">&quot;mm_md_metadynamics_torsion_minimisation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsTorsionMinimisationSamplingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1052"><a id="__codelineno-0-1052" name="__codelineno-0-1052" href="#__codelineno-0-1052"></a><span class="w">          </span><span class="nt">&quot;pre_computed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/PreComputedDatasetSettings&quot;</span>
+</span><span id="__span-0-1053"><a id="__codelineno-0-1053" name="__codelineno-0-1053" href="#__codelineno-0-1053"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1054"><a id="__codelineno-0-1054" name="__codelineno-0-1054" href="#__codelineno-0-1054"></a><span class="w">        </span><span class="nt">&quot;propertyName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sampling_protocol&quot;</span>
+</span><span id="__span-0-1055"><a id="__codelineno-0-1055" name="__codelineno-0-1055" href="#__codelineno-0-1055"></a><span class="w">      </span><span class="p">},</span>
+</span><span id="__span-0-1056"><a id="__codelineno-0-1056" name="__codelineno-0-1056" href="#__codelineno-0-1056"></a><span class="w">      </span><span class="nt">&quot;oneOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-0-1057"><a id="__codelineno-0-1057" name="__codelineno-0-1057" href="#__codelineno-0-1057"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1058"><a id="__codelineno-0-1058" name="__codelineno-0-1058" href="#__codelineno-0-1058"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDSamplingSettings&quot;</span>
+</span><span id="__span-0-1059"><a id="__codelineno-0-1059" name="__codelineno-0-1059" href="#__codelineno-0-1059"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1060"><a id="__codelineno-0-1060" name="__codelineno-0-1060" href="#__codelineno-0-1060"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1061"><a id="__codelineno-0-1061" name="__codelineno-0-1061" href="#__codelineno-0-1061"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MLMDSamplingSettings&quot;</span>
+</span><span id="__span-0-1062"><a id="__codelineno-0-1062" name="__codelineno-0-1062" href="#__codelineno-0-1062"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1063"><a id="__codelineno-0-1063" name="__codelineno-0-1063" href="#__codelineno-0-1063"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1064"><a id="__codelineno-0-1064" name="__codelineno-0-1064" href="#__codelineno-0-1064"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsSamplingSettings&quot;</span>
+</span><span id="__span-0-1065"><a id="__codelineno-0-1065" name="__codelineno-0-1065" href="#__codelineno-0-1065"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1066"><a id="__codelineno-0-1066" name="__codelineno-0-1066" href="#__codelineno-0-1066"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1067"><a id="__codelineno-0-1067" name="__codelineno-0-1067" href="#__codelineno-0-1067"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsTorsionMinimisationSamplingSettings&quot;</span>
+</span><span id="__span-0-1068"><a id="__codelineno-0-1068" name="__codelineno-0-1068" href="#__codelineno-0-1068"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1069"><a id="__codelineno-0-1069" name="__codelineno-0-1069" href="#__codelineno-0-1069"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1070"><a id="__codelineno-0-1070" name="__codelineno-0-1070" href="#__codelineno-0-1070"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/PreComputedDatasetSettings&quot;</span>
+</span><span id="__span-0-1071"><a id="__codelineno-0-1071" name="__codelineno-0-1071" href="#__codelineno-0-1071"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-0-1072"><a id="__codelineno-0-1072" name="__codelineno-0-1072" href="#__codelineno-0-1072"></a><span class="w">      </span><span class="p">],</span>
+</span><span id="__span-0-1073"><a id="__codelineno-0-1073" name="__codelineno-0-1073" href="#__codelineno-0-1073"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Training Sampling Settings&quot;</span>
+</span><span id="__span-0-1074"><a id="__codelineno-0-1074" name="__codelineno-0-1074" href="#__codelineno-0-1074"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-0-1075"><a id="__codelineno-0-1075" name="__codelineno-0-1075" href="#__codelineno-0-1075"></a><span class="w">    </span><span class="nt">&quot;testing_sampling_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1076"><a id="__codelineno-0-1076" name="__codelineno-0-1076" href="#__codelineno-0-1076"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings for sampling for generating the testing data (usually molecular dynamics)&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1077"><a id="__codelineno-0-1077" name="__codelineno-0-1077" href="#__codelineno-0-1077"></a><span class="w">      </span><span class="nt">&quot;discriminator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1078"><a id="__codelineno-0-1078" name="__codelineno-0-1078" href="#__codelineno-0-1078"></a><span class="w">        </span><span class="nt">&quot;mapping&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1079"><a id="__codelineno-0-1079" name="__codelineno-0-1079" href="#__codelineno-0-1079"></a><span class="w">          </span><span class="nt">&quot;ml_md&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MLMDSamplingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1080"><a id="__codelineno-0-1080" name="__codelineno-0-1080" href="#__codelineno-0-1080"></a><span class="w">          </span><span class="nt">&quot;mm_md&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDSamplingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1081"><a id="__codelineno-0-1081" name="__codelineno-0-1081" href="#__codelineno-0-1081"></a><span class="w">          </span><span class="nt">&quot;mm_md_metadynamics&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsSamplingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1082"><a id="__codelineno-0-1082" name="__codelineno-0-1082" href="#__codelineno-0-1082"></a><span class="w">          </span><span class="nt">&quot;mm_md_metadynamics_torsion_minimisation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsTorsionMinimisationSamplingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1083"><a id="__codelineno-0-1083" name="__codelineno-0-1083" href="#__codelineno-0-1083"></a><span class="w">          </span><span class="nt">&quot;pre_computed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/PreComputedDatasetSettings&quot;</span>
+</span><span id="__span-0-1084"><a id="__codelineno-0-1084" name="__codelineno-0-1084" href="#__codelineno-0-1084"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1085"><a id="__codelineno-0-1085" name="__codelineno-0-1085" href="#__codelineno-0-1085"></a><span class="w">        </span><span class="nt">&quot;propertyName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sampling_protocol&quot;</span>
+</span><span id="__span-0-1086"><a id="__codelineno-0-1086" name="__codelineno-0-1086" href="#__codelineno-0-1086"></a><span class="w">      </span><span class="p">},</span>
+</span><span id="__span-0-1087"><a id="__codelineno-0-1087" name="__codelineno-0-1087" href="#__codelineno-0-1087"></a><span class="w">      </span><span class="nt">&quot;oneOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-0-1088"><a id="__codelineno-0-1088" name="__codelineno-0-1088" href="#__codelineno-0-1088"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1089"><a id="__codelineno-0-1089" name="__codelineno-0-1089" href="#__codelineno-0-1089"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDSamplingSettings&quot;</span>
+</span><span id="__span-0-1090"><a id="__codelineno-0-1090" name="__codelineno-0-1090" href="#__codelineno-0-1090"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1091"><a id="__codelineno-0-1091" name="__codelineno-0-1091" href="#__codelineno-0-1091"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1092"><a id="__codelineno-0-1092" name="__codelineno-0-1092" href="#__codelineno-0-1092"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MLMDSamplingSettings&quot;</span>
+</span><span id="__span-0-1093"><a id="__codelineno-0-1093" name="__codelineno-0-1093" href="#__codelineno-0-1093"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1094"><a id="__codelineno-0-1094" name="__codelineno-0-1094" href="#__codelineno-0-1094"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1095"><a id="__codelineno-0-1095" name="__codelineno-0-1095" href="#__codelineno-0-1095"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsSamplingSettings&quot;</span>
+</span><span id="__span-0-1096"><a id="__codelineno-0-1096" name="__codelineno-0-1096" href="#__codelineno-0-1096"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1097"><a id="__codelineno-0-1097" name="__codelineno-0-1097" href="#__codelineno-0-1097"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1098"><a id="__codelineno-0-1098" name="__codelineno-0-1098" href="#__codelineno-0-1098"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/MMMDMetadynamicsTorsionMinimisationSamplingSettings&quot;</span>
+</span><span id="__span-0-1099"><a id="__codelineno-0-1099" name="__codelineno-0-1099" href="#__codelineno-0-1099"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1100"><a id="__codelineno-0-1100" name="__codelineno-0-1100" href="#__codelineno-0-1100"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1101"><a id="__codelineno-0-1101" name="__codelineno-0-1101" href="#__codelineno-0-1101"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/PreComputedDatasetSettings&quot;</span>
+</span><span id="__span-0-1102"><a id="__codelineno-0-1102" name="__codelineno-0-1102" href="#__codelineno-0-1102"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-0-1103"><a id="__codelineno-0-1103" name="__codelineno-0-1103" href="#__codelineno-0-1103"></a><span class="w">      </span><span class="p">],</span>
+</span><span id="__span-0-1104"><a id="__codelineno-0-1104" name="__codelineno-0-1104" href="#__codelineno-0-1104"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Testing Sampling Settings&quot;</span>
+</span><span id="__span-0-1105"><a id="__codelineno-0-1105" name="__codelineno-0-1105" href="#__codelineno-0-1105"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-0-1106"><a id="__codelineno-0-1106" name="__codelineno-0-1106" href="#__codelineno-0-1106"></a><span class="w">    </span><span class="nt">&quot;training_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1107"><a id="__codelineno-0-1107" name="__codelineno-0-1107" href="#__codelineno-0-1107"></a><span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/TrainingSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1108"><a id="__codelineno-0-1108" name="__codelineno-0-1108" href="#__codelineno-0-1108"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings for the training process&quot;</span>
+</span><span id="__span-0-1109"><a id="__codelineno-0-1109" name="__codelineno-0-1109" href="#__codelineno-0-1109"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-0-1110"><a id="__codelineno-0-1110" name="__codelineno-0-1110" href="#__codelineno-0-1110"></a><span class="w">    </span><span class="nt">&quot;outlier_filter_settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-1111"><a id="__codelineno-0-1111" name="__codelineno-0-1111" href="#__codelineno-0-1111"></a><span class="w">      </span><span class="nt">&quot;anyOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-0-1112"><a id="__codelineno-0-1112" name="__codelineno-0-1112" href="#__codelineno-0-1112"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1113"><a id="__codelineno-0-1113" name="__codelineno-0-1113" href="#__codelineno-0-1113"></a><span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/$defs/OutlierFilterSettings&quot;</span>
+</span><span id="__span-0-1114"><a id="__codelineno-0-1114" name="__codelineno-0-1114" href="#__codelineno-0-1114"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-1115"><a id="__codelineno-0-1115" name="__codelineno-0-1115" href="#__codelineno-0-1115"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-0-1116"><a id="__codelineno-0-1116" name="__codelineno-0-1116" href="#__codelineno-0-1116"></a><span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;null&quot;</span>
+</span><span id="__span-0-1117"><a id="__codelineno-0-1117" name="__codelineno-0-1117" href="#__codelineno-0-1117"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-0-1118"><a id="__codelineno-0-1118" name="__codelineno-0-1118" href="#__codelineno-0-1118"></a><span class="w">      </span><span class="p">],</span>
+</span><span id="__span-0-1119"><a id="__codelineno-0-1119" name="__codelineno-0-1119" href="#__codelineno-0-1119"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Settings for filtering outliers from training data. Set to None to disable outlier filtering.&quot;</span>
+</span><span id="__span-0-1120"><a id="__codelineno-0-1120" name="__codelineno-0-1120" href="#__codelineno-0-1120"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-1121"><a id="__codelineno-0-1121" name="__codelineno-0-1121" href="#__codelineno-0-1121"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-0-1122"><a id="__codelineno-0-1122" name="__codelineno-0-1122" href="#__codelineno-0-1122"></a><span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-0-1123"><a id="__codelineno-0-1123" name="__codelineno-0-1123" href="#__codelineno-0-1123"></a><span class="w">    </span><span class="s2">&quot;param_settings&quot;</span>
+</span><span id="__span-0-1124"><a id="__codelineno-0-1124" name="__codelineno-0-1124" href="#__codelineno-0-1124"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-0-1125"><a id="__codelineno-0-1125" name="__codelineno-0-1125" href="#__codelineno-0-1125"></a><span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;WorkflowSettings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1126"><a id="__codelineno-0-1126" name="__codelineno-0-1126" href="#__codelineno-0-1126"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span>
+</span><span id="__span-0-1127"><a id="__codelineno-0-1127" name="__codelineno-0-1127" href="#__codelineno-0-1127"></a><span class="p">}</span>
 </span></code></pre></div>
       </details>
     
@@ -17341,6 +17431,15 @@ the molecular Hessian — here computed using the reference MLP. See
       &lt;small class=&quot;doc doc-label doc-label-pydantic-field&quot;&gt;&lt;code&gt;pydantic-field&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;presto.settings.WorkflowSettings.memory&lt;/code&gt;)" href="#presto.settings.WorkflowSettings.memory">memory</a></code>
                 (<code><span title="bool">bool</span></code>)
+            </li>
+            <li>
+              <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;n_sampling_processes&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-pydantic-field&quot;&gt;&lt;code&gt;pydantic-field&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;presto.settings.WorkflowSettings.n_sampling_processes&lt;/code&gt;)" href="#presto.settings.WorkflowSettings.n_sampling_processes">n_sampling_processes</a></code>
+                (<code><span title="int">int</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;param_settings&lt;/span&gt;
@@ -17596,6 +17695,30 @@ the molecular Hessian — here computed using the reference MLP. See
 
 
 
+<h3 id="presto.settings.WorkflowSettings.n_sampling_processes" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">n_sampling_processes</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+<a href="#presto.settings.WorkflowSettings.n_sampling_processes" class="headerlink" title="Permanent link">#</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_sampling_processes</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">1</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Number of spawned worker processes used to sample independent ligands.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="presto.settings.WorkflowSettings.param_settings" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">param_settings</span>
 
@@ -17811,15 +17934,7 @@ the molecular Hessian — here computed using the reference MLP. See
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>presto/settings.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-963">963</a></span>
-<span class="normal"><a href="#__codelineno-0-964">964</a></span>
-<span class="normal"><a href="#__codelineno-0-965">965</a></span>
-<span class="normal"><a href="#__codelineno-0-966">966</a></span>
-<span class="normal"><a href="#__codelineno-0-967">967</a></span>
-<span class="normal"><a href="#__codelineno-0-968">968</a></span>
-<span class="normal"><a href="#__codelineno-0-969">969</a></span>
-<span class="normal"><a href="#__codelineno-0-970">970</a></span>
-<span class="normal"><a href="#__codelineno-0-971">971</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-971">971</a></span>
 <span class="normal"><a href="#__codelineno-0-972">972</a></span>
 <span class="normal"><a href="#__codelineno-0-973">973</a></span>
 <span class="normal"><a href="#__codelineno-0-974">974</a></span>
@@ -17828,24 +17943,32 @@ the molecular Hessian — here computed using the reference MLP. See
 <span class="normal"><a href="#__codelineno-0-977">977</a></span>
 <span class="normal"><a href="#__codelineno-0-978">978</a></span>
 <span class="normal"><a href="#__codelineno-0-979">979</a></span>
-<span class="normal"><a href="#__codelineno-0-980">980</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-963"><a id="__codelineno-0-963" name="__codelineno-0-963"></a><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">)</span>
-</span><span id="__span-0-964"><a id="__codelineno-0-964" name="__codelineno-0-964"></a><span class="nd">@classmethod</span>
-</span><span id="__span-0-965"><a id="__codelineno-0-965" name="__codelineno-0-965"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_version</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="__span-0-966"><a id="__codelineno-0-966" name="__codelineno-0-966"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate version format and check compatibility.&quot;&quot;&quot;</span>
-</span><span id="__span-0-967"><a id="__codelineno-0-967" name="__codelineno-0-967"></a>    <span class="k">try</span><span class="p">:</span>
-</span><span id="__span-0-968"><a id="__codelineno-0-968" name="__codelineno-0-968"></a>        <span class="n">parsed</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-</span><span id="__span-0-969"><a id="__codelineno-0-969" name="__codelineno-0-969"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-</span><span id="__span-0-970"><a id="__codelineno-0-970" name="__codelineno-0-970"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid version format: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-</span><span id="__span-0-971"><a id="__codelineno-0-971" name="__codelineno-0-971"></a>
-</span><span id="__span-0-972"><a id="__codelineno-0-972" name="__codelineno-0-972"></a>    <span class="n">actual_version</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="n">__version__</span><span class="p">)</span>
-</span><span id="__span-0-973"><a id="__codelineno-0-973" name="__codelineno-0-973"></a>
-</span><span id="__span-0-974"><a id="__codelineno-0-974" name="__codelineno-0-974"></a>    <span class="c1"># Warn the user if major or minor versions do not match</span>
-</span><span id="__span-0-975"><a id="__codelineno-0-975" name="__codelineno-0-975"></a>    <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">major</span> <span class="o">!=</span> <span class="n">actual_version</span><span class="o">.</span><span class="n">major</span> <span class="ow">or</span> <span class="n">parsed</span><span class="o">.</span><span class="n">minor</span> <span class="o">!=</span> <span class="n">actual_version</span><span class="o">.</span><span class="n">minor</span><span class="p">:</span>
-</span><span id="__span-0-976"><a id="__codelineno-0-976" name="__codelineno-0-976"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-</span><span id="__span-0-977"><a id="__codelineno-0-977" name="__codelineno-0-977"></a>            <span class="sa">f</span><span class="s2">&quot;Version mismatch: settings version </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> may not be compatible with current version </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">.&quot;</span>
-</span><span id="__span-0-978"><a id="__codelineno-0-978" name="__codelineno-0-978"></a>        <span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-980">980</a></span>
+<span class="normal"><a href="#__codelineno-0-981">981</a></span>
+<span class="normal"><a href="#__codelineno-0-982">982</a></span>
+<span class="normal"><a href="#__codelineno-0-983">983</a></span>
+<span class="normal"><a href="#__codelineno-0-984">984</a></span>
+<span class="normal"><a href="#__codelineno-0-985">985</a></span>
+<span class="normal"><a href="#__codelineno-0-986">986</a></span>
+<span class="normal"><a href="#__codelineno-0-987">987</a></span>
+<span class="normal"><a href="#__codelineno-0-988">988</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-971"><a id="__codelineno-0-971" name="__codelineno-0-971"></a><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">)</span>
+</span><span id="__span-0-972"><a id="__codelineno-0-972" name="__codelineno-0-972"></a><span class="nd">@classmethod</span>
+</span><span id="__span-0-973"><a id="__codelineno-0-973" name="__codelineno-0-973"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_version</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-0-974"><a id="__codelineno-0-974" name="__codelineno-0-974"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate version format and check compatibility.&quot;&quot;&quot;</span>
+</span><span id="__span-0-975"><a id="__codelineno-0-975" name="__codelineno-0-975"></a>    <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-0-976"><a id="__codelineno-0-976" name="__codelineno-0-976"></a>        <span class="n">parsed</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span id="__span-0-977"><a id="__codelineno-0-977" name="__codelineno-0-977"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-0-978"><a id="__codelineno-0-978" name="__codelineno-0-978"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid version format: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 </span><span id="__span-0-979"><a id="__codelineno-0-979" name="__codelineno-0-979"></a>
-</span><span id="__span-0-980"><a id="__codelineno-0-980" name="__codelineno-0-980"></a>    <span class="k">return</span> <span class="n">value</span>
+</span><span id="__span-0-980"><a id="__codelineno-0-980" name="__codelineno-0-980"></a>    <span class="n">actual_version</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="n">__version__</span><span class="p">)</span>
+</span><span id="__span-0-981"><a id="__codelineno-0-981" name="__codelineno-0-981"></a>
+</span><span id="__span-0-982"><a id="__codelineno-0-982" name="__codelineno-0-982"></a>    <span class="c1"># Warn the user if major or minor versions do not match</span>
+</span><span id="__span-0-983"><a id="__codelineno-0-983" name="__codelineno-0-983"></a>    <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">major</span> <span class="o">!=</span> <span class="n">actual_version</span><span class="o">.</span><span class="n">major</span> <span class="ow">or</span> <span class="n">parsed</span><span class="o">.</span><span class="n">minor</span> <span class="o">!=</span> <span class="n">actual_version</span><span class="o">.</span><span class="n">minor</span><span class="p">:</span>
+</span><span id="__span-0-984"><a id="__codelineno-0-984" name="__codelineno-0-984"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+</span><span id="__span-0-985"><a id="__codelineno-0-985" name="__codelineno-0-985"></a>            <span class="sa">f</span><span class="s2">&quot;Version mismatch: settings version </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> may not be compatible with current version </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">.&quot;</span>
+</span><span id="__span-0-986"><a id="__codelineno-0-986" name="__codelineno-0-986"></a>        <span class="p">)</span>
+</span><span id="__span-0-987"><a id="__codelineno-0-987" name="__codelineno-0-987"></a>
+</span><span id="__span-0-988"><a id="__codelineno-0-988" name="__codelineno-0-988"></a>    <span class="k">return</span> <span class="n">value</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -17874,35 +17997,35 @@ the molecular Hessian — here computed using the reference MLP. See
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>presto/settings.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-982">982</a></span>
-<span class="normal"><a href="#__codelineno-0-983">983</a></span>
-<span class="normal"><a href="#__codelineno-0-984">984</a></span>
-<span class="normal"><a href="#__codelineno-0-985">985</a></span>
-<span class="normal"><a href="#__codelineno-0-986">986</a></span>
-<span class="normal"><a href="#__codelineno-0-987">987</a></span>
-<span class="normal"><a href="#__codelineno-0-988">988</a></span>
-<span class="normal"><a href="#__codelineno-0-989">989</a></span>
-<span class="normal"><a href="#__codelineno-0-990">990</a></span>
-<span class="normal"><a href="#__codelineno-0-991">991</a></span>
-<span class="normal"><a href="#__codelineno-0-992">992</a></span>
-<span class="normal"><a href="#__codelineno-0-993">993</a></span>
-<span class="normal"><a href="#__codelineno-0-994">994</a></span>
-<span class="normal"><a href="#__codelineno-0-995">995</a></span>
-<span class="normal"><a href="#__codelineno-0-996">996</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-982"><a id="__codelineno-0-982" name="__codelineno-0-982"></a><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;device_type&quot;</span><span class="p">)</span>
-</span><span id="__span-0-983"><a id="__codelineno-0-983" name="__codelineno-0-983"></a><span class="nd">@classmethod</span>
-</span><span id="__span-0-984"><a id="__codelineno-0-984" name="__codelineno-0-984"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_device_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TorchDevice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TorchDevice</span><span class="p">:</span>
-</span><span id="__span-0-985"><a id="__codelineno-0-985" name="__codelineno-0-985"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that the requested device type is available.&quot;&quot;&quot;</span>
-</span><span id="__span-0-986"><a id="__codelineno-0-986" name="__codelineno-0-986"></a>    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;cuda&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-</span><span id="__span-0-987"><a id="__codelineno-0-987" name="__codelineno-0-987"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;CUDA is not available on this system.&quot;</span><span class="p">)</span>
-</span><span id="__span-0-988"><a id="__codelineno-0-988" name="__codelineno-0-988"></a>
-</span><span id="__span-0-989"><a id="__codelineno-0-989" name="__codelineno-0-989"></a>    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
-</span><span id="__span-0-990"><a id="__codelineno-0-990" name="__codelineno-0-990"></a>        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-</span><span id="__span-0-991"><a id="__codelineno-0-991" name="__codelineno-0-991"></a>            <span class="s2">&quot;Using CPU for training and sampling. This may be slow. Consider using CUDA if available.&quot;</span><span class="p">,</span>
-</span><span id="__span-0-992"><a id="__codelineno-0-992" name="__codelineno-0-992"></a>            <span class="ne">UserWarning</span><span class="p">,</span>
-</span><span id="__span-0-993"><a id="__codelineno-0-993" name="__codelineno-0-993"></a>            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-</span><span id="__span-0-994"><a id="__codelineno-0-994" name="__codelineno-0-994"></a>        <span class="p">)</span>
-</span><span id="__span-0-995"><a id="__codelineno-0-995" name="__codelineno-0-995"></a>
-</span><span id="__span-0-996"><a id="__codelineno-0-996" name="__codelineno-0-996"></a>    <span class="k">return</span> <span class="n">value</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-990"> 990</a></span>
+<span class="normal"><a href="#__codelineno-0-991"> 991</a></span>
+<span class="normal"><a href="#__codelineno-0-992"> 992</a></span>
+<span class="normal"><a href="#__codelineno-0-993"> 993</a></span>
+<span class="normal"><a href="#__codelineno-0-994"> 994</a></span>
+<span class="normal"><a href="#__codelineno-0-995"> 995</a></span>
+<span class="normal"><a href="#__codelineno-0-996"> 996</a></span>
+<span class="normal"><a href="#__codelineno-0-997"> 997</a></span>
+<span class="normal"><a href="#__codelineno-0-998"> 998</a></span>
+<span class="normal"><a href="#__codelineno-0-999"> 999</a></span>
+<span class="normal"><a href="#__codelineno-0-1000">1000</a></span>
+<span class="normal"><a href="#__codelineno-0-1001">1001</a></span>
+<span class="normal"><a href="#__codelineno-0-1002">1002</a></span>
+<span class="normal"><a href="#__codelineno-0-1003">1003</a></span>
+<span class="normal"><a href="#__codelineno-0-1004">1004</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-990"><a id="__codelineno-0-990" name="__codelineno-0-990"></a><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;device_type&quot;</span><span class="p">)</span>
+</span><span id="__span-0-991"><a id="__codelineno-0-991" name="__codelineno-0-991"></a><span class="nd">@classmethod</span>
+</span><span id="__span-0-992"><a id="__codelineno-0-992" name="__codelineno-0-992"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_device_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TorchDevice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TorchDevice</span><span class="p">:</span>
+</span><span id="__span-0-993"><a id="__codelineno-0-993" name="__codelineno-0-993"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that the requested device type is available.&quot;&quot;&quot;</span>
+</span><span id="__span-0-994"><a id="__codelineno-0-994" name="__codelineno-0-994"></a>    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;cuda&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+</span><span id="__span-0-995"><a id="__codelineno-0-995" name="__codelineno-0-995"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;CUDA is not available on this system.&quot;</span><span class="p">)</span>
+</span><span id="__span-0-996"><a id="__codelineno-0-996" name="__codelineno-0-996"></a>
+</span><span id="__span-0-997"><a id="__codelineno-0-997" name="__codelineno-0-997"></a>    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+</span><span id="__span-0-998"><a id="__codelineno-0-998" name="__codelineno-0-998"></a>        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+</span><span id="__span-0-999"><a id="__codelineno-0-999" name="__codelineno-0-999"></a>            <span class="s2">&quot;Using CPU for training and sampling. This may be slow. Consider using CUDA if available.&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1000"><a id="__codelineno-0-1000" name="__codelineno-0-1000"></a>            <span class="ne">UserWarning</span><span class="p">,</span>
+</span><span id="__span-0-1001"><a id="__codelineno-0-1001" name="__codelineno-0-1001"></a>            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-0-1002"><a id="__codelineno-0-1002" name="__codelineno-0-1002"></a>        <span class="p">)</span>
+</span><span id="__span-0-1003"><a id="__codelineno-0-1003" name="__codelineno-0-1003"></a>
+</span><span id="__span-0-1004"><a id="__codelineno-0-1004" name="__codelineno-0-1004"></a>    <span class="k">return</span> <span class="n">value</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -17931,15 +18054,7 @@ the molecular Hessian — here computed using the reference MLP. See
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>presto/settings.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1000">1000</a></span>
-<span class="normal"><a href="#__codelineno-0-1001">1001</a></span>
-<span class="normal"><a href="#__codelineno-0-1002">1002</a></span>
-<span class="normal"><a href="#__codelineno-0-1003">1003</a></span>
-<span class="normal"><a href="#__codelineno-0-1004">1004</a></span>
-<span class="normal"><a href="#__codelineno-0-1005">1005</a></span>
-<span class="normal"><a href="#__codelineno-0-1006">1006</a></span>
-<span class="normal"><a href="#__codelineno-0-1007">1007</a></span>
-<span class="normal"><a href="#__codelineno-0-1008">1008</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1008">1008</a></span>
 <span class="normal"><a href="#__codelineno-0-1009">1009</a></span>
 <span class="normal"><a href="#__codelineno-0-1010">1010</a></span>
 <span class="normal"><a href="#__codelineno-0-1011">1011</a></span>
@@ -17949,25 +18064,33 @@ the molecular Hessian — here computed using the reference MLP. See
 <span class="normal"><a href="#__codelineno-0-1015">1015</a></span>
 <span class="normal"><a href="#__codelineno-0-1016">1016</a></span>
 <span class="normal"><a href="#__codelineno-0-1017">1017</a></span>
-<span class="normal"><a href="#__codelineno-0-1018">1018</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1000"><a id="__codelineno-0-1000" name="__codelineno-0-1000"></a><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
-</span><span id="__span-0-1001"><a id="__codelineno-0-1001" name="__codelineno-0-1001"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_parameterisation_training_consistency</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span id="__span-0-1002"><a id="__codelineno-0-1002" name="__codelineno-0-1002"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate that linearise_harmonics in parameterisation settings is consistent with the valence types in the training settings.&quot;&quot;&quot;</span>
-</span><span id="__span-0-1003"><a id="__codelineno-0-1003" name="__codelineno-0-1003"></a>    <span class="n">harmonics_linearised</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_settings</span><span class="o">.</span><span class="n">linearise_harmonics</span>
-</span><span id="__span-0-1004"><a id="__codelineno-0-1004" name="__codelineno-0-1004"></a>    <span class="n">excluded_valence_types</span> <span class="o">=</span> <span class="p">(</span>
-</span><span id="__span-0-1005"><a id="__codelineno-0-1005" name="__codelineno-0-1005"></a>        <span class="p">(</span><span class="s2">&quot;Bonds&quot;</span><span class="p">,</span> <span class="s2">&quot;Angles&quot;</span><span class="p">)</span>
-</span><span id="__span-0-1006"><a id="__codelineno-0-1006" name="__codelineno-0-1006"></a>        <span class="k">if</span> <span class="n">harmonics_linearised</span>
-</span><span id="__span-0-1007"><a id="__codelineno-0-1007" name="__codelineno-0-1007"></a>        <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;LinearBonds&quot;</span><span class="p">,</span> <span class="s2">&quot;LinearAngles&quot;</span><span class="p">)</span>
-</span><span id="__span-0-1008"><a id="__codelineno-0-1008" name="__codelineno-0-1008"></a>    <span class="p">)</span>
-</span><span id="__span-0-1009"><a id="__codelineno-0-1009" name="__codelineno-0-1009"></a>    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
-</span><span id="__span-0-1010"><a id="__codelineno-0-1010" name="__codelineno-0-1010"></a>        <span class="n">valence_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_settings</span><span class="o">.</span><span class="n">parameter_configs</span>
-</span><span id="__span-0-1011"><a id="__codelineno-0-1011" name="__codelineno-0-1011"></a>        <span class="k">for</span> <span class="n">valence_type</span> <span class="ow">in</span> <span class="n">excluded_valence_types</span>
-</span><span id="__span-0-1012"><a id="__codelineno-0-1012" name="__codelineno-0-1012"></a>    <span class="p">):</span>
-</span><span id="__span-0-1013"><a id="__codelineno-0-1013" name="__codelineno-0-1013"></a>        <span class="k">raise</span> <span class="n">InvalidSettingsError</span><span class="p">(</span>
-</span><span id="__span-0-1014"><a id="__codelineno-0-1014" name="__codelineno-0-1014"></a>            <span class="sa">f</span><span class="s2">&quot;ParamSettings.linearise_harmonics is </span><span class="si">{</span><span class="n">harmonics_linearised</span><span class="si">}</span><span class="s2">, but TrainingSettings.parameter_configs &quot;</span>
-</span><span id="__span-0-1015"><a id="__codelineno-0-1015" name="__codelineno-0-1015"></a>            <span class="sa">f</span><span class="s2">&quot;contains valence types that are inconsistent with this setting: </span><span class="si">{</span><span class="n">excluded_valence_types</span><span class="si">}</span><span class="s2">. &quot;</span>
-</span><span id="__span-0-1016"><a id="__codelineno-0-1016" name="__codelineno-0-1016"></a>        <span class="p">)</span>
-</span><span id="__span-0-1017"><a id="__codelineno-0-1017" name="__codelineno-0-1017"></a>
-</span><span id="__span-0-1018"><a id="__codelineno-0-1018" name="__codelineno-0-1018"></a>    <span class="k">return</span> <span class="bp">self</span>
+<span class="normal"><a href="#__codelineno-0-1018">1018</a></span>
+<span class="normal"><a href="#__codelineno-0-1019">1019</a></span>
+<span class="normal"><a href="#__codelineno-0-1020">1020</a></span>
+<span class="normal"><a href="#__codelineno-0-1021">1021</a></span>
+<span class="normal"><a href="#__codelineno-0-1022">1022</a></span>
+<span class="normal"><a href="#__codelineno-0-1023">1023</a></span>
+<span class="normal"><a href="#__codelineno-0-1024">1024</a></span>
+<span class="normal"><a href="#__codelineno-0-1025">1025</a></span>
+<span class="normal"><a href="#__codelineno-0-1026">1026</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1008"><a id="__codelineno-0-1008" name="__codelineno-0-1008"></a><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+</span><span id="__span-0-1009"><a id="__codelineno-0-1009" name="__codelineno-0-1009"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_parameterisation_training_consistency</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-1010"><a id="__codelineno-0-1010" name="__codelineno-0-1010"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate that linearise_harmonics in parameterisation settings is consistent with the valence types in the training settings.&quot;&quot;&quot;</span>
+</span><span id="__span-0-1011"><a id="__codelineno-0-1011" name="__codelineno-0-1011"></a>    <span class="n">harmonics_linearised</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_settings</span><span class="o">.</span><span class="n">linearise_harmonics</span>
+</span><span id="__span-0-1012"><a id="__codelineno-0-1012" name="__codelineno-0-1012"></a>    <span class="n">excluded_valence_types</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-0-1013"><a id="__codelineno-0-1013" name="__codelineno-0-1013"></a>        <span class="p">(</span><span class="s2">&quot;Bonds&quot;</span><span class="p">,</span> <span class="s2">&quot;Angles&quot;</span><span class="p">)</span>
+</span><span id="__span-0-1014"><a id="__codelineno-0-1014" name="__codelineno-0-1014"></a>        <span class="k">if</span> <span class="n">harmonics_linearised</span>
+</span><span id="__span-0-1015"><a id="__codelineno-0-1015" name="__codelineno-0-1015"></a>        <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;LinearBonds&quot;</span><span class="p">,</span> <span class="s2">&quot;LinearAngles&quot;</span><span class="p">)</span>
+</span><span id="__span-0-1016"><a id="__codelineno-0-1016" name="__codelineno-0-1016"></a>    <span class="p">)</span>
+</span><span id="__span-0-1017"><a id="__codelineno-0-1017" name="__codelineno-0-1017"></a>    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+</span><span id="__span-0-1018"><a id="__codelineno-0-1018" name="__codelineno-0-1018"></a>        <span class="n">valence_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_settings</span><span class="o">.</span><span class="n">parameter_configs</span>
+</span><span id="__span-0-1019"><a id="__codelineno-0-1019" name="__codelineno-0-1019"></a>        <span class="k">for</span> <span class="n">valence_type</span> <span class="ow">in</span> <span class="n">excluded_valence_types</span>
+</span><span id="__span-0-1020"><a id="__codelineno-0-1020" name="__codelineno-0-1020"></a>    <span class="p">):</span>
+</span><span id="__span-0-1021"><a id="__codelineno-0-1021" name="__codelineno-0-1021"></a>        <span class="k">raise</span> <span class="n">InvalidSettingsError</span><span class="p">(</span>
+</span><span id="__span-0-1022"><a id="__codelineno-0-1022" name="__codelineno-0-1022"></a>            <span class="sa">f</span><span class="s2">&quot;ParamSettings.linearise_harmonics is </span><span class="si">{</span><span class="n">harmonics_linearised</span><span class="si">}</span><span class="s2">, but TrainingSettings.parameter_configs &quot;</span>
+</span><span id="__span-0-1023"><a id="__codelineno-0-1023" name="__codelineno-0-1023"></a>            <span class="sa">f</span><span class="s2">&quot;contains valence types that are inconsistent with this setting: </span><span class="si">{</span><span class="n">excluded_valence_types</span><span class="si">}</span><span class="s2">. &quot;</span>
+</span><span id="__span-0-1024"><a id="__codelineno-0-1024" name="__codelineno-0-1024"></a>        <span class="p">)</span>
+</span><span id="__span-0-1025"><a id="__codelineno-0-1025" name="__codelineno-0-1025"></a>
+</span><span id="__span-0-1026"><a id="__codelineno-0-1026" name="__codelineno-0-1026"></a>    <span class="k">return</span> <span class="bp">self</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -17999,15 +18122,7 @@ mid-run.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>presto/settings.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1020">1020</a></span>
-<span class="normal"><a href="#__codelineno-0-1021">1021</a></span>
-<span class="normal"><a href="#__codelineno-0-1022">1022</a></span>
-<span class="normal"><a href="#__codelineno-0-1023">1023</a></span>
-<span class="normal"><a href="#__codelineno-0-1024">1024</a></span>
-<span class="normal"><a href="#__codelineno-0-1025">1025</a></span>
-<span class="normal"><a href="#__codelineno-0-1026">1026</a></span>
-<span class="normal"><a href="#__codelineno-0-1027">1027</a></span>
-<span class="normal"><a href="#__codelineno-0-1028">1028</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1028">1028</a></span>
 <span class="normal"><a href="#__codelineno-0-1029">1029</a></span>
 <span class="normal"><a href="#__codelineno-0-1030">1030</a></span>
 <span class="normal"><a href="#__codelineno-0-1031">1031</a></span>
@@ -18037,45 +18152,53 @@ mid-run.</p>
 <span class="normal"><a href="#__codelineno-0-1055">1055</a></span>
 <span class="normal"><a href="#__codelineno-0-1056">1056</a></span>
 <span class="normal"><a href="#__codelineno-0-1057">1057</a></span>
-<span class="normal"><a href="#__codelineno-0-1058">1058</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1020"><a id="__codelineno-0-1020" name="__codelineno-0-1020"></a><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
-</span><span id="__span-0-1021"><a id="__codelineno-0-1021" name="__codelineno-0-1021"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_starting_conformers_match_molecules</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span id="__span-0-1022"><a id="__codelineno-0-1022" name="__codelineno-0-1022"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Fail fast if a configured starting-conformers SDF lacks a molecule being fitted.</span>
-</span><span id="__span-0-1023"><a id="__codelineno-0-1023" name="__codelineno-0-1023"></a>
-</span><span id="__span-0-1024"><a id="__codelineno-0-1024" name="__codelineno-0-1024"></a><span class="sd">    This runs before the (slow) parameterisation stage so a mismatch between the</span>
-</span><span id="__span-0-1025"><a id="__codelineno-0-1025" name="__codelineno-0-1025"></a><span class="sd">    supplied conformers and the fitted molecules surfaces immediately rather than</span>
-</span><span id="__span-0-1026"><a id="__codelineno-0-1026" name="__codelineno-0-1026"></a><span class="sd">    mid-run.</span>
-</span><span id="__span-0-1027"><a id="__codelineno-0-1027" name="__codelineno-0-1027"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-1028"><a id="__codelineno-0-1028" name="__codelineno-0-1028"></a>    <span class="n">msm_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_settings</span><span class="o">.</span><span class="n">msm_settings</span>
-</span><span id="__span-0-1029"><a id="__codelineno-0-1029" name="__codelineno-0-1029"></a>    <span class="n">stages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
-</span><span id="__span-0-1030"><a id="__codelineno-0-1030" name="__codelineno-0-1030"></a>        <span class="p">(</span>
-</span><span id="__span-0-1031"><a id="__codelineno-0-1031" name="__codelineno-0-1031"></a>            <span class="s2">&quot;training_sampling_settings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1032"><a id="__codelineno-0-1032" name="__codelineno-0-1032"></a>            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_sampling_settings</span><span class="p">,</span> <span class="s2">&quot;starting_conformers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-</span><span id="__span-0-1033"><a id="__codelineno-0-1033" name="__codelineno-0-1033"></a>        <span class="p">),</span>
-</span><span id="__span-0-1034"><a id="__codelineno-0-1034" name="__codelineno-0-1034"></a>        <span class="p">(</span>
-</span><span id="__span-0-1035"><a id="__codelineno-0-1035" name="__codelineno-0-1035"></a>            <span class="s2">&quot;testing_sampling_settings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1036"><a id="__codelineno-0-1036" name="__codelineno-0-1036"></a>            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_sampling_settings</span><span class="p">,</span> <span class="s2">&quot;starting_conformers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-</span><span id="__span-0-1037"><a id="__codelineno-0-1037" name="__codelineno-0-1037"></a>        <span class="p">),</span>
+<span class="normal"><a href="#__codelineno-0-1058">1058</a></span>
+<span class="normal"><a href="#__codelineno-0-1059">1059</a></span>
+<span class="normal"><a href="#__codelineno-0-1060">1060</a></span>
+<span class="normal"><a href="#__codelineno-0-1061">1061</a></span>
+<span class="normal"><a href="#__codelineno-0-1062">1062</a></span>
+<span class="normal"><a href="#__codelineno-0-1063">1063</a></span>
+<span class="normal"><a href="#__codelineno-0-1064">1064</a></span>
+<span class="normal"><a href="#__codelineno-0-1065">1065</a></span>
+<span class="normal"><a href="#__codelineno-0-1066">1066</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1028"><a id="__codelineno-0-1028" name="__codelineno-0-1028"></a><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+</span><span id="__span-0-1029"><a id="__codelineno-0-1029" name="__codelineno-0-1029"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_starting_conformers_match_molecules</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-1030"><a id="__codelineno-0-1030" name="__codelineno-0-1030"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Fail fast if a configured starting-conformers SDF lacks a molecule being fitted.</span>
+</span><span id="__span-0-1031"><a id="__codelineno-0-1031" name="__codelineno-0-1031"></a>
+</span><span id="__span-0-1032"><a id="__codelineno-0-1032" name="__codelineno-0-1032"></a><span class="sd">    This runs before the (slow) parameterisation stage so a mismatch between the</span>
+</span><span id="__span-0-1033"><a id="__codelineno-0-1033" name="__codelineno-0-1033"></a><span class="sd">    supplied conformers and the fitted molecules surfaces immediately rather than</span>
+</span><span id="__span-0-1034"><a id="__codelineno-0-1034" name="__codelineno-0-1034"></a><span class="sd">    mid-run.</span>
+</span><span id="__span-0-1035"><a id="__codelineno-0-1035" name="__codelineno-0-1035"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-1036"><a id="__codelineno-0-1036" name="__codelineno-0-1036"></a>    <span class="n">msm_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_settings</span><span class="o">.</span><span class="n">msm_settings</span>
+</span><span id="__span-0-1037"><a id="__codelineno-0-1037" name="__codelineno-0-1037"></a>    <span class="n">stages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
 </span><span id="__span-0-1038"><a id="__codelineno-0-1038" name="__codelineno-0-1038"></a>        <span class="p">(</span>
-</span><span id="__span-0-1039"><a id="__codelineno-0-1039" name="__codelineno-0-1039"></a>            <span class="s2">&quot;param_settings.msm_settings&quot;</span><span class="p">,</span>
-</span><span id="__span-0-1040"><a id="__codelineno-0-1040" name="__codelineno-0-1040"></a>            <span class="kc">None</span> <span class="k">if</span> <span class="n">msm_settings</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">msm_settings</span><span class="o">.</span><span class="n">starting_conformers</span><span class="p">,</span>
+</span><span id="__span-0-1039"><a id="__codelineno-0-1039" name="__codelineno-0-1039"></a>            <span class="s2">&quot;training_sampling_settings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1040"><a id="__codelineno-0-1040" name="__codelineno-0-1040"></a>            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_sampling_settings</span><span class="p">,</span> <span class="s2">&quot;starting_conformers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
 </span><span id="__span-0-1041"><a id="__codelineno-0-1041" name="__codelineno-0-1041"></a>        <span class="p">),</span>
-</span><span id="__span-0-1042"><a id="__codelineno-0-1042" name="__codelineno-0-1042"></a>    <span class="p">]</span>
-</span><span id="__span-0-1043"><a id="__codelineno-0-1043" name="__codelineno-0-1043"></a>
-</span><span id="__span-0-1044"><a id="__codelineno-0-1044" name="__codelineno-0-1044"></a>    <span class="n">configured</span> <span class="o">=</span> <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">stages</span> <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
-</span><span id="__span-0-1045"><a id="__codelineno-0-1045" name="__codelineno-0-1045"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">configured</span><span class="p">:</span>
-</span><span id="__span-0-1046"><a id="__codelineno-0-1046" name="__codelineno-0-1046"></a>        <span class="k">return</span> <span class="bp">self</span>
-</span><span id="__span-0-1047"><a id="__codelineno-0-1047" name="__codelineno-0-1047"></a>
-</span><span id="__span-0-1048"><a id="__codelineno-0-1048" name="__codelineno-0-1048"></a>    <span class="n">molecules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_settings</span><span class="o">.</span><span class="n">openff_molecules</span>
-</span><span id="__span-0-1049"><a id="__codelineno-0-1049" name="__codelineno-0-1049"></a>    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">configured</span><span class="p">:</span>
-</span><span id="__span-0-1050"><a id="__codelineno-0-1050" name="__codelineno-0-1050"></a>        <span class="k">for</span> <span class="n">molecule</span> <span class="ow">in</span> <span class="n">molecules</span><span class="p">:</span>
-</span><span id="__span-0-1051"><a id="__codelineno-0-1051" name="__codelineno-0-1051"></a>            <span class="k">try</span><span class="p">:</span>
-</span><span id="__span-0-1052"><a id="__codelineno-0-1052" name="__codelineno-0-1052"></a>                <span class="n">load_conformers_for_molecule</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-</span><span id="__span-0-1053"><a id="__codelineno-0-1053" name="__codelineno-0-1053"></a>            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-</span><span id="__span-0-1054"><a id="__codelineno-0-1054" name="__codelineno-0-1054"></a>                <span class="k">raise</span> <span class="n">InvalidSettingsError</span><span class="p">(</span>
-</span><span id="__span-0-1055"><a id="__codelineno-0-1055" name="__codelineno-0-1055"></a>                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.starting_conformers (</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">) is invalid: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="__span-0-1056"><a id="__codelineno-0-1056" name="__codelineno-0-1056"></a>                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-</span><span id="__span-0-1057"><a id="__codelineno-0-1057" name="__codelineno-0-1057"></a>
-</span><span id="__span-0-1058"><a id="__codelineno-0-1058" name="__codelineno-0-1058"></a>    <span class="k">return</span> <span class="bp">self</span>
+</span><span id="__span-0-1042"><a id="__codelineno-0-1042" name="__codelineno-0-1042"></a>        <span class="p">(</span>
+</span><span id="__span-0-1043"><a id="__codelineno-0-1043" name="__codelineno-0-1043"></a>            <span class="s2">&quot;testing_sampling_settings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1044"><a id="__codelineno-0-1044" name="__codelineno-0-1044"></a>            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_sampling_settings</span><span class="p">,</span> <span class="s2">&quot;starting_conformers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+</span><span id="__span-0-1045"><a id="__codelineno-0-1045" name="__codelineno-0-1045"></a>        <span class="p">),</span>
+</span><span id="__span-0-1046"><a id="__codelineno-0-1046" name="__codelineno-0-1046"></a>        <span class="p">(</span>
+</span><span id="__span-0-1047"><a id="__codelineno-0-1047" name="__codelineno-0-1047"></a>            <span class="s2">&quot;param_settings.msm_settings&quot;</span><span class="p">,</span>
+</span><span id="__span-0-1048"><a id="__codelineno-0-1048" name="__codelineno-0-1048"></a>            <span class="kc">None</span> <span class="k">if</span> <span class="n">msm_settings</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">msm_settings</span><span class="o">.</span><span class="n">starting_conformers</span><span class="p">,</span>
+</span><span id="__span-0-1049"><a id="__codelineno-0-1049" name="__codelineno-0-1049"></a>        <span class="p">),</span>
+</span><span id="__span-0-1050"><a id="__codelineno-0-1050" name="__codelineno-0-1050"></a>    <span class="p">]</span>
+</span><span id="__span-0-1051"><a id="__codelineno-0-1051" name="__codelineno-0-1051"></a>
+</span><span id="__span-0-1052"><a id="__codelineno-0-1052" name="__codelineno-0-1052"></a>    <span class="n">configured</span> <span class="o">=</span> <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">stages</span> <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+</span><span id="__span-0-1053"><a id="__codelineno-0-1053" name="__codelineno-0-1053"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">configured</span><span class="p">:</span>
+</span><span id="__span-0-1054"><a id="__codelineno-0-1054" name="__codelineno-0-1054"></a>        <span class="k">return</span> <span class="bp">self</span>
+</span><span id="__span-0-1055"><a id="__codelineno-0-1055" name="__codelineno-0-1055"></a>
+</span><span id="__span-0-1056"><a id="__codelineno-0-1056" name="__codelineno-0-1056"></a>    <span class="n">molecules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_settings</span><span class="o">.</span><span class="n">openff_molecules</span>
+</span><span id="__span-0-1057"><a id="__codelineno-0-1057" name="__codelineno-0-1057"></a>    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">configured</span><span class="p">:</span>
+</span><span id="__span-0-1058"><a id="__codelineno-0-1058" name="__codelineno-0-1058"></a>        <span class="k">for</span> <span class="n">molecule</span> <span class="ow">in</span> <span class="n">molecules</span><span class="p">:</span>
+</span><span id="__span-0-1059"><a id="__codelineno-0-1059" name="__codelineno-0-1059"></a>            <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-0-1060"><a id="__codelineno-0-1060" name="__codelineno-0-1060"></a>                <span class="n">load_conformers_for_molecule</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+</span><span id="__span-0-1061"><a id="__codelineno-0-1061" name="__codelineno-0-1061"></a>            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span id="__span-0-1062"><a id="__codelineno-0-1062" name="__codelineno-0-1062"></a>                <span class="k">raise</span> <span class="n">InvalidSettingsError</span><span class="p">(</span>
+</span><span id="__span-0-1063"><a id="__codelineno-0-1063" name="__codelineno-0-1063"></a>                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.starting_conformers (</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">) is invalid: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-0-1064"><a id="__codelineno-0-1064" name="__codelineno-0-1064"></a>                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+</span><span id="__span-0-1065"><a id="__codelineno-0-1065" name="__codelineno-0-1065"></a>
+</span><span id="__span-0-1066"><a id="__codelineno-0-1066" name="__codelineno-0-1066"></a>    <span class="k">return</span> <span class="bp">self</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -18105,29 +18228,29 @@ mid-run.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>presto/settings.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1065">1065</a></span>
-<span class="normal"><a href="#__codelineno-0-1066">1066</a></span>
-<span class="normal"><a href="#__codelineno-0-1067">1067</a></span>
-<span class="normal"><a href="#__codelineno-0-1068">1068</a></span>
-<span class="normal"><a href="#__codelineno-0-1069">1069</a></span>
-<span class="normal"><a href="#__codelineno-0-1070">1070</a></span>
-<span class="normal"><a href="#__codelineno-0-1071">1071</a></span>
-<span class="normal"><a href="#__codelineno-0-1072">1072</a></span>
-<span class="normal"><a href="#__codelineno-0-1073">1073</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1073">1073</a></span>
 <span class="normal"><a href="#__codelineno-0-1074">1074</a></span>
 <span class="normal"><a href="#__codelineno-0-1075">1075</a></span>
-<span class="normal"><a href="#__codelineno-0-1076">1076</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1065"><a id="__codelineno-0-1065" name="__codelineno-0-1065"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_path_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WorkflowPathManager</span><span class="p">:</span>
-</span><span id="__span-0-1066"><a id="__codelineno-0-1066" name="__codelineno-0-1066"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the output paths manager for this workflow settings object.&quot;&quot;&quot;</span>
-</span><span id="__span-0-1067"><a id="__codelineno-0-1067" name="__codelineno-0-1067"></a>    <span class="c1"># Get the number of molecules from the validated molecule list</span>
-</span><span id="__span-0-1068"><a id="__codelineno-0-1068" name="__codelineno-0-1068"></a>    <span class="n">n_mols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_settings</span><span class="o">.</span><span class="n">openff_molecules</span><span class="p">)</span>
-</span><span id="__span-0-1069"><a id="__codelineno-0-1069" name="__codelineno-0-1069"></a>    <span class="k">return</span> <span class="n">WorkflowPathManager</span><span class="p">(</span>
-</span><span id="__span-0-1070"><a id="__codelineno-0-1070" name="__codelineno-0-1070"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span>
-</span><span id="__span-0-1071"><a id="__codelineno-0-1071" name="__codelineno-0-1071"></a>        <span class="n">n_iterations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span><span class="p">,</span>
-</span><span id="__span-0-1072"><a id="__codelineno-0-1072" name="__codelineno-0-1072"></a>        <span class="n">n_mols</span><span class="o">=</span><span class="n">n_mols</span><span class="p">,</span>
-</span><span id="__span-0-1073"><a id="__codelineno-0-1073" name="__codelineno-0-1073"></a>        <span class="n">training_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training_settings</span><span class="p">,</span>
-</span><span id="__span-0-1074"><a id="__codelineno-0-1074" name="__codelineno-0-1074"></a>        <span class="n">training_sampling_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training_sampling_settings</span><span class="p">,</span>
-</span><span id="__span-0-1075"><a id="__codelineno-0-1075" name="__codelineno-0-1075"></a>        <span class="n">testing_sampling_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_sampling_settings</span><span class="p">,</span>
-</span><span id="__span-0-1076"><a id="__codelineno-0-1076" name="__codelineno-0-1076"></a>    <span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-1076">1076</a></span>
+<span class="normal"><a href="#__codelineno-0-1077">1077</a></span>
+<span class="normal"><a href="#__codelineno-0-1078">1078</a></span>
+<span class="normal"><a href="#__codelineno-0-1079">1079</a></span>
+<span class="normal"><a href="#__codelineno-0-1080">1080</a></span>
+<span class="normal"><a href="#__codelineno-0-1081">1081</a></span>
+<span class="normal"><a href="#__codelineno-0-1082">1082</a></span>
+<span class="normal"><a href="#__codelineno-0-1083">1083</a></span>
+<span class="normal"><a href="#__codelineno-0-1084">1084</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1073"><a id="__codelineno-0-1073" name="__codelineno-0-1073"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_path_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WorkflowPathManager</span><span class="p">:</span>
+</span><span id="__span-0-1074"><a id="__codelineno-0-1074" name="__codelineno-0-1074"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the output paths manager for this workflow settings object.&quot;&quot;&quot;</span>
+</span><span id="__span-0-1075"><a id="__codelineno-0-1075" name="__codelineno-0-1075"></a>    <span class="c1"># Get the number of molecules from the validated molecule list</span>
+</span><span id="__span-0-1076"><a id="__codelineno-0-1076" name="__codelineno-0-1076"></a>    <span class="n">n_mols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_settings</span><span class="o">.</span><span class="n">openff_molecules</span><span class="p">)</span>
+</span><span id="__span-0-1077"><a id="__codelineno-0-1077" name="__codelineno-0-1077"></a>    <span class="k">return</span> <span class="n">WorkflowPathManager</span><span class="p">(</span>
+</span><span id="__span-0-1078"><a id="__codelineno-0-1078" name="__codelineno-0-1078"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span>
+</span><span id="__span-0-1079"><a id="__codelineno-0-1079" name="__codelineno-0-1079"></a>        <span class="n">n_iterations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span><span class="p">,</span>
+</span><span id="__span-0-1080"><a id="__codelineno-0-1080" name="__codelineno-0-1080"></a>        <span class="n">n_mols</span><span class="o">=</span><span class="n">n_mols</span><span class="p">,</span>
+</span><span id="__span-0-1081"><a id="__codelineno-0-1081" name="__codelineno-0-1081"></a>        <span class="n">training_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training_settings</span><span class="p">,</span>
+</span><span id="__span-0-1082"><a id="__codelineno-0-1082" name="__codelineno-0-1082"></a>        <span class="n">training_sampling_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training_sampling_settings</span><span class="p">,</span>
+</span><span id="__span-0-1083"><a id="__codelineno-0-1083" name="__codelineno-0-1083"></a>        <span class="n">testing_sampling_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">testing_sampling_settings</span><span class="p">,</span>
+</span><span id="__span-0-1084"><a id="__codelineno-0-1084" name="__codelineno-0-1084"></a>    <span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -18349,7 +18472,7 @@ mid-run.</p>
 
 <a href="#presto.settings._model_from_yaml" class="headerlink" title="Permanent link">#</a></h2>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">_model_from_yaml</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="bp">cls</span><span class="p">:</span> <span class="n"><span title="type">type</span></span><span class="p">[</span><span class="n"><span title="presto.settings._T">_T</span></span><span class="p">],</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="bp">cls</span><span class="p">:</span> <span class="n"><span title="type">type</span></span><span class="p">[</span><span class="n"><span title="presto.settings.<autoref identifier=">_T</span>" backlink-type="used-by" backlink-anchor="presto.settings._model_from_yaml" optional hover><span title="presto.settings._T">_T</span></autoref></span><span class="p">],</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">yaml_path</span><span class="p">:</span> <span class="n"><span title="presto.utils.typing.PathLike">PathLike</span></span><span class="p">,</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">overwrite</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="presto.settings._T">_T</span></span>
@@ -18494,7 +18617,7 @@ fitted can only be checked once the molecules are known — see
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../sample/" class="md-footer__link md-footer__link--prev" aria-label="Previous: sample">
+          <a href="../sampling_coordinator/" class="md-footer__link md-footer__link--prev" aria-label="Previous: sampling_coordinator">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -18504,7 +18627,7 @@ fitted can only be checked once the molecules are known — see
                 Previous
               </span>
               <div class="md-ellipsis">
-                sample
+                sampling_coordinator
               </div>
             </div>
           </a>

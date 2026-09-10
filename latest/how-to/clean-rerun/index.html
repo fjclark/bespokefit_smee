@@ -695,6 +695,8 @@
       
         
       
+        
+      
     
     
     
@@ -1004,6 +1006,34 @@
     
   
     Use an ASE calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../speed-up-with-parallelism/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speed up fitting with parallelism
   
 
     
@@ -1568,6 +1598,8 @@
       
         
       
+        
+      
     
     
     
@@ -1993,6 +2025,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/api/sampling_coordinator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    sampling_coordinator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/api/settings/" class="md-nav__link">
         
   
@@ -2078,7 +2138,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_1_17" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_1_18" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2100,14 +2160,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_4_1_17" id="__nav_5_4_1_17_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5_4_1_18" id="__nav_5_4_1_18_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_4_1_17_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_4_1_17">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_4_1_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_1_18">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2635,12 +2695,29 @@
 <h1 id="wipe-re-run-and-re-analyse">Wipe, Re-run, and Re-analyse<a class="headerlink" href="#wipe-re-run-and-re-analyse" title="Permanent link">#</a></h1>
 <p>How to wipe output and rerun.</p>
 <h2 id="clean-a-directory">Clean a directory<a class="headerlink" href="#clean-a-directory" title="Permanent link">#</a></h2>
-<p><code>presto clean</code> removes everything <code>presto train</code> / <code>train-from-yaml</code> would generate, but <strong>keeps the settings YAML</strong>:</p>
+<p><code>presto clean</code> removes the stage directories the settings predict, but <strong>keeps the settings YAML</strong>:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>presto<span class="w"> </span>clean<span class="w"> </span>workflow_settings.yaml
 </span></code></pre></div>
-<p>It walks the expected output layout (see <strong><a href="../../concepts/output-layout/">Concepts → Output directory layout</a></strong>) and deletes each known file/directory plus the empty stage directories. Anything not in the expected layout is left alone — useful if you've added your own notes or scripts to the run directory.</p>
+<p>The settings file is the single source of truth: <code>initial_statistics/</code>, <code>test_data/</code>,
+<code>plots/</code>, and <code>training_iteration_1</code> through <code>training_iteration_&lt;n_iterations&gt;</code> are
+reserved for Presto and are removed recursively. Nothing else is touched, so files at
+the output root and iteration directories beyond <code>n_iterations</code> are left alone.</p>
+<p>If one of those directories holds a path the settings do not predict, such as your own
+notes or a plot you made, <code>presto clean</code> refuses and deletes nothing. Move the file
+out, or use a different <code>output_dir</code>. The only way your own input is deleted is by
+placing it at a path Presto generates, for example a pre-computed dataset saved to
+<code>test_data/energy_and_force_data_mol0/</code>.</p>
+<p>The output manager reports a fit as:</p>
+<ul>
+<li><code>clean</code> when none of the predicted stage directories exists;</li>
+<li><code>partial</code> when one exists without the final fitted force field; or</li>
+<li><code>complete</code> when <code>training_iteration_&lt;n_iterations&gt;/bespoke_ff.offxml</code> exists.</li>
+</ul>
+<p>Both partial and complete output must be cleaned before another fit can start. This
+prevents an interrupted run from silently reusing an old trajectory or metadynamics
+bias.</p>
 <h2 id="re-run-from-a-yaml">Re-run from a YAML<a class="headerlink" href="#re-run-from-a-yaml" title="Permanent link">#</a></h2>
-<p>Any <code>workflow_settings.yaml</code> written by a previous run can be replayed with:</p>
+<p>After cleaning, any <code>workflow_settings.yaml</code> written by a previous run can be replayed with:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>presto<span class="w"> </span>train-from-yaml<span class="w"> </span>workflow_settings.yaml
 </span></code></pre></div>
 <p>To make small changes before replaying, either edit the YAML directly or use the <code>overwrite</code> argument on <code>WorkflowSettings.from_yaml</code>:</p>

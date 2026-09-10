@@ -691,6 +691,8 @@
       
         
       
+        
+      
     
     
     
@@ -928,6 +930,34 @@
     
   
     Use an ASE calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/speed-up-with-parallelism/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speed up fitting with parallelism
   
 
     
@@ -1492,6 +1522,8 @@
       
         
       
+        
+      
     
     
     
@@ -1917,6 +1949,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/api/sampling_coordinator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    sampling_coordinator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/api/settings/" class="md-nav__link">
         
   
@@ -2002,7 +2062,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_1_17" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_1_18" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2024,14 +2084,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_4_1_17" id="__nav_5_4_1_17_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5_4_1_18" id="__nav_5_4_1_18_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_4_1_17_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_4_1_17">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_4_1_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_1_18">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2540,6 +2600,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#features" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2618,7 +2689,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
+  <a href="#breaking-changes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking changes
@@ -2997,6 +3068,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#features" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3075,7 +3157,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
+  <a href="#breaking-changes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking changes
@@ -3429,10 +3511,15 @@
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">#</a></h1>
 <h2 id="090">0.9.0<a class="headerlink" href="#090" title="Permanent link">#</a></h2>
+<h3 id="breaking-changes">Breaking changes<a class="headerlink" href="#breaking-changes" title="Permanent link">#</a></h3>
+<ul>
+<li>Refuse to start a fit when the output directory already holds generated output from an earlier fit; run <code>presto clean</code> or choose a new <code>output_dir</code> first. This stops an interrupted run from silently reusing an old trajectory or metadynamics bias. In <a href="https://github.com/cole-group/presto/pull/84">#84</a>.</li>
+</ul>
 <h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">#</a></h3>
 <ul>
 <li>Warn without rejecting or changing settings when input molecules contain phosphorus or sulfonamide environments known to cause MLP-minimisation or modified Seminario initialisation failures. The warnings identify every matching molecule and recommend safer sampling/MSM settings. Addresses <a href="https://github.com/cole-group/presto/issues/63">#63</a>.</li>
 <li>Add an optional <code>starting_conformers</code> setting to each sampling stage (<code>training_sampling_settings</code>, <code>testing_sampling_settings</code>) and to <code>msm_settings</code>. When set to an SDF path, that stage starts from the supplied conformers (matched to each molecule by graph isomorphism and realigned automatically) instead of generating them with ETKDG; <code>n_conformers</code> is ignored for that stage. The default remains ETKDG.In <a href="https://github.com/cole-group/presto/pull/78">#78</a>.</li>
+<li>Add <code>n_sampling_processes</code> to <code>WorkflowSettings</code> (<code>--n-sampling-processes</code> on <code>presto train</code>) to sample independent ligands in parallel worker processes on one node, assigned round-robin across the visible CUDA devices. The default of <code>1</code> keeps the previous serial behaviour. Addresses <a href="https://github.com/cole-group/presto/issues/77">#77</a> in <a href="https://github.com/cole-group/presto/pull/84">#84</a>.</li>
 <li>Add <code>presto.create_types.add_library_charges_to_forcefield</code> to write custom partial charges from OpenFF <code>Molecule</code> objects into a force field as library charges, addressing <a href="https://github.com/cole-group/presto/issues/64">#64</a>.</li>
 </ul>
 <h3 id="fixes">Fixes<a class="headerlink" href="#fixes" title="Permanent link">#</a></h3>
@@ -3444,6 +3531,7 @@
 <ul>
 <li>Document the aggregated parameterisation error in <a href="../reference/troubleshooting/">Troubleshooting</a>.</li>
 <li>Add <a href="../how-to/use-custom-charges/">Use custom charges</a> how-to guide.</li>
+<li>Add <a href="../how-to/speed-up-with-parallelism/">Speed up fitting with parallelism</a> how-to guide, and update <a href="../how-to/clean-rerun/">Wipe output and rerun</a> for the new cleaning behaviour. In <a href="https://github.com/cole-group/presto/pull/84">#84</a>.</li>
 <li>Add <a href="../how-to/use-starting-conformers/">Use your own starting conformers</a> how-to guide.</li>
 <li>Add a <code>CITATION.cff</code> file and cite the presto preprint in the README and docs, and point users to the OpenFF publications to cite, in <a href="https://github.com/cole-group/presto/pull/76">#76</a>.</li>
 <li>Document installing <code>presto</code> from <code>conda-forge</code> as <code>presto-fit</code> (note this comes without the MLP dependencies, which must be installed separately) in <a href="https://github.com/cole-group/presto/pull/70">#70</a>.</li>
@@ -3454,7 +3542,7 @@
 <li>Bundle full Egret license in <a href="https://github.com/cole-group/presto/pull/66">#66</a>.</li>
 </ul>
 <h2 id="080">0.8.0<a class="headerlink" href="#080" title="Permanent link">#</a></h2>
-<h3 id="breaking-changes">Breaking changes<a class="headerlink" href="#breaking-changes" title="Permanent link">#</a></h3>
+<h3 id="breaking-changes_1">Breaking changes<a class="headerlink" href="#breaking-changes_1" title="Permanent link">#</a></h3>
 <ul>
 <li>
 <p>Rename <code>ParameterisationSettings</code> to <code>ParamSettings</code> and the <code>parameterisation_settings</code> field to <code>param_settings</code> throughout. This avoids confusion between British/American spellings. YAML configs must update the key from <code>parameterisation_settings:</code> to <code>param_settings:</code>. In <a href="https://github.com/cole-group/presto/pull/62">#62</a>.</p>
