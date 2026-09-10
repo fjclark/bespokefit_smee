@@ -71,6 +71,8 @@ def test_sampling_devices_round_robin(monkeypatch):
     assert sampling_devices("cpu", 3) == ["cpu"] * 3
     with patch("torch.cuda.device_count", return_value=2):
         assert sampling_devices("cuda", 3) == ["0", "1", "0"]
+    # device_type is only "cuda" once CUDA has been shown available, so a count of
+    # 0 means torch under-reported: fall back to one device rather than to the CPU.
     with patch("torch.cuda.device_count", return_value=0):
         assert sampling_devices("cuda", 2) == ["0", "0"]
 
