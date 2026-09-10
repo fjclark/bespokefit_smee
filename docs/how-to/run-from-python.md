@@ -37,29 +37,7 @@ This is the recommended way to inject runtime objects (e.g. an ASE calculator) t
 
 ## Parallel ligand sampling
 
-Set `n_sampling_processes` on `WorkflowSettings` (or `--n-sampling-processes` on
-`presto train`) to sample independent ligands concurrently on one node. The default of
-one process keeps the serial behaviour.
-
-On CUDA, workers are assigned round-robin to the devices visible through
-`CUDA_VISIBLE_DEVICES`. Each worker loads its own force field and ML model, so model
-and CUDA memory scale with the worker count, and more workers can be slower once one
-already saturates a GPU. Concurrent execution on a single GPU needs NVIDIA MPS,
-configured outside Presto. Only sampling is parallelised; parameterisation, fitting,
-and analysis stay in the parent process.
-
-On CPU, cap the threads per worker before launching. OpenMM and PyTorch each size
-their thread pools to the whole machine, so every worker claims all cores no matter
-how many workers there are, and the processes then fight for them. Divide the cores
-you have by the number of workers:
-
-```bash
-export OPENMM_CPU_THREADS=6 OMP_NUM_THREADS=6  # 24 cores, 4 workers
-```
-
-Workers inherit these, so setting them in the launching shell is enough. Without
-them, raising `n_sampling_processes` on CPU could make the fit slower rather than
-faster.
+Set `n_sampling_processes` on `WorkflowSettings` (or `--n-sampling-processes` on `presto train`) to sample independent ligands concurrently on one node. The default of one process keeps the serial behaviour. For how to size it, and for the CPU thread limits it needs, see **[Speed up fitting with parallelism](speed-up-with-parallelism.md)**.
 
 !!! warning "Guard the Python entry point"
     Workers are fresh Python processes that re-import your script. With

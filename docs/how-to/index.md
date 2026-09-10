@@ -10,6 +10,7 @@ Short, task-oriented recipes. Each page assumes you've finished **[Get started](
 - **[Use your own starting conformers](use-starting-conformers.md)** — seed a sampling stage (or MSM) from an SDF instead of ETKDG.
 - **[Use custom charges](use-custom-charges.md)** — bake your own partial charges into the force field as library charges.
 - **[Wipe output and rerun](clean-rerun.md)**
+- **[Speed up fitting with parallelism](speed-up-with-parallelism.md)** — sample independent ligands concurrently on one node.
 
 ## By component
 
