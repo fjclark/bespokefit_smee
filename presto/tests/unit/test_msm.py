@@ -23,6 +23,7 @@ from presto.msm import (
     _calculate_linear_angle_force_constant,
     _dot_product,
     _get_arbitrary_perpendicular,
+    _is_linear_angle,
     _mean_angle_params,
     _mean_bond_params,
     apply_msm_to_molecule,
@@ -465,8 +466,9 @@ class TestCalculateAngleForceConstant:
 class TestCalculateLinearAngleForceConstant:
     """Tests for _calculate_linear_angle_force_constant function."""
 
-    def test_linear_angle_returns_valid_result(self):
-        """Test that linear angle calculation returns valid results."""
+    @pytest.fixture
+    def linear_inputs(self):
+        """Return a simple exactly linear case with an analytic result."""
         # Linear configuration along x
         u_ab = np.array([1.0, 0.0, 0.0])
         u_cb = np.array([-1.0, 0.0, 0.0])  # Opposite direction (linear)
@@ -477,14 +479,69 @@ class TestCalculateLinearAngleForceConstant:
             np.array([100.0, 50.0, 50.0]),
         )
         eigenvecs = (np.eye(3, dtype=complex), np.eye(3, dtype=complex))
+        return u_ab, u_cb, bond_lens, eigenvals, eigenvecs
 
+    def test_exact_linear_angle_has_analytic_force_constant(self, linear_inputs):
+        """The one-direction two-spring result is 1 / (1/50 + 1/50) = 25."""
         k_theta, theta_0 = _calculate_linear_angle_force_constant(
-            u_ab, u_cb, bond_lens, eigenvals, eigenvecs, n_samples=50
+            *linear_inputs, n_samples=1
         )
-        # Force constant should be positive
-        assert k_theta > 0
-        # Angle should be close to 180 degrees
-        assert np.abs(theta_0 - 180.0) < 1.0
+        assert k_theta == pytest.approx(25.0)
+        assert theta_0 == pytest.approx(180.0)
+
+    def test_matches_qubekit_final_linear_force_constant(self, linear_inputs):
+        """Compare with QUBEKit's published 200-direction special case.
+
+        QUBEKit's helper returns half the projected curvature and its caller
+        multiplies the value by two when constructing the final angle
+        parameter. The reference below is that final exported value, evaluated
+        with QUBEKit's integer-radian sampling grid. Presto uses a uniformly
+        spaced grid, which accounts for the small numerical tolerance.
+
+        Source: QUBEKit 2.1.1, ``ModSemMaths.f_c_a_special_case`` and
+        ``ModSeminario.calculate_angles``.
+        """
+        u_ab, _u_cb, bond_lens, eigenvals, eigenvecs = linear_inputs
+        angle = np.deg2rad(175.0)
+        u_cb = np.array([np.cos(angle), np.sin(angle), 0.0])
+        k_theta, theta_0 = _calculate_linear_angle_force_constant(
+            u_ab, u_cb, bond_lens, eigenvals, eigenvecs
+        )
+
+        qubekit_reference = _QUBEKIT_REFERENCE_DATA["near_linear_angle_reference"]
+        qubekit_final_k = qubekit_reference["final_k_kcal_mol_rad2"]
+        assert qubekit_final_k == pytest.approx(
+            2.0 * qubekit_reference["helper_k_kcal_mol_rad2"]
+        )
+        np.testing.assert_allclose(k_theta, qubekit_final_k, rtol=5e-4)
+        assert theta_0 == pytest.approx(175.0)
+
+    def test_production_dispatches_exact_linear_angle_to_special_case(self):
+        """Exercise the production branch rather than only its helper."""
+        coords = np.array([[-1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+        decomposer = HessianDecomposer(create_mock_hessian(3), coords)
+
+        with patch(
+            "presto.msm._calculate_linear_angle_force_constant",
+            wraps=_calculate_linear_angle_force_constant,
+        ) as linear_fn:
+            calculate_angle_force_constant(
+                (0, 1, 2),
+                decomposer.bond_lengths,
+                decomposer.eigenvals,
+                decomposer.eigenvecs,
+                decomposer.coords,
+                (1.0, 1.0),
+            )
+
+        linear_fn.assert_called_once()
+
+    def test_linear_angle_predicate_boundaries(self):
+        """Keep the audit and production definition of a linear angle identical."""
+        assert _is_linear_angle(np.array([1.0, 0.0, 0.0]), np.array([-1.0, 0.0, 0.0]))
+        assert not _is_linear_angle(
+            np.array([1.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0])
+        )
 
 
 # --- Parameter Calculation Tests ---
@@ -1062,7 +1119,7 @@ def _parse_reference_data():
     bonds = [tuple(b) for b in _QUBEKIT_REFERENCE_DATA["bonds"]]
     angles = [tuple(a) for a in _QUBEKIT_REFERENCE_DATA["angles"]]
 
-    # QUBEKit bond parameters (OpenMM convention: U = k*x^2)
+    # QUBEKit bond parameters (SMIRNOFF / OpenMM convention: U = k*x^2/2)
     # Reference data is in kJ/mol/nm², convert to kcal/mol/nm²
     bond_params = {
         tuple(map(int, k.strip("()").split(", "))): (
@@ -1072,7 +1129,7 @@ def _parse_reference_data():
         for k, v in _QUBEKIT_REFERENCE_DATA["bond_params"].items()
     }
 
-    # QUBEKit angle parameters (OpenMM convention: U = k*x^2)
+    # QUBEKit angle parameters (SMIRNOFF / OpenMM convention: U = k*x^2/2)
     # Reference data is in kJ/mol/rad², convert to kcal/mol/rad²
     angle_params = {
         tuple(map(int, k.strip("()").split(", "))): (
@@ -1212,7 +1269,7 @@ class TestMSMQubekitComparison:
 
         print("\nBOND PARAMETERS:")
         print("-" * 70)
-        print(f"{'Bond':<10} {'Length (nm)':<18} {'Force Const (kJ/mol/nm²)':<30}")
+        print(f"{'Bond':<10} {'Length (nm)':<18} {'Force Const (kcal/mol/nm²)':<30}")
         print(f"{'':10} {'Calc':<9}{'Ref':<9} {'Calc':<14}{'Ref':<14}{'Diff %':<8}")
         print("-" * 70)
 
@@ -1229,7 +1286,7 @@ class TestMSMQubekitComparison:
 
         print("\nANGLE PARAMETERS:")
         print("-" * 70)
-        print(f"{'Angle':<12} {'Value (deg)':<18} {'Force Const (kJ/mol/rad²)':<28}")
+        print(f"{'Angle':<12} {'Value (deg)':<18} {'Force Const (kcal/mol/rad²)':<28}")
         print(f"{'':12} {'Calc':<9}{'Ref':<9} {'Calc':<13}{'Ref':<13}{'Diff %':<8}")
         print("-" * 70)
 

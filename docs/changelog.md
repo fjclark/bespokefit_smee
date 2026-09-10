@@ -9,6 +9,9 @@
 
 ### Fixes
 
+- Correct linear and near-linear MSM angle force constants that were half their
+  intended SMIRNOFF / OpenMM values due to an uncancelled intermediate QUBEKit
+  convention factor.
 - Fix a latent `IndexError` in the MSM step when fewer conformers were available than `n_conformers`; the conformer loop now iterates the conformers actually present.
 
 ### Documentation

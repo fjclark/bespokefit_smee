@@ -149,15 +149,107 @@
       "k_kj_mol_rad2": 978.9316438775583
     }
   },
+  "linear_angle_reference": {
+    "u_ab": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "u_cb": [
+      -1.0,
+      0.0,
+      0.0
+    ],
+    "bond_lengths": [
+      1.0,
+      1.0
+    ],
+    "eigenvalues": [
+      [
+        100.0,
+        50.0,
+        50.0
+      ],
+      [
+        100.0,
+        50.0,
+        50.0
+      ]
+    ],
+    "eigenvectors": [
+      [
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0]
+      ],
+      [
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0]
+      ]
+    ],
+    "n_samples": 200,
+    "helper_k_kcal_mol_rad2": 15.281138524925655,
+    "final_k_kcal_mol_rad2": 30.56227704985131,
+    "angle_degrees": 180.0,
+    "notes": "Final k includes QUBEKit calculate_angles conversion factor of 2."
+  },
+  "near_linear_angle_reference": {
+    "u_ab": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "u_cb": [
+      -0.9961946980917455,
+      0.0871557427476582,
+      0.0
+    ],
+    "bond_lengths": [
+      1.0,
+      1.0
+    ],
+    "eigenvalues": [
+      [
+        100.0,
+        50.0,
+        50.0
+      ],
+      [
+        100.0,
+        50.0,
+        50.0
+      ]
+    ],
+    "eigenvectors": [
+      [
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0]
+      ],
+      [
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0]
+      ]
+    ],
+    "n_samples": 200,
+    "helper_k_kcal_mol_rad2": 15.968767087565285,
+    "final_k_kcal_mol_rad2": 31.93753417513057,
+    "angle_degrees": 175.0,
+    "notes": "Final k includes QUBEKit calculate_angles conversion factor of 2."
+  },
   "notes": {
+    "qubekit_version": "2.1.1",
+    "qubekit_source": "https://github.com/qubekit/QUBEKit/blob/main/qubekit/bonded/mod_seminario.py",
     "hessian_type": "mock_diagonal_dominated",
     "hessian_k_diagonal_kcal_mol_A2": 500.0,
     "vibrational_scaling": 1.0,
     "units": {
       "length": "nm",
-      "bond_k": "kJ/mol/nm\u00b2 (OpenMM convention: U = k*(r-r0)\u00b2)",
+      "bond_k": "kJ/mol/nm\u00b2 (OpenMM convention: U = k*(r-r0)\u00b2/2)",
       "angle": "radians (also provided in degrees)",
-      "angle_k": "kJ/mol/rad\u00b2 (OpenMM convention: U = k*(theta-theta0)\u00b2)"
+      "angle_k": "kJ/mol/rad\u00b2 (OpenMM convention: U = k*(theta-theta0)\u00b2/2)"
     }
   }
 }

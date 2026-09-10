@@ -33,6 +33,7 @@ Note on test molecule:
 
 import json
 import sys
+from importlib.metadata import version
 from pathlib import Path
 
 import numpy as np
@@ -40,6 +41,7 @@ import numpy as np
 # Check if QUBEKit is available
 try:
     from qubekit.bonded import ModSeminario
+    from qubekit.bonded.mod_seminario import ModSemMaths
     from qubekit.molecules import Ligand
     from qubekit.utils import constants
 except ImportError:
@@ -212,6 +214,58 @@ def main() -> None:
         print(f"    k = {param.k:.2f} kJ/mol/rad²")
     print()
 
+    # Exercise QUBEKit's linear-angle helper directly. Running an exactly linear
+    # molecule through the complete QUBEKit stage is not possible because its
+    # scaling-factor setup constructs a plane normal before dispatching to the
+    # special case. The final stage multiplies the helper result by two.
+    linear_u_ab = np.array([1.0, 0.0, 0.0])
+    linear_u_cb = np.array([-1.0, 0.0, 0.0])
+    linear_bond_lengths = [1.0, 1.0]
+    linear_eigenvalues = [
+        np.array([100.0, 50.0, 50.0]),
+        np.array([100.0, 50.0, 50.0]),
+    ]
+    linear_eigenvectors = [
+        np.eye(3, dtype=complex),
+        np.eye(3, dtype=complex),
+    ]
+    linear_raw_k, linear_angle = ModSemMaths.f_c_a_special_case(
+        linear_u_ab,
+        linear_u_cb,
+        linear_bond_lengths,
+        linear_eigenvalues,
+        linear_eigenvectors,
+    )
+    linear_angle_reference = {
+        "u_ab": linear_u_ab.tolist(),
+        "u_cb": linear_u_cb.tolist(),
+        "bond_lengths": linear_bond_lengths,
+        "eigenvalues": [values.tolist() for values in linear_eigenvalues],
+        "eigenvectors": [np.real(vectors).tolist() for vectors in linear_eigenvectors],
+        "n_samples": 200,
+        "helper_k_kcal_mol_rad2": float(linear_raw_k),
+        "final_k_kcal_mol_rad2": float(linear_raw_k * 2.0),
+        "angle_degrees": float(linear_angle),
+        "notes": "Final k includes QUBEKit calculate_angles conversion factor of 2.",
+    }
+    near_linear_u_cb = np.array(
+        [np.cos(np.deg2rad(175.0)), np.sin(np.deg2rad(175.0)), 0.0]
+    )
+    near_linear_raw_k, near_linear_angle = ModSemMaths.f_c_a_special_case(
+        linear_u_ab,
+        near_linear_u_cb,
+        linear_bond_lengths,
+        linear_eigenvalues,
+        linear_eigenvectors,
+    )
+    near_linear_angle_reference = {
+        **linear_angle_reference,
+        "u_cb": near_linear_u_cb.tolist(),
+        "helper_k_kcal_mol_rad2": float(near_linear_raw_k),
+        "final_k_kcal_mol_rad2": float(near_linear_raw_k * 2.0),
+        "angle_degrees": float(near_linear_angle),
+    }
+
     # Print summary as Python dict for copy-paste
     print("=" * 70)
     print("PYTHON REFERENCE DATA (copy-paste into test file)")
@@ -244,7 +298,7 @@ def main() -> None:
 
     # Bond reference values
     print("# QUBEKit bond parameters")
-    print("# Units: length in nm, k in kJ/mol/nm² (OpenMM convention: U = k*(r-r0)²)")
+    print("# Units: length in nm, k in kJ/mol/nm² (OpenMM convention: U = k*(r-r0)²/2)")
     print("QUBEKIT_BOND_PARAMS = {")
     for bond in mol.bonds:
         bond_key = (bond.atom1_index, bond.atom2_index)
@@ -256,7 +310,8 @@ def main() -> None:
     # Angle reference values
     print("# QUBEKit angle parameters")
     print(
-        "# Units: angle in degrees, k in kJ/mol/rad² (OpenMM convention: U = k*(theta-theta0)²)"
+        "# Units: angle in degrees, k in kJ/mol/rad² "
+        "(OpenMM convention: U = k*(theta-theta0)²/2)"
     )
     print("QUBEKIT_ANGLE_PARAMS = {")
     for angle in mol.angles:
@@ -274,15 +329,19 @@ def main() -> None:
         "angles": list(mol.angles),
         "bond_params": bond_results,
         "angle_params": angle_results,
+        "linear_angle_reference": linear_angle_reference,
+        "near_linear_angle_reference": near_linear_angle_reference,
         "notes": {
+            "qubekit_version": version("qubekit"),
+            "qubekit_source": "https://github.com/qubekit/QUBEKit/blob/main/qubekit/bonded/mod_seminario.py",
             "hessian_type": "mock_diagonal_dominated",
             "hessian_k_diagonal_kcal_mol_A2": 500.0,
             "vibrational_scaling": 1.0,
             "units": {
                 "length": "nm",
-                "bond_k": "kJ/mol/nm² (OpenMM convention: U = k*(r-r0)²)",
+                "bond_k": "kJ/mol/nm² (OpenMM convention: U = k*(r-r0)²/2)",
                 "angle": "radians (also provided in degrees)",
-                "angle_k": "kJ/mol/rad² (OpenMM convention: U = k*(theta-theta0)²)",
+                "angle_k": "kJ/mol/rad² (OpenMM convention: U = k*(theta-theta0)²/2)",
             },
         },
     }
@@ -308,10 +367,10 @@ QUBEKit internal workflow:
    - Angles: kJ/mol/rad² using KCAL_TO_KJ * 2 (= 4.184 * 2 = 8.368)
      Factor of 2 is for potential convention
 
-OpenMM convention: U = k*(r-r0)² (no 1/2 factor)
-OpenFF/SMIRNOFF convention: U = (k/2)*(r-r0)² (has 1/2 factor)
-
-So QUBEKit k values are 2x larger than OpenFF k values for the same physical potential.
+QUBEKit's internal ``0.5`` factors and final ``2`` conversion factors cancel.
+Its final values use the same U = (k/2)*delta² convention as OpenMM and
+OpenFF/SMIRNOFF, so final force constants should be compared directly after
+unit conversion.
 """
     )
 
