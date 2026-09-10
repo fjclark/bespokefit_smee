@@ -48,6 +48,19 @@ already saturates a GPU. Concurrent execution on a single GPU needs NVIDIA MPS,
 configured outside Presto. Only sampling is parallelised; parameterisation, fitting,
 and analysis stay in the parent process.
 
+On CPU, cap the threads per worker before launching. OpenMM and PyTorch each size
+their thread pools to the whole machine, so every worker claims all cores no matter
+how many workers there are, and the processes then fight for them. Divide the cores
+you have by the number of workers:
+
+```bash
+export OPENMM_CPU_THREADS=6 OMP_NUM_THREADS=6  # 24 cores, 4 workers
+```
+
+Workers inherit these, so setting them in the launching shell is enough. Without
+them, raising `n_sampling_processes` on CPU could make the fit slower rather than
+faster.
+
 !!! warning "Guard the Python entry point"
     Workers are fresh Python processes that re-import your script. With
     `n_sampling_processes > 1`, call `get_bespoke_force_field` behind an
