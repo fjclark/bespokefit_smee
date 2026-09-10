@@ -5,16 +5,23 @@ from __future__ import annotations
 import multiprocessing
 import os
 import pickle
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
+from typing import TypeVar
 
 import datasets
 import loguru
 import torch
 from loguru import logger
 from openff.toolkit import ForceField, Molecule
-from rich.progress import track
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    TextColumn,
+    TimeRemainingColumn,
+)
 
 from . import mlp
 from . import sample as sample_module
@@ -23,6 +30,8 @@ from .sample import _SAMPLING_FNS_REGISTRY
 from .settings import PreComputedDatasetSettings, SamplingSettings
 from .utils._suppress_output import suppress_unwanted_output
 from .utils.gpu import free_gpu_memory
+
+_T = TypeVar("_T")
 
 _WORKER_DEVICE = "cpu"
 """The torch device this worker samples on, set once it has claimed a GPU.
@@ -147,6 +156,18 @@ def sample_ligands(
     return results
 
 
+def _track_ligands(items: Iterable[_T], total: int) -> Iterator[_T]:
+    """Yield ``items`` behind a bar counting completed ligands as ``x/N``."""
+    progress = Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeRemainingColumn(),
+    )
+    with progress:
+        yield from progress.track(items, total=total, description="Ligands sampled")
+
+
 def _warm_ml_potential(
     mol: Molecule, sampling_settings: SamplingSettings, device_type: str
 ) -> None:
@@ -202,7 +223,9 @@ def _sample_every_ligand(
     failures: dict[int, Exception] = {}
 
     if workers == 1:
-        for mol_idx, args in enumerate(worker_args):
+        for mol_idx, args in _track_ligands(
+            enumerate(worker_args), total=len(worker_args)
+        ):
             try:
                 sampled[mol_idx], worker_logs[mol_idx] = _sample_worker(*args)
             except Exception as exc:
@@ -239,11 +262,7 @@ def _sample_every_ligand(
                 executor.submit(_sample_worker, *args): mol_idx
                 for mol_idx, args in enumerate(worker_args)
             }
-            for future in track(
-                as_completed(futures),
-                total=len(futures),
-                description="Ligands completed",
-            ):
+            for future in _track_ligands(as_completed(futures), total=len(futures)):
                 try:
                     mol_idx = futures[future]
                     sampled[mol_idx], worker_logs[mol_idx] = future.result()
