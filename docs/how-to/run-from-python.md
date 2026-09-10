@@ -8,15 +8,16 @@ The CLI is an easy way to run `presto` for one-off fits, but the Python API give
 from presto.settings import ParamSettings, WorkflowSettings
 from presto.workflow import get_bespoke_force_field
 
-settings = WorkflowSettings(
-    param_settings=ParamSettings(
-        molecule_input_type="smiles",
-        molecules="CCO",
-    ),
-    device_type="cuda",
-)
+if __name__ == "__main__":
+    settings = WorkflowSettings(
+        param_settings=ParamSettings(
+            molecule_input_type="smiles",
+            molecules="CCO",
+        ),
+        device_type="cuda",
+    )
 
-bespoke_ff = get_bespoke_force_field(settings)
+    bespoke_ff = get_bespoke_force_field(settings)
 ```
 
 `get_bespoke_force_field` returns the final fitted `openff.toolkit.ForceField` and writes the same output tree the CLI would. Pass `write_settings=False` to skip writing `workflow_settings.yaml` (useful when you've loaded settings from a YAML file already).
@@ -33,6 +34,19 @@ settings = WorkflowSettings.from_yaml(
 ```
 
 This is the recommended way to inject runtime objects (e.g. an ASE calculator) that can't round-trip through YAML — see **[Use an ASE calculator](use-ase-calculator.md)**.
+
+## Parallel ligand sampling
+
+Set `n_sampling_processes` on `WorkflowSettings` (or `--n-sampling-processes` on `presto train`) to sample independent ligands concurrently on one node. The default of one process keeps the serial behaviour. For how to size it, and for the CPU thread limits it needs, see **[Speed up fitting with parallelism](speed-up-with-parallelism.md)**.
+
+!!! warning "Guard the Python entry point"
+    Workers are fresh Python processes that re-import your script. With
+    `n_sampling_processes > 1`, call `get_bespoke_force_field` behind an
+    `if __name__ == "__main__":` guard, as in the example above; without it every
+    worker re-runs the script and may spawn workers recursively or fail with a
+    multiprocessing bootstrap error. Interactive sessions and notebooks have no
+    importable guard, so use `n_sampling_processes=1` there, a guarded `.py` script,
+    or the `presto` CLI.
 
 ## Reference
 

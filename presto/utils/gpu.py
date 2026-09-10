@@ -5,6 +5,13 @@ from openmm import Integrator
 from openmm.app import Simulation
 
 
+def free_gpu_memory() -> None:
+    """Return cached GPU memory to the driver, if there is a GPU."""
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()  # Wait for all GPU operations to complete
+        torch.cuda.empty_cache()  # Now GPU is idle, memory can actually be freed
+
+
 def cleanup_simulation(
     simulation: Simulation, integrator: Integrator | None = None
 ) -> None:
@@ -33,6 +40,4 @@ def cleanup_simulation(
     del simulation
     if integrator is not None:
         del integrator
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()  # Wait for all GPU operations to complete
-        torch.cuda.empty_cache()  # Now GPU is idle, memory can actually be freed
+    free_gpu_memory()

@@ -914,6 +914,7 @@ class WorkflowSettings(_DefaultSettings):
 
     n_iterations: int = Field(
         2,
+        ge=1,
         description="Number of (sample, train) iterations to run. Iteration 1 samples "
         "with the initial force field; later iterations sample with the bespoke force "
         "field produced by the previous iteration, which usually improves test loss.",
@@ -925,6 +926,13 @@ class WorkflowSettings(_DefaultSettings):
         "to the data from previous iterations (growing dataset). If False (default), "
         "each iteration replaces the previous training dataset. Enabling memory "
         "increases peak GPU memory usage with each iteration.",
+    )
+
+    n_sampling_processes: int = Field(
+        1,
+        ge=1,
+        description="Number of spawned worker processes used to sample independent "
+        "ligands.",
     )
 
     param_settings: ParamSettings = Field(
