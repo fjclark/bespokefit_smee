@@ -165,7 +165,27 @@ def get_bespoke_force_field(
         TimeRemainingColumn(),
     )
 
-    datasets_train = None  # Only None for the first iteration
+    previous_datasets = None  # Only None for the first iteration
+
+    def process_training_dataset(
+        mol_idx: int, dataset: datasets.Dataset
+    ) -> datasets.Dataset:
+        if settings.outlier_filter_settings is not None:
+            logger.info(
+                f"Applying outlier filtering to molecule {mol_idx} training data"
+            )
+            dataset = filter_dataset_outliers(
+                dataset=dataset,
+                force_field=tensor_ff,
+                topology=tensor_tops[mol_idx],
+                settings=settings.outlier_filter_settings,
+                device=settings.device,
+            )
+        if settings.memory and previous_datasets is not None:
+            dataset = datasets.combine.concatenate_datasets(
+                [previous_datasets[mol_idx], dataset]
+            )
+        return dataset
 
     with progress:
         for iteration in progress.track(
@@ -179,29 +199,6 @@ def get_bespoke_force_field(
                 output_type: path_manager.get_output_path(stage, output_type)
                 for output_type in settings.training_sampling_settings.output_types
             }
-
-            def process_training_dataset(
-                mol_idx: int,
-                dataset: datasets.Dataset,
-                # Bound now, before `datasets_train` is rebound by the call below.
-                previous_datasets: list[datasets.Dataset] | None = datasets_train,
-            ) -> datasets.Dataset:
-                if settings.outlier_filter_settings is not None:
-                    logger.info(
-                        f"Applying outlier filtering to molecule {mol_idx} training data"
-                    )
-                    dataset = filter_dataset_outliers(
-                        dataset=dataset,
-                        force_field=tensor_ff,
-                        topology=tensor_tops[mol_idx],
-                        settings=settings.outlier_filter_settings,
-                        device=settings.device,
-                    )
-                if settings.memory and previous_datasets is not None:
-                    dataset = datasets.combine.concatenate_datasets(
-                        [previous_datasets[mol_idx], dataset]
-                    )
-                return dataset
 
             # Workers load the force field produced by the previous iteration.
             sampling_offxml_path = (
@@ -275,6 +272,8 @@ def get_bespoke_force_field(
                 logger.info(
                     f"Iteration {iteration} Molecule {mol_idx} force field statistics: Energy (Mean/SD): {energy_mean_new:.3e}/{energy_sd_new:.3e} kcal/mol, Forces (Mean/SD): {forces_mean_new:.3e}/{forces_sd_new:.3e} kcal/mol/Å"
                 )
+
+            previous_datasets = datasets_train  # Carry into the next iteration
 
     # Plot
     analyse_workflow(settings)
