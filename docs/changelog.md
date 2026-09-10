@@ -15,9 +15,7 @@
 
 ### Fixes
 
-- Correct linear and near-linear MSM angle force constants that were half their
-  intended SMIRNOFF / OpenMM values due to an uncancelled intermediate QUBEKit
-  convention factor.
+- Correct linear and near-linear MSM angle force constants that were half their intended SMIRNOFF / OpenMM values due to an uncancelled intermediate QUBEKit convention factor. This only affects ~ linear function groups e.g. nitrile and even then is expected to have only minimal impact on fits (as previously very little difference between the final performance of FFs initialised with MSM or Sage vales was observed). Fixed in [#85](https://github.com/cole-group/presto/pull/85).
 - Attempt parameterisation for every molecule instead of aborting on the first failure, then raise a single `MoleculeParameterisationError` listing every molecule which could not be parameterised (whether the modified Seminario step could not generate a conformer for it, or OpenFF could not assign its charges/parameters). Addresses [#80](https://github.com/cole-group/presto/issues/80).
 - Fix a latent `IndexError` in the MSM step when fewer conformers were available than `n_conformers`; the conformer loop now iterates the conformers actually present.
 
