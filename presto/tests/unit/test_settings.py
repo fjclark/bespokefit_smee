@@ -900,6 +900,16 @@ class TestWorkflowSettings:
         assert settings.n_iterations == n_iterations
         assert settings.memory == memory
 
+    def test_workflow_requires_at_least_one_iteration(self):
+        """A workflow must have a final training iteration."""
+        with pytest.raises(ValidationError, match="n_iterations"):
+            WorkflowSettings(
+                param_settings=ParamSettings(
+                    molecule_input_type="smiles", molecules="CCO"
+                ),
+                n_iterations=0,
+            )
+
     def test_outlier_filter_settings_has_default(self, valid_workflow_settings):
         """Test that outlier_filter_settings has default values."""
         assert valid_workflow_settings.outlier_filter_settings is not None

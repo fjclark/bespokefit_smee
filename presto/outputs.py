@@ -113,6 +113,14 @@ class StageKind(StrEnum):
     PLOTS = "plots"
 
 
+class WorkflowStatus(StrEnum):
+    """The state of generated output for a workflow fit."""
+
+    CLEAN = "clean"
+    PARTIAL = "partial"
+    COMPLETE = "complete"
+
+
 @dataclass(frozen=True)
 class OutputStage:
     """A specific stage in the workflow output directory structure."""
@@ -139,6 +147,59 @@ class WorkflowPathManager:
     training_settings: "TrainingSettings | None" = None
     training_sampling_settings: "SamplingSettings | None" = None
     testing_sampling_settings: "SamplingSettings | None" = None
+
+    def _generated_stages(self) -> list[OutputStage]:
+        """Return every stage these settings predict whose directory exists."""
+        return [
+            stage
+            for stage in self.outputs_by_stage
+            if stage.kind is not StageKind.BASE
+            and (
+                (stage_path := self.get_stage_path(stage)).is_dir()
+                or stage_path.is_symlink()
+            )
+        ]
+
+    def _foreign_children(self, stage: OutputStage) -> list[Path]:
+        """Return entries in a stage directory which these settings do not predict."""
+        predicted = {
+            path
+            for paths in self.get_all_output_paths(only_if_exists=False)
+            .get(stage, {})
+            .values()
+            for path in (paths if isinstance(paths, list) else [paths])
+        }
+        return [
+            child
+            for child in self.get_stage_path(stage).iterdir()
+            if child not in predicted
+        ]
+
+    @property
+    def final_force_field(self) -> Path:
+        """The bespoke force field written by the last training iteration."""
+        return self.get_output_path(
+            OutputStage(StageKind.TRAINING, self.n_iterations), OutputType.OFFXML
+        )
+
+    @property
+    def status(self) -> WorkflowStatus:
+        """Return whether generated fit output is clean, partial, or complete."""
+        # is_symlink covers a broken link, which exists() reports as missing.
+        if self.final_force_field.exists() or self.final_force_field.is_symlink():
+            return WorkflowStatus.COMPLETE
+        if self._generated_stages():
+            return WorkflowStatus.PARTIAL
+        return WorkflowStatus.CLEAN
+
+    def require_clean(self) -> None:
+        """Raise if generated output must be cleaned before starting a fit."""
+        if (status := self.status) is not WorkflowStatus.CLEAN:
+            raise RuntimeError(
+                f"The output directory {self.output_dir} contains a {status.value} "
+                "Presto fit. Run `presto clean` or use a new output directory before "
+                "starting another fit."
+            )
 
     @property
     def outputs_by_stage(self) -> dict[OutputStage, set[OutputType]]:
@@ -375,25 +436,31 @@ class WorkflowPathManager:
         return 0  # Default for backward compatibility
 
     def clean(self) -> None:
-        """Remove all output files and empty stage directories."""
-        # Delete all output files
-        all_paths = self.get_all_output_paths(only_if_exists=True)
+        """Remove every stage directory these settings predict.
 
-        for paths in all_paths.values():
-            for output_type, path_or_paths in paths.items():
-                if output_type == OutputType.WORKFLOW_SETTINGS:
-                    continue  # Don't delete workflow settings
-                if isinstance(path_or_paths, list):
-                    for path in path_or_paths:
-                        delete_path(path, recursive=True)
-                else:
-                    delete_path(path_or_paths, recursive=True)
+        Stages beyond the predicted ones, such as an iteration past
+        ``n_iterations``, are left alone, as is anything outside a stage directory.
 
-        # Remove empty stage directories
-        for stage in self.outputs_by_stage.keys():
-            if stage.kind == StageKind.BASE:
+        Raises:
+        ------
+        RuntimeError
+            If a predicted stage directory holds a path these settings do not
+            predict. Nothing is deleted in that case.
+        """
+        stages = self._generated_stages()
+        for stage in stages:
+            stage_path = self.get_stage_path(stage)
+            if stage_path.is_symlink() or not (
+                foreign := self._foreign_children(stage)
+            ):
                 continue
-            delete_path(self.get_stage_path(stage), recursive=False)
+            raise RuntimeError(
+                f"{stage_path} contains files presto did not generate "
+                f"({', '.join(child.name for child in foreign[:3])}). Delete it "
+                "yourself or use a different output_dir."
+            )
+        for stage in stages:
+            delete_path(self.get_stage_path(stage), recursive=True)
 
 
 def delete_path(path: Path, recursive: bool = False) -> None:
@@ -410,10 +477,12 @@ def delete_path(path: Path, recursive: bool = False) -> None:
         Whether to delete directories recursively, by default False. If False, only
         empty directories will be deleted.
     """
-    if not path.exists():
+    if not path.exists() and not path.is_symlink():
         return
 
-    if path.is_dir():
+    if path.is_symlink():
+        path.unlink()
+    elif path.is_dir():
         if recursive:
             for child in path.iterdir():
                 delete_path(child, recursive=True)
