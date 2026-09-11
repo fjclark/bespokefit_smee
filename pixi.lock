@@ -12892,8 +12892,8 @@ packages:
   timestamp: 1776858157327
 - pypi: ./
   name: presto
-  version: 0.8.2.dev24+g61d9b7c46.d20260911
-  sha256: b2cd64ed0ea6bd14990ec8a79a0474ed1d15ab7bd1399e85c6ea9d3f9980ac1d
+  version: 0.8.2.dev29+g1db365645.d20260911
+  sha256: 0ec5deb018fc64e96800f180e88a56e723b6b69c2cabc558e07f3b3c33546369
   requires_python: '>=3.11,<3.15'
 - pypi: https://files.pythonhosted.org/packages/ee/8c/83087ebc47ab0396ce092363001fa37c17153119ee282700c0713a195853/prettytable-3.17.0-py3-none-any.whl
   name: prettytable
