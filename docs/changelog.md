@@ -8,6 +8,7 @@
 
 ### Features
 
+- Dockerfile, associated docs, and GHA workflow added in [#86](https://github.com/cole-group/presto/pull/86).
 - Warn without rejecting or changing settings when input molecules contain phosphorus or sulfonamide environments known to cause MLP-minimisation or modified Seminario initialisation failures. The warnings identify every matching molecule and recommend safer sampling/MSM settings. Addresses [#63](https://github.com/cole-group/presto/issues/63).
 - Add an optional `starting_conformers` setting to each sampling stage (`training_sampling_settings`, `testing_sampling_settings`) and to `msm_settings`. When set to an SDF path, that stage starts from the supplied conformers (matched to each molecule by graph isomorphism and realigned automatically) instead of generating them with ETKDG; `n_conformers` is ignored for that stage. The default remains ETKDG.In [#78](https://github.com/cole-group/presto/pull/78).
 - Add `n_sampling_processes` to `WorkflowSettings` (`--n-sampling-processes` on `presto train`) to sample independent ligands in parallel worker processes on one node, assigned round-robin across the visible CUDA devices. The default of `1` keeps the previous serial behaviour. Addresses [#77](https://github.com/cole-group/presto/issues/77) in [#84](https://github.com/cole-group/presto/pull/84).
