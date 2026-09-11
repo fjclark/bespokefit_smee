@@ -3,9 +3,6 @@ name: Publish Docker Image
 on:
   push:
     tags: ["*"]
-    # TEMPORARY: lets this branch exercise the workflow before it reaches main,
-    # where workflow_dispatch first becomes available. Remove before merging.
-    branches: ["feature-docker"]
   workflow_dispatch:
     inputs:
       tag:
@@ -56,9 +53,6 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},enable=${{ github.event_name == 'push' && github.ref_type == 'tag' && steps.release.outputs.is_series_latest == 'true' }}
             type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref_type == 'tag' && steps.release.outputs.is_latest == 'true' }}
             type=raw,value=test-${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
-            # TEMPORARY: pairs with the feature-docker push trigger above, so a
-            # branch build has a tag to push as. Remove both together before merge.
-            type=ref,event=branch,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
 
       - name: Build and push
         if: github.event_name != 'push' || github.ref_type != 'tag' || steps.release.outputs.is_version == 'true'
