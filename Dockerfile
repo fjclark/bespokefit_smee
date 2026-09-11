@@ -42,10 +42,11 @@ ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PRESTO_VERSION}
 COPY pyproject.toml pixi.lock README.md LICENSE ./
 COPY presto ./presto
 
-# Keep dependencies locked, but install presto separately so the stale project
-# version embedded in pixi.lock cannot become the installed version.
+# pixi builds the editable presto from the copied source, and hatch-vcs picks up
+# SETUPTOOLS_SCM_PRETEND_VERSION, so the stale project version recorded in
+# pixi.lock cannot become the installed version.
 RUN --mount=type=cache,target=/root/.cache/rattler \
-    pixi install --locked --environment "${PRESTO_ENV}" --skip presto
+    pixi install --locked --environment "${PRESTO_ENV}"
 
 # Render the environment into a standalone bash prologue so the runtime image
 # does not need pixi.
@@ -53,11 +54,6 @@ RUN printf '#!/bin/bash\n' > /entrypoint.sh \
  && pixi shell-hook --as-is --environment "${PRESTO_ENV}" -s bash >> /entrypoint.sh \
  && printf '\nexec "$@"\n' >> /entrypoint.sh \
  && chmod 0755 /entrypoint.sh
-
-# Install the source last: later pixi commands must not restore the locked local
-# package metadata. Build isolation supplies the backend declared in pyproject.toml.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    /app/.pixi/envs/${PRESTO_ENV}/bin/pip install --no-deps --editable .
 
 # Warm the default MLP. AIMNet2 writes its weights inside site-packages and has no
 # cache-directory override, so baking them here is what lets a non-root container
