@@ -5,16 +5,19 @@ the Modified Seminario Method, which can then be used as reference values
 for testing our implementation.
 
 Usage:
-    conda run -n qubekit python presto/data/msm/generate_qubekit_reference.py
+    conda create -n qubekit-2.1.1 -c conda-forge python=3.9 qubekit=2.1.1 \
+        pydantic=1.10 openff-toolkit-base=0.10.4 openmm
+    conda run -n qubekit-2.1.1 python \
+        presto/data/msm/generate_qubekit_reference.py
 
 Requirements:
-    - QUBEKit must be installed (available in the 'qubekit' conda environment)
+    - QUBEKit 2.1.1 and its contemporary Pydantic/OpenFF dependencies
 
 The script will:
-    1. Create an asymmetric halogenated molecule with QUBEKit
-    2. Generate a mock Hessian matrix
-    3. Run QUBEKit's ModSeminario method
-    4. Output the resulting bond and angle parameters
+    1. Generate the existing asymmetric-molecule reference
+    2. Create acetonitrile with its C-C#N angle bent to 175 degrees
+    3. Run QUBEKit's complete ModSeminario method for both molecules
+    4. Output the resulting final bond and angle parameters
 
 These values can be compared against our implementation to verify correctness.
 
@@ -28,29 +31,157 @@ Note on test molecule:
     We use fluorochlorobromomethanol (OC(F)(Cl)Br), a fully asymmetric molecule,
     to avoid QUBEKit's internal symmetry averaging when comparing against our
     implementation (in our workflow, symmetry averaging is handled by having
-    symmetric atoms share the same SMIRKS types).
+    symmetric atoms share the same SMIRKS types). A separate acetonitrile fixture
+    exercises QUBEKit's full near-linear-angle path.
 """
 
 import json
-import sys
+import os
 from importlib.metadata import version
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 
 # Check if QUBEKit is available
 try:
     from qubekit.bonded import ModSeminario
-    from qubekit.bonded.mod_seminario import ModSemMaths
     from qubekit.molecules import Ligand
     from qubekit.utils import constants
-except ImportError:
-    print("ERROR: QUBEKit is not installed in this environment.")
-    print("Please run this script using:")
-    print(
-        "    conda run -n qubekit python presto/data/msm/generate_qubekit_reference.py"
+except ImportError as error:
+    raise ImportError(
+        "QUBEKit and its runtime dependencies are required; run this script "
+        "in the pinned QUBEKit 2.1.1 reference environment."
+    ) from error
+
+
+_QUBEKIT_VERSION = "2.1.1"
+_NEAR_LINEAR_ANGLE_DEGREES = 175.0
+
+
+def _run_mod_seminario(molecule: Ligand) -> Ligand:
+    """Run QUBEKit without leaving its text reports in the source tree."""
+    previous_directory = os.getcwd()
+    with TemporaryDirectory() as temporary_directory:
+        try:
+            os.chdir(temporary_directory)
+            return ModSeminario(vibrational_scaling=1.0).run(molecule=molecule)
+        finally:
+            os.chdir(previous_directory)
+
+
+def _rotation_matrix(pair_index: int) -> np.ndarray:
+    """Return a deterministic rotation used to orient a Hessian pair block."""
+    alpha, beta, gamma = (
+        0.13 * pair_index,
+        0.17 * pair_index,
+        0.19 * pair_index,
     )
-    sys.exit(1)
+    sin_a, cos_a = np.sin(alpha), np.cos(alpha)
+    sin_b, cos_b = np.sin(beta), np.cos(beta)
+    sin_g, cos_g = np.sin(gamma), np.cos(gamma)
+    rotate_x = np.array([[1.0, 0.0, 0.0], [0.0, cos_a, -sin_a], [0.0, sin_a, cos_a]])
+    rotate_y = np.array([[cos_b, 0.0, sin_b], [0.0, 1.0, 0.0], [-sin_b, 0.0, cos_b]])
+    rotate_z = np.array([[cos_g, -sin_g, 0.0], [sin_g, cos_g, 0.0], [0.0, 0.0, 1.0]])
+    return rotate_z @ rotate_y @ rotate_x
+
+
+def create_nondegenerate_hessian_angstrom(n_atoms: int) -> np.ndarray:
+    """Create a deterministic PSD Hessian in kcal/mol/Angstrom**2.
+
+    Distinct, anisotropic atom-pair blocks avoid arbitrary eigenvectors in the
+    QUBEKit/Presto differential test. The block-Laplacian construction makes
+    the complete matrix symmetric, positive semidefinite, and translationally
+    invariant.
+    """
+    hessian = np.zeros((3 * n_atoms, 3 * n_atoms))
+    pair_index = 0
+    for atom_i in range(n_atoms):
+        for atom_j in range(atom_i + 1, n_atoms):
+            pair_index += 1
+            rotation = _rotation_matrix(pair_index)
+            eigenvalues = np.array(
+                [
+                    40.0 + 3.0 * pair_index,
+                    70.0 + 5.0 * pair_index,
+                    110.0 + 7.0 * pair_index,
+                ]
+            )
+            pair_block = rotation @ np.diag(eigenvalues) @ rotation.T
+            slice_i = slice(3 * atom_i, 3 * (atom_i + 1))
+            slice_j = slice(3 * atom_j, 3 * (atom_j + 1))
+            hessian[slice_i, slice_i] += pair_block
+            hessian[slice_j, slice_j] += pair_block
+            hessian[slice_i, slice_j] -= pair_block
+            hessian[slice_j, slice_i] -= pair_block
+
+    np.testing.assert_allclose(hessian, hessian.T, atol=1e-12)
+    np.testing.assert_allclose(
+        hessian.reshape(n_atoms, 3, n_atoms, 3).sum(axis=2), 0.0, atol=1e-10
+    )
+    assert np.linalg.eigvalsh(hessian).min() > -1e-10
+    return hessian
+
+
+def _measure_angle_degrees(coords: np.ndarray, angle: tuple[int, int, int]) -> float:
+    """Measure an angle from Cartesian coordinates in degrees."""
+    atom_a, atom_b, atom_c = angle
+    vector_ba = coords[atom_a] - coords[atom_b]
+    vector_bc = coords[atom_c] - coords[atom_b]
+    cosine = np.dot(vector_ba, vector_bc) / (
+        np.linalg.norm(vector_ba) * np.linalg.norm(vector_bc)
+    )
+    return float(np.degrees(np.arccos(np.clip(cosine, -1.0, 1.0))))
+
+
+def create_near_linear_acetonitrile() -> tuple[Ligand, tuple[int, int, int]]:
+    """Create acetonitrile with a deterministic 175-degree C-C-N angle."""
+    molecule = Ligand.from_smiles("CC#N", "near_linear_acetonitrile")
+    topology = molecule.to_topology()
+
+    nitrogen_indices = [
+        index
+        for index, atom in enumerate(molecule.atoms)
+        if atom.atomic_symbol == "N" and topology.degree[index] == 1
+    ]
+    assert len(nitrogen_indices) == 1
+    nitrogen = nitrogen_indices[0]
+    nitrile_carbon = next(iter(topology.neighbors(nitrogen)))
+    assert molecule.atoms[nitrile_carbon].atomic_symbol == "C"
+    carbon_substituents = [
+        index
+        for index in topology.neighbors(nitrile_carbon)
+        if index != nitrogen and molecule.atoms[index].atomic_symbol == "C"
+    ]
+    assert len(carbon_substituents) == 1
+    methyl_carbon = carbon_substituents[0]
+    target_angle = (methyl_carbon, nitrile_carbon, nitrogen)
+    assert target_angle in molecule.angles or target_angle[::-1] in molecule.angles
+
+    coords = np.array(molecule.coordinates, copy=True)
+    central_position = coords[nitrile_carbon]
+    substituent_vector = coords[methyl_carbon] - central_position
+    substituent_unit = substituent_vector / np.linalg.norm(substituent_vector)
+    reference_axis = np.eye(3)[np.argmin(np.abs(substituent_unit))]
+    perpendicular = (
+        reference_axis - np.dot(reference_axis, substituent_unit) * substituent_unit
+    )
+    perpendicular /= np.linalg.norm(perpendicular)
+    nitrile_length = np.linalg.norm(coords[nitrogen] - central_position)
+    target_radians = np.deg2rad(_NEAR_LINEAR_ANGLE_DEGREES)
+    coords[nitrogen] = central_position + nitrile_length * (
+        np.cos(target_radians) * substituent_unit
+        + np.sin(target_radians) * perpendicular
+    )
+    molecule.coordinates = coords
+
+    np.testing.assert_allclose(
+        _measure_angle_degrees(coords, target_angle),
+        _NEAR_LINEAR_ANGLE_DEGREES,
+        rtol=0.0,
+        atol=1e-10,
+    )
+    return molecule, target_angle
 
 
 def create_mock_hessian_angstrom(
@@ -124,6 +255,12 @@ def create_mock_hessian_atomic_units(
 
 def main() -> None:
     """Generate reference values using QUBEKit's ModSeminario."""
+    qubekit_version = version("qubekit")
+    if qubekit_version != _QUBEKIT_VERSION:
+        raise RuntimeError(
+            f"Reference data requires QUBEKit {_QUBEKIT_VERSION}, found {qubekit_version}."
+        )
+
     print("=" * 70)
     print("QUBEKit Modified Seminario Method - Reference Value Generator")
     print("=" * 70)
@@ -142,7 +279,8 @@ def main() -> None:
 
     # Print coordinates
     print("Coordinates (Angstroms):")
-    for i, (atom, coord) in enumerate(zip(mol.atoms, mol.coordinates, strict=True)):
+    for i, atom in enumerate(mol.atoms):
+        coord = mol.coordinates[i]
         print(
             f"  {i}: {atom.atomic_symbol:2s} [{coord[0]:10.6f}, {coord[1]:10.6f}, {coord[2]:10.6f}]"
         )
@@ -169,8 +307,7 @@ def main() -> None:
 
     # Run ModSeminario
     print("Running QUBEKit ModSeminario...")
-    mod_sem = ModSeminario(vibrational_scaling=1.0)
-    mol = mod_sem.run(molecule=mol)
+    mol = _run_mod_seminario(mol)
     print("  Done!")
     print()
 
@@ -214,57 +351,67 @@ def main() -> None:
         print(f"    k = {param.k:.2f} kJ/mol/rad²")
     print()
 
-    # Exercise QUBEKit's linear-angle helper directly. Running an exactly linear
-    # molecule through the complete QUBEKit stage is not possible because its
-    # scaling-factor setup constructs a plane normal before dispatching to the
-    # special case. The final stage multiplies the helper result by two.
-    linear_u_ab = np.array([1.0, 0.0, 0.0])
-    linear_u_cb = np.array([-1.0, 0.0, 0.0])
-    linear_bond_lengths = [1.0, 1.0]
-    linear_eigenvalues = [
-        np.array([100.0, 50.0, 50.0]),
-        np.array([100.0, 50.0, 50.0]),
-    ]
-    linear_eigenvectors = [
-        np.eye(3, dtype=complex),
-        np.eye(3, dtype=complex),
-    ]
-    linear_raw_k, linear_angle = ModSemMaths.f_c_a_special_case(
-        linear_u_ab,
-        linear_u_cb,
-        linear_bond_lengths,
-        linear_eigenvalues,
-        linear_eigenvectors,
-    )
-    linear_angle_reference = {
-        "u_ab": linear_u_ab.tolist(),
-        "u_cb": linear_u_cb.tolist(),
-        "bond_lengths": linear_bond_lengths,
-        "eigenvalues": [values.tolist() for values in linear_eigenvalues],
-        "eigenvectors": [np.real(vectors).tolist() for vectors in linear_eigenvectors],
-        "n_samples": 200,
-        "helper_k_kcal_mol_rad2": float(linear_raw_k),
-        "final_k_kcal_mol_rad2": float(linear_raw_k * 2.0),
-        "angle_degrees": float(linear_angle),
-        "notes": "Final k includes QUBEKit calculate_angles conversion factor of 2.",
+    print("Generating full-pipeline near-linear acetonitrile reference...")
+    nitrile, nitrile_angle = create_near_linear_acetonitrile()
+    nitrile_coords = np.array(nitrile.coordinates, copy=True)
+    nitrile_hessian = create_nondegenerate_hessian_angstrom(nitrile.n_atoms)
+
+    # The target pair blocks must have a unique eigenbasis so this reference is
+    # independent of LAPACK's basis choice for degenerate eigenvalues.
+    for terminal_atom in (nitrile_angle[0], nitrile_angle[2]):
+        pair_block = nitrile_hessian[
+            nitrile_angle[1] * 3 : (nitrile_angle[1] + 1) * 3,
+            terminal_atom * 3 : (terminal_atom + 1) * 3,
+        ]
+        eigenvalue_gaps = np.diff(np.sort(np.linalg.eigvalsh(pair_block)))
+        assert np.min(np.abs(eigenvalue_gaps)) > 1e-6
+
+    atomic_unit_conversion = constants.HA_TO_KCAL_P_MOL / (constants.BOHR_TO_ANGS**2)
+    nitrile.hessian = nitrile_hessian / atomic_unit_conversion
+    nitrile = _run_mod_seminario(nitrile)
+    np.testing.assert_allclose(nitrile.coordinates, nitrile_coords, atol=0.0, rtol=0.0)
+    nitrile_parameter = nitrile.AngleForce[nitrile_angle]
+    near_linear_nitrile_reference = {
+        "molecule": {
+            "name": "near_linear_acetonitrile",
+            "smiles": "CC#N",
+            "atoms": [
+                {"index": index, "element": atom.atomic_symbol}
+                for index, atom in enumerate(nitrile.atoms)
+            ],
+            "bonds": [[bond.atom1_index, bond.atom2_index] for bond in nitrile.bonds],
+            "angles": [list(angle) for angle in nitrile.angles],
+            "target_angle": list(nitrile_angle),
+        },
+        "inputs": {
+            "coordinates_angstrom": nitrile_coords.tolist(),
+            "hessian_kcal_mol_angstrom2": nitrile_hessian.tolist(),
+            "target_angle_degrees": _NEAR_LINEAR_ANGLE_DEGREES,
+            "vibrational_scaling": 1.0,
+        },
+        "qubekit_output": {
+            "angle_radians": float(nitrile_parameter.angle),
+            "k_kj_mol_rad2": float(nitrile_parameter.k),
+            "potential": "U = k * (theta - theta0)**2 / 2",
+        },
+        "provenance": {
+            "qubekit_version": qubekit_version,
+            "numpy_version": np.__version__,
+            "pydantic_version": version("pydantic"),
+            "openff_toolkit_version": version("openff.toolkit"),
+            "openmm_version": version("openmm"),
+            "qubekit_source": "https://github.com/qubekit/QUBEKit/blob/2.1.1/qubekit/bonded/mod_seminario.py",
+            "generation_command": "conda run -n qubekit-2.1.1 python presto/data/msm/generate_qubekit_reference.py",
+            "generation": "Full ModSeminario.run pipeline; final molecule.AngleForce parameter",
+            "hessian": "Stored nondegenerate anisotropic PSD block Laplacian",
+        },
     }
-    near_linear_u_cb = np.array(
-        [np.cos(np.deg2rad(175.0)), np.sin(np.deg2rad(175.0)), 0.0]
+    print(
+        "  C-C#N angle: "
+        f"{np.degrees(nitrile_parameter.angle):.8f} degrees, "
+        f"k={nitrile_parameter.k:.8f} kJ/mol/rad^2"
     )
-    near_linear_raw_k, near_linear_angle = ModSemMaths.f_c_a_special_case(
-        linear_u_ab,
-        near_linear_u_cb,
-        linear_bond_lengths,
-        linear_eigenvalues,
-        linear_eigenvectors,
-    )
-    near_linear_angle_reference = {
-        **linear_angle_reference,
-        "u_cb": near_linear_u_cb.tolist(),
-        "helper_k_kcal_mol_rad2": float(near_linear_raw_k),
-        "final_k_kcal_mol_rad2": float(near_linear_raw_k * 2.0),
-        "angle_degrees": float(near_linear_angle),
-    }
+    print()
 
     # Print summary as Python dict for copy-paste
     print("=" * 70)
@@ -273,24 +420,24 @@ def main() -> None:
     print()
 
     # Coordinates
-    print("# Ethanol coordinates in Angstroms (QUBEKit native format)")
-    print("ETHANOL_COORDS_ANGSTROM = np.array([")
+    print("# Fluorochlorobromomethanol coordinates in Angstroms")
+    print("REFERENCE_COORDS_ANGSTROM = np.array([")
     for coord in mol.coordinates:
         print(f"    [{coord[0]:12.8f}, {coord[1]:12.8f}, {coord[2]:12.8f}],")
     print("])")
     print()
 
     # Bonds
-    print("# Ethanol bonds (0-indexed atom pairs)")
-    print("ETHANOL_BONDS = [")
+    print("# Fluorochlorobromomethanol bonds (0-indexed atom pairs)")
+    print("REFERENCE_BONDS = [")
     for bond in mol.bonds:
         print(f"    ({bond.atom1_index}, {bond.atom2_index}),")
     print("]")
     print()
 
     # Angles
-    print("# Ethanol angles (central atom is middle index)")
-    print("ETHANOL_ANGLES = [")
+    print("# Fluorochlorobromomethanol angles (central atom is middle index)")
+    print("REFERENCE_ANGLES = [")
     for angle in mol.angles:
         print(f"    {angle},")
     print("]")
@@ -329,11 +476,10 @@ def main() -> None:
         "angles": list(mol.angles),
         "bond_params": bond_results,
         "angle_params": angle_results,
-        "linear_angle_reference": linear_angle_reference,
-        "near_linear_angle_reference": near_linear_angle_reference,
+        "near_linear_nitrile_reference": near_linear_nitrile_reference,
         "notes": {
-            "qubekit_version": version("qubekit"),
-            "qubekit_source": "https://github.com/qubekit/QUBEKit/blob/main/qubekit/bonded/mod_seminario.py",
+            "qubekit_version": qubekit_version,
+            "qubekit_source": "https://github.com/qubekit/QUBEKit/blob/2.1.1/qubekit/bonded/mod_seminario.py",
             "hessian_type": "mock_diagonal_dominated",
             "hessian_k_diagonal_kcal_mol_A2": 500.0,
             "vibrational_scaling": 1.0,
