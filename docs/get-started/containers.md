@@ -1,44 +1,16 @@
 # Run with containers
 
-A prebuilt GPU image is published to the GitHub Container Registry, so you can run `presto` without pixi and
-without a dependency solve. This page covers Docker on a workstation and Apptainer on HPC.
-
-If pixi already works for you, keep using it. Containers are worth it when you want a fixed, citable
-environment, when you are handing `presto` to a collaborator, or when you are on a cluster that will not let
-you install a 9 GB conda environment.
+A prebuilt GPU image is published to the GitHub Container Registry; this page covers Docker on a workstation and Apptainer on HPC.
 
 ## What is and is not in the image
 
-The image contains the whole `default` pixi environment: `presto`, OpenMM, PyTorch, and every supported MLP,
-along with the CUDA **userspace libraries** from conda-forge. It does **not** contain the NVIDIA **kernel
-driver**, which stays on the host and is handed to the container by `--gpus all`. So the image is portable
-between machines, but the host still needs a driver supporting **CUDA >= 12.9**, exactly as the
-[pixi install](installation.md) does.
-
-The default AIMNet2 weights are baked in, so a default fit runs with no network access. All other MLP weights
-download on first use into a cache volume (see [below](#the-cache-volume)).
+The image contains the whole `default` pixi GPU environment: `presto`, OpenMM, PyTorch, and every supported MLP, but the host still needs a driver supporting **CUDA >= 12.9**, exactly as the [pixi install](installation.md) does.
 
 ## Prerequisites
 
-- [Docker Engine](https://docs.docker.com/engine/install/)
 - An NVIDIA driver supporting CUDA >= 12.9 (check with `nvidia-smi`)
-- The [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html), **registered with the Docker daemon**
-
-Installing the toolkit is not enough on its own. Docker also has to be told about the NVIDIA runtime, and
-without that `--gpus all` fails, on recent Docker with a misleading message about AMD. On Ubuntu:
-
-```bash
-curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
-  | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
-  | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
-  | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
-
-# The step that is easy to miss:
-sudo nvidia-ctk runtime configure --runtime=docker
-sudo systemctl restart docker
-```
+- The [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- [Docker Engine](https://docs.docker.com/engine/install/)
 
 Verify the whole chain before going further:
 
@@ -46,7 +18,7 @@ Verify the whole chain before going further:
 docker run --rm --gpus all nvidia/cuda:12.9.1-base-ubuntu24.04 nvidia-smi
 ```
 
-If that prints your GPU, you are ready. If it does not, see [Troubleshooting](#troubleshooting).
+and check that prints your GPU.
 
 ## Run a fit
 
@@ -62,15 +34,15 @@ docker run --rm --gpus all --shm-size=1g \
 | Part | Why |
 |---|---|
 | `--rm` | Delete the container when it exits. Anything not on a mount is discarded. |
-| `--gpus all` | Hand the host GPUs and driver to the container. Without it, `presto` fails with "CUDA is not available on this system." |
-| `--shm-size=1g` | Docker caps `/dev/shm` at 64 MB, which is too small for `n_sampling_processes > 1`. Harmless otherwise. |
+| `--gpus all` | Hand the host GPUs and driver to the container. |
+| `--shm-size=1g` | Docker caps `/dev/shm` at 64 MB, which may be too small for `n_sampling_processes > 1`. |
 | `--user "$(id -u):$(id -g)"` | Run as you, so output files are yours and not root-owned. |
 | `-v "$PWD:/work"` | Expose the current directory as the container's working directory. |
 | `-v presto-cache:/cache` | A persistent volume for downloaded MLP weights. |
 | `ghcr.io/cole-group/presto:latest` | The image. Pin an exact version for real work. |
 | `presto train ...` | Everything after the image name is the command run inside. |
 
-Because `/work` is your current directory, output lands exactly where a native run would put it:
+Because `/work` is your current directory, output goes exactly where a native run would put it:
 `training_iteration_2/bespoke_ff.offxml` and the rest of the
 [output layout](../concepts/output-layout.md).
 
@@ -114,9 +86,7 @@ From a clone of the repository:
 pixi run container-build
 ```
 
-Expect 20-60 minutes for a cold build and roughly 12 GB on disk. The task passes `PRESTO_VERSION` from
-`git describe`, which is needed because `.git` is excluded from the build context and the version therefore
-cannot be derived from the repository inside the build.
+Expect ~ 15 minutes for a cold build.
 
 Two more tasks wrap the run commands. `container-run` appends whatever you pass after it:
 
@@ -125,7 +95,7 @@ pixi run container-run presto train --param-settings.molecules "CCO"
 pixi run container-shell   # interactive bash inside the image
 ```
 
-They build on `presto:local`, so run `container-build` first.
+They build on `presto:local`, so run `container-build` first. Note that these won't work if you're not in the docker group (just copy the commands from `pyproject.toml` and add `sudo` in this case).
 
 ## Apptainer on HPC
 
@@ -137,6 +107,11 @@ apptainer pull presto.sif docker://ghcr.io/cole-group/presto:latest
 : "${SCRATCH:?Set SCRATCH to a writable scratch directory}"
 mkdir -p "$SCRATCH/presto-cache"
 chmod 700 "$SCRATCH/presto-cache"
+
+# Preserve the GPUs assigned by Slurm; --cleanenv would otherwise discard this.
+if [ -n "${CUDA_VISIBLE_DEVICES:-}" ]; then
+  export APPTAINERENV_CUDA_VISIBLE_DEVICES="$CUDA_VISIBLE_DEVICES"
+fi
 
 apptainer run --nv --cleanenv \
   --bind "$PWD:/work" \
@@ -150,26 +125,15 @@ Three differences from Docker:
 - Apptainer already runs as you, so there is no `--user` flag to pass.
 - `--cleanenv` matters. Apptainer inherits the host environment by default, and a stray `PYTHONPATH`,
   `CONDA_PREFIX` or `LD_LIBRARY_PATH` from a `module load` will break the container.
+- On Slurm, forward `CUDA_VISIBLE_DEVICES` as `APPTAINERENV_CUDA_VISIBLE_DEVICES` so that `--cleanenv`
+  does not discard the scheduler's GPU assignment. The conditional in the example avoids hiding all GPUs
+  when `CUDA_VISIBLE_DEVICES` is unset.
 
 The `.sif` is a single file, which is easier on a shared filesystem than a 9 GB conda environment. Keep the
 cache bind on scratch rather than in the image.
 
 Podman users can substitute `podman` for `docker` throughout, replacing `--gpus all` with
 `--device nvidia.com/gpu=all`.
-
-## Troubleshooting
-
-| Symptom | Cause and fix |
-|---|---|
-| `CUDA is not available on this system.` | `--gpus all` was omitted, or the NVIDIA Container Toolkit is not installed. |
-| `could not select device driver "" with capabilities: [[gpu]]` | The NVIDIA Container Toolkit is missing or the Docker daemon was not restarted after installing it. |
-| `AMD CDI spec not found`, or `--gpus all` failing on Docker 28+ | Docker resolves `--gpus` through CDI and guesses the vendor when no NVIDIA runtime is registered. Either address the device directly with `--device nvidia.com/gpu=all` (check it exists with `nvidia-ctk cdi list`), or register the runtime once with `sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker`. |
-| `nvidia-smi` works inside the container but `torch.cuda.is_available()` is `False` | The container toolkit did not inject `libcuda.so.1`. Check `NVIDIA_DRIVER_CAPABILITIES` includes `compute`. |
-| CUDA errors mentioning the driver version | The host driver is older than CUDA 12.9. This is the same requirement as a native install; the container cannot work around it. |
-| Output files owned by UID 1001 | The image defaults to UID/GID 1001. Add `--user "$(id -u):$(id -g)"` so outputs belong to you. |
-| Bus errors or worker crashes with `n_sampling_processes > 1` | `/dev/shm` is too small. Raise `--shm-size`, or use `--ipc=host` if sharing the host IPC namespace is acceptable. |
-| Odd import errors under Apptainer | Add `--cleanenv`. |
-| `no space left on device` while pulling | The image is several GB compressed and around 12 GB unpacked. Check the Docker data root. |
 
 ## Licensing
 
