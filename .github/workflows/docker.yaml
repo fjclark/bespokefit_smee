@@ -9,9 +9,13 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Image tag to push (test builds)"
+        description: "Image tag suffix (published as test-<suffix>)"
         default: "test"
         required: true
+
+concurrency:
+  group: publish-docker-image
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -23,6 +27,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Classify release tag
+        id: release
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        run: python .github/scripts/release_tags.py "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
@@ -39,16 +50,18 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
+          flavor: latest=false
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
-            type=raw,value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'push' && github.ref_type == 'tag' && steps.release.outputs.is_version == 'true' }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ github.event_name == 'push' && github.ref_type == 'tag' && steps.release.outputs.is_series_latest == 'true' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref_type == 'tag' && steps.release.outputs.is_latest == 'true' }}
+            type=raw,value=test-${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
             # TEMPORARY: pairs with the feature-docker push trigger above, so a
             # branch build has a tag to push as. Remove both together before merge.
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
 
       - name: Build and push
+        if: github.event_name != 'push' || github.ref_type != 'tag' || steps.release.outputs.is_version == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -58,7 +71,7 @@ jobs:
           # hatch-vcs cannot read the version from git inside the build, because
           # .git is excluded from the build context. Hand it in instead.
           build-args: |
-            PRESTO_VERSION=${{ github.ref_type == 'tag' && github.ref_name || '0.0.0.dev0' }}
+            PRESTO_VERSION=${{ github.event_name == 'push' && github.ref_type == 'tag' && github.ref_name || '0.0.0.dev0' }}
           # Do not export a BuildKit cache to type=gha: its large Pixi layers would
           # compete with ci.yaml's Pixi caches for the repo's Actions cache quota.
           provenance: false
