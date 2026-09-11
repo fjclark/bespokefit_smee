@@ -3,6 +3,9 @@ name: Publish Docker Image
 on:
   push:
     tags: ["*"]
+    # TEMPORARY: lets this branch exercise the workflow before it reaches main,
+    # where workflow_dispatch first becomes available. Remove before merging.
+    branches: ["feature-docker"]
   workflow_dispatch:
     inputs:
       tag:
