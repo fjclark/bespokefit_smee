@@ -70,92 +70,34 @@ def _run_mod_seminario(molecule: Ligand) -> Ligand:
             os.chdir(previous_directory)
 
 
-def _rotation_matrix(pair_index: int) -> np.ndarray:
-    """Return a deterministic rotation used to orient a Hessian pair block."""
-    alpha, beta, gamma = (
-        0.13 * pair_index,
-        0.17 * pair_index,
-        0.19 * pair_index,
-    )
-    sin_a, cos_a = np.sin(alpha), np.cos(alpha)
-    sin_b, cos_b = np.sin(beta), np.cos(beta)
-    sin_g, cos_g = np.sin(gamma), np.cos(gamma)
-    rotate_x = np.array([[1.0, 0.0, 0.0], [0.0, cos_a, -sin_a], [0.0, sin_a, cos_a]])
-    rotate_y = np.array([[cos_b, 0.0, sin_b], [0.0, 1.0, 0.0], [-sin_b, 0.0, cos_b]])
-    rotate_z = np.array([[cos_g, -sin_g, 0.0], [sin_g, cos_g, 0.0], [0.0, 0.0, 1.0]])
-    return np.asarray(rotate_z @ rotate_y @ rotate_x, dtype=np.float64)
-
-
 def create_nondegenerate_hessian_angstrom(n_atoms: int) -> np.ndarray:
-    """Create a deterministic PSD Hessian in kcal/mol/Angstrom**2.
+    """Create a deterministic Hessian in kcal/mol/Angstrom**2.
 
-    Distinct, anisotropic atom-pair blocks avoid arbitrary eigenvectors in the
-    QUBEKit/Presto differential test. The block-Laplacian construction makes
-    the complete matrix symmetric, positive semidefinite, and translationally
-    invariant.
+    QUBEKit and presto both eigendecompose the 3x3 atom-pair blocks of the
+    Hessian with ``np.linalg.eig``, so a degenerate block would leave the
+    eigenvector basis arbitrary and the differential test meaningless. Every
+    block here is diagonal with three well-separated entries, which pins the
+    basis exactly. No other property of the matrix is read by either code.
     """
     hessian = np.zeros((3 * n_atoms, 3 * n_atoms))
-    pair_index = 0
     for atom_i in range(n_atoms):
-        for atom_j in range(atom_i + 1, n_atoms):
-            pair_index += 1
-            rotation = _rotation_matrix(pair_index)
-            eigenvalues = np.array(
+        for atom_j in range(n_atoms):
+            hessian[3 * atom_i : 3 * atom_i + 3, 3 * atom_j : 3 * atom_j + 3] = np.diag(
                 [
-                    40.0 + 3.0 * pair_index,
-                    70.0 + 5.0 * pair_index,
-                    110.0 + 7.0 * pair_index,
+                    40.0 + atom_i + atom_j,
+                    70.0 + 2.0 * atom_i + 3.0 * atom_j,
+                    110.0 + 5.0 * atom_i + 7.0 * atom_j,
                 ]
             )
-            pair_block = rotation @ np.diag(eigenvalues) @ rotation.T
-            slice_i = slice(3 * atom_i, 3 * (atom_i + 1))
-            slice_j = slice(3 * atom_j, 3 * (atom_j + 1))
-            hessian[slice_i, slice_i] += pair_block
-            hessian[slice_j, slice_j] += pair_block
-            hessian[slice_i, slice_j] -= pair_block
-            hessian[slice_j, slice_i] -= pair_block
-
-    np.testing.assert_allclose(hessian, hessian.T, atol=1e-12)
-    np.testing.assert_allclose(
-        hessian.reshape(n_atoms, 3, n_atoms, 3).sum(axis=2), 0.0, atol=1e-10
-    )
-    assert np.linalg.eigvalsh(hessian).min() > -1e-10
     return hessian
-
-
-def _measure_angle_degrees(coords: np.ndarray, angle: tuple[int, int, int]) -> float:
-    """Measure an angle from Cartesian coordinates in degrees."""
-    atom_a, atom_b, atom_c = angle
-    vector_ba = coords[atom_a] - coords[atom_b]
-    vector_bc = coords[atom_c] - coords[atom_b]
-    cosine = np.dot(vector_ba, vector_bc) / (
-        np.linalg.norm(vector_ba) * np.linalg.norm(vector_bc)
-    )
-    return float(np.degrees(np.arccos(np.clip(cosine, -1.0, 1.0))))
 
 
 def create_near_linear_acetonitrile() -> tuple[Ligand, tuple[int, int, int]]:
     """Create acetonitrile with a deterministic 175-degree C-C-N angle."""
     molecule = Ligand.from_smiles("CC#N", "near_linear_acetonitrile")
-    topology = molecule.to_topology()
-
-    nitrogen_indices = [
-        index
-        for index, atom in enumerate(molecule.atoms)
-        if atom.atomic_symbol == "N" and topology.degree[index] == 1
-    ]
-    assert len(nitrogen_indices) == 1
-    nitrogen = nitrogen_indices[0]
-    nitrile_carbon = next(iter(topology.neighbors(nitrogen)))
-    assert molecule.atoms[nitrile_carbon].atomic_symbol == "C"
-    carbon_substituents = [
-        index
-        for index in topology.neighbors(nitrile_carbon)
-        if index != nitrogen and molecule.atoms[index].atomic_symbol == "C"
-    ]
-    assert len(carbon_substituents) == 1
-    methyl_carbon = carbon_substituents[0]
-    target_angle = (methyl_carbon, nitrile_carbon, nitrogen)
+    target_angle = (0, 1, 2)
+    methyl_carbon, nitrile_carbon, nitrogen = target_angle
+    assert [atom.atomic_symbol for atom in molecule.atoms] == list("CCNHHH")
     assert target_angle in molecule.angles or target_angle[::-1] in molecule.angles
 
     coords = np.array(molecule.coordinates, copy=True)
@@ -175,12 +117,9 @@ def create_near_linear_acetonitrile() -> tuple[Ligand, tuple[int, int, int]]:
     )
     molecule.coordinates = coords
 
-    np.testing.assert_allclose(
-        _measure_angle_degrees(coords, target_angle),
-        _NEAR_LINEAR_ANGLE_DEGREES,
-        rtol=0.0,
-        atol=1e-10,
-    )
+    nitrogen_unit = (coords[nitrogen] - central_position) / nitrile_length
+    cosine = float(np.dot(substituent_unit, nitrogen_unit))
+    assert np.isclose(np.degrees(np.arccos(cosine)), _NEAR_LINEAR_ANGLE_DEGREES)
     return molecule, target_angle
 
 
@@ -279,6 +218,7 @@ def main() -> None:
 
     # Print coordinates
     print("Coordinates (Angstroms):")
+    # No zip(..., strict=True): this script runs under the Python 3.9 QUBEKit env.
     for i, atom in enumerate(mol.atoms):
         coord = mol.coordinates[i]
         print(
@@ -356,16 +296,6 @@ def main() -> None:
     nitrile_coords = np.array(nitrile.coordinates, copy=True)
     nitrile_hessian = create_nondegenerate_hessian_angstrom(nitrile.n_atoms)
 
-    # The target pair blocks must have a unique eigenbasis so this reference is
-    # independent of LAPACK's basis choice for degenerate eigenvalues.
-    for terminal_atom in (nitrile_angle[0], nitrile_angle[2]):
-        pair_block = nitrile_hessian[
-            nitrile_angle[1] * 3 : (nitrile_angle[1] + 1) * 3,
-            terminal_atom * 3 : (terminal_atom + 1) * 3,
-        ]
-        eigenvalue_gaps = np.diff(np.sort(np.linalg.eigvalsh(pair_block)))
-        assert np.min(np.abs(eigenvalue_gaps)) > 1e-6
-
     atomic_unit_conversion = constants.HA_TO_KCAL_P_MOL / (constants.BOHR_TO_ANGS**2)
     nitrile.hessian = nitrile_hessian / atomic_unit_conversion
     nitrile = _run_mod_seminario(nitrile)
@@ -396,14 +326,10 @@ def main() -> None:
         },
         "provenance": {
             "qubekit_version": qubekit_version,
-            "numpy_version": np.__version__,
-            "pydantic_version": version("pydantic"),
-            "openff_toolkit_version": version("openff.toolkit"),
-            "openmm_version": version("openmm"),
             "qubekit_source": "https://github.com/qubekit/QUBEKit/blob/2.1.1/qubekit/bonded/mod_seminario.py",
             "generation_command": "conda run -n qubekit-2.1.1 python presto/data/msm/generate_qubekit_reference.py",
             "generation": "Full ModSeminario.run pipeline; final molecule.AngleForce parameter",
-            "hessian": "Stored nondegenerate anisotropic PSD block Laplacian",
+            "hessian": "Stored deterministic Hessian with nondegenerate pair blocks",
         },
     }
     print(

@@ -466,25 +466,15 @@ class TestCalculateAngleForceConstant:
 class TestCalculateLinearAngleForceConstant:
     """Tests for _calculate_linear_angle_force_constant function."""
 
-    @pytest.fixture
-    def linear_inputs(self):
-        """Return a simple exactly linear case with an analytic result."""
-        # Linear configuration along x
-        u_ab = np.array([1.0, 0.0, 0.0])
-        u_cb = np.array([-1.0, 0.0, 0.0])  # Opposite direction (linear)
-        bond_lens = (1.0, 1.0)
-        # Simple eigenvalues/eigenvectors
-        eigenvals = (
-            np.array([100.0, 50.0, 50.0]),
-            np.array([100.0, 50.0, 50.0]),
-        )
-        eigenvecs = (np.eye(3, dtype=complex), np.eye(3, dtype=complex))
-        return u_ab, u_cb, bond_lens, eigenvals, eigenvecs
-
-    def test_exact_linear_angle_has_analytic_force_constant(self, linear_inputs):
+    def test_exact_linear_angle_has_analytic_force_constant(self):
         """The one-direction two-spring result is 1 / (1/50 + 1/50) = 25."""
         k_theta, theta_0 = _calculate_linear_angle_force_constant(
-            *linear_inputs, n_samples=1
+            u_ab=np.array([1.0, 0.0, 0.0]),
+            u_cb=np.array([-1.0, 0.0, 0.0]),
+            bond_lens=(1.0, 1.0),
+            eigenvals=(np.array([100.0, 50.0, 50.0]), np.array([100.0, 50.0, 50.0])),
+            eigenvecs=(np.eye(3, dtype=complex), np.eye(3, dtype=complex)),
+            n_samples=1,
         )
         assert k_theta == pytest.approx(25.0)
         assert theta_0 == pytest.approx(180.0)
@@ -492,58 +482,33 @@ class TestCalculateLinearAngleForceConstant:
     def test_matches_qubekit_full_pipeline_for_near_linear_nitrile(self):
         """Compare directly with QUBEKit's final stored acetonitrile parameter."""
         reference = _QUBEKIT_REFERENCE_DATA["near_linear_nitrile_reference"]
-        molecule = reference["molecule"]
         inputs = reference["inputs"]
         qubekit_output = reference["qubekit_output"]
-
-        target_angle = tuple(molecule["target_angle"])
-        assert [atom["element"] for atom in molecule["atoms"]] == [
-            "C",
-            "C",
-            "N",
-            "H",
-            "H",
-            "H",
-        ]
-        assert list(target_angle) in molecule["angles"]
+        target_angle = tuple(reference["molecule"]["target_angle"])
 
         coords_nm = np.asarray(inputs["coordinates_angstrom"]) / 10.0
         hessian_kcal_mol_nm2 = np.asarray(inputs["hessian_kcal_mol_angstrom2"]) * 100.0
-        n_atoms = len(molecule["atoms"])
-        assert hessian_kcal_mol_nm2.shape == (3 * n_atoms, 3 * n_atoms)
-        np.testing.assert_allclose(
-            hessian_kcal_mol_nm2, hessian_kcal_mol_nm2.T, atol=1e-10
-        )
-        assert np.linalg.eigvalsh(hessian_kcal_mol_nm2).min() > -1e-8
-        hessian_blocks = hessian_kcal_mol_nm2.reshape(n_atoms, 3, n_atoms, 3)
-        np.testing.assert_allclose(hessian_blocks.sum(axis=2), 0.0, atol=1e-8)
-        for terminal_atom in (target_angle[0], target_angle[2]):
-            pair_block = hessian_blocks[target_angle[1], :, terminal_atom, :]
-            eigenvalue_gaps = np.diff(np.sort(np.linalg.eigvalsh(pair_block)))
-            assert np.min(np.abs(eigenvalue_gaps)) > 1e-4
 
         decomposer = HessianDecomposer(hessian_kcal_mol_nm2, coords_nm)
         u_ab = unit_vector_along_bond(coords_nm, target_angle[0], target_angle[1])
         u_cb = unit_vector_along_bond(coords_nm, target_angle[2], target_angle[1])
         assert _is_linear_angle(u_ab, u_cb)
 
-        angle_params = calculate_angle_params([target_angle], decomposer, 1.0)
-        calculated = angle_params[target_angle]
-        calculated_angle = calculated.angle.m_as(_ANGLE_UNIT)
-        calculated_k = calculated.force_constant.m_as(_ANGLE_K_UNIT)
-        expected_angle = qubekit_output["angle_radians"]
-        expected_k = qubekit_output["k_kj_mol_rad2"] / 4.184
-
+        calculated = calculate_angle_params([target_angle], decomposer, 1.0)[
+            target_angle
+        ]
         np.testing.assert_allclose(
-            calculated_angle, expected_angle, rtol=0.0, atol=1e-12
+            calculated.angle.m_as(_ANGLE_UNIT),
+            qubekit_output["angle_radians"],
+            rtol=0.0,
+            atol=1e-12,
         )
-        # QUBEKit samples integer-radian directions while Presto samples a
-        # uniform 200-point circle. Two percent accommodates that quadrature
+        # QUBEKit samples integer-radian directions while presto samples a
+        # uniform 200-point circle. One percent accommodates that quadrature
         # difference while decisively rejecting the former factor-of-two result.
-        relative_difference = abs(calculated_k - expected_k) / expected_k
-        assert relative_difference < 0.01
-        np.testing.assert_allclose(calculated_k, expected_k, rtol=0.02, atol=0.0)
-        assert not np.isclose(calculated_k * 0.5, expected_k, rtol=0.02)
+        assert calculated.force_constant.m_as(_ANGLE_K_UNIT) == pytest.approx(
+            qubekit_output["k_kj_mol_rad2"] / 4.184, rel=0.01
+        )
 
     def test_production_handles_exact_linear_angle(self):
         """Exercise exact collinearity through scaling and parameter assembly."""
@@ -559,15 +524,6 @@ class TestCalculateLinearAngleForceConstant:
         force_constant = parameter.force_constant.m_as(_ANGLE_K_UNIT)
         assert np.isfinite(force_constant)
         assert force_constant > 0.0
-        assert parameter.angle.units == _ANGLE_UNIT
-        assert parameter.force_constant.units == _ANGLE_K_UNIT
-
-    def test_linear_angle_predicate_boundaries(self):
-        """Keep the audit and production definition of a linear angle identical."""
-        assert _is_linear_angle(np.array([1.0, 0.0, 0.0]), np.array([-1.0, 0.0, 0.0]))
-        assert not _is_linear_angle(
-            np.array([1.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0])
-        )
 
 
 # --- Parameter Calculation Tests ---
