@@ -21,32 +21,6 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      # The image is ~10 GB and the build needs roughly that again for the
-      # exported layers, which does not fit in a stock runner's free space.
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: false
-
-      # The runner's / has ~20-30 GB free, but the build needs a 12 GB environment,
-      # a second copy of it in the runtime stage, and the package cache. /mnt is a
-      # much larger unused volume, so give Docker its data-root there.
-      - name: Move Docker data-root to /mnt
-        run: |
-          df -h / /mnt
-          sudo systemctl stop docker
-          sudo mkdir -p /mnt/docker
-          printf '{"data-root": "/mnt/docker"}' | sudo tee /etc/docker/daemon.json
-          sudo rm -rf /var/lib/docker
-          sudo systemctl start docker
-          df -h / /mnt
-
       - name: Checkout
         uses: actions/checkout@v7
 
@@ -70,6 +44,9 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
             type=raw,value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            # TEMPORARY: pairs with the feature-docker push trigger above, so a
+            # branch build has a tag to push as. Remove both together before merge.
+            type=ref,event=branch
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -88,4 +65,4 @@ jobs:
 
       - name: Report disk usage
         if: always()
-        run: df -h / /mnt
+        run: df -h /
