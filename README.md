@@ -42,6 +42,19 @@ For more information on activating pixi environments, see [the documentation](ht
 
 `presto` is also available on `conda-forge` as `presto-fit`, but note that this comes without the MLP dependencies (install these separately, e.g. `pip install aimnet`). See the [installation docs](https://cole-group.github.io/presto/get-started/installation/) for details.
 
+### Docker
+
+A prebuilt GPU image is published to the GitHub Container Registry, so you can run `presto` without pixi:
+
+```bash
+docker run --rm --gpus all --shm-size=1g --user "$(id -u):$(id -g)" \
+  -v "$PWD:/work" -v presto-cache:/cache \
+  ghcr.io/cole-group/presto:latest \
+  presto train --param-settings.molecules "CCO"
+```
+
+The host still needs an NVIDIA driver supporting CUDA >= 12.9. See the [container docs](https://cole-group.github.io/presto/latest/get-started/containers/) for Apptainer on HPC and for troubleshooting.
+
 ## Usage
 
 Run with command line arguments:

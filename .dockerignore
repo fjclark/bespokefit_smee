@@ -1,0 +1,13 @@
+# Deny everything, then allow only what the build needs. Written this way round
+# because .pixi/ holds ~10 GB of installed environments and is not gitignored, so
+# an allow-list is the only safe default.
+*
+!pyproject.toml
+!pixi.lock
+!README.md
+!LICENSE
+!presto
+
+# ...but not the demo outputs shipped inside the package.
+presto/data/example_run_single
+**/__pycache__

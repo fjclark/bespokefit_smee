@@ -1,0 +1,88 @@
+name: Publish Docker Image
+
+on:
+  push:
+    tags: ["*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to push (test builds)"
+        default: "test"
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # The image is ~10 GB and the build needs roughly that again for the
+      # exported layers, which does not fit in a stock runner's free space.
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+
+      # The runner's / has ~20-30 GB free, but the build needs a 12 GB environment,
+      # a second copy of it in the runtime stage, and the package cache. /mnt is a
+      # much larger unused volume, so give Docker its data-root there.
+      - name: Move Docker data-root to /mnt
+        run: |
+          df -h / /mnt
+          sudo systemctl stop docker
+          sudo mkdir -p /mnt/docker
+          printf '{"data-root": "/mnt/docker"}' | sudo tee /etc/docker/daemon.json
+          sudo rm -rf /var/lib/docker
+          sudo systemctl start docker
+          df -h / /mnt
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
+            type=raw,value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # hatch-vcs cannot read the version from git inside the build, because
+          # .git is excluded from the build context. Hand it in instead.
+          build-args: |
+            PRESTO_VERSION=${{ github.ref_type == 'tag' && github.ref_name || '0.0.0.dev0' }}
+          # No cache-from/cache-to: the Actions cache is capped at 10 GB per repo
+          # and this image alone would evict the pixi cache that ci.yaml relies on.
+          provenance: false
+
+      - name: Report disk usage
+        if: always()
+        run: df -h / /mnt
