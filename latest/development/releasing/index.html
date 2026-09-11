@@ -489,6 +489,8 @@
       
         
       
+        
+      
     
     
     
@@ -558,6 +560,34 @@
     
   
     Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run with containers
   
 
     
@@ -2696,11 +2726,14 @@
 <h2 id="conda-forge">Conda-Forge<a class="headerlink" href="#conda-forge" title="Permanent link">#</a></h2>
 <p><code>presto</code> is not yet available on conda-forge.</p>
 <h2 id="versioning">Versioning<a class="headerlink" href="#versioning" title="Permanent link">#</a></h2>
-<p>To add a new tag:</p>
+<p>Release tags must be valid, monotonically increasing semantic versions. To add
+a new tag:</p>
 <div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>tag<span class="w"> </span>&lt;new<span class="w"> </span>version&gt;
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>&lt;new<span class="w"> </span>version&gt;
 </span></code></pre></div>
-<p>This will trigger a new build of the docs.</p>
+<p>This triggers new documentation and container image builds. Do not rerun an
+older release workflow: mutable aliases such as <code>stable</code>, <code>latest</code>, and the
+container's major-minor tag always follow the most recently published release.</p>
 <p>Version numbers are derived from git tags using <code>hatch-vcs</code> (configured in <code>pyproject.toml [tool.hatch.version]</code>). The <code>presto.__version__</code> string is set at install time.</p>
 
 

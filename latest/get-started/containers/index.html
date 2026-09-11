@@ -10,9 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/cole-group/presto/latest/how-to/use-starting-conformers/">
+        <link rel="canonical" href="https://github.com/cole-group/presto/latest/get-started/containers/">
       
       
+        <link rel="prev" href="../installation/">
+      
+      
+        <link rel="next" href="../quickstart/">
       
       
         
@@ -23,7 +27,7 @@
     
     
       
-        <title>Use your own starting conformers - presto</title>
+        <title>Run with containers - presto</title>
       
     
     
@@ -76,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#use-your-own-starting-conformers" class="md-skip">
+        <a href="#run-with-containers" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Use your own starting conformers
+              Run with containers
             
           </span>
         </div>
@@ -240,11 +244,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../get-started/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -266,7 +272,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../" class="md-tabs__link">
+        <a href="../../how-to/" class="md-tabs__link">
           
   
   
@@ -466,6 +472,8 @@
       
   
   
+    
+  
   
   
     
@@ -489,20 +497,23 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../get-started/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -520,13 +531,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -546,7 +557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../get-started/installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -571,10 +582,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../get-started/containers/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run with containers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -590,6 +628,103 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-and-is-not-in-the-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is and is not in the image
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-a-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run a fit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-cache-volume" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cache volume
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-the-image-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the image yourself
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apptainer-on-hpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Apptainer on HPC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#licensing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Licensing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -602,7 +737,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../get-started/quickstart/" class="md-nav__link">
+      <a href="../quickstart/" class="md-nav__link">
         
   
   
@@ -736,7 +871,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../how-to/" class="md-nav__link ">
               
   
   
@@ -780,7 +915,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../fit-single-molecule/" class="md-nav__link">
+      <a href="../../how-to/fit-single-molecule/" class="md-nav__link">
         
   
   
@@ -808,7 +943,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../fit-congeneric-series/" class="md-nav__link">
+      <a href="../../how-to/fit-congeneric-series/" class="md-nav__link">
         
   
   
@@ -836,7 +971,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-sdf-inputs/" class="md-nav__link">
+      <a href="../../how-to/use-sdf-inputs/" class="md-nav__link">
         
   
   
@@ -864,7 +999,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-custom-charges/" class="md-nav__link">
+      <a href="../../how-to/use-custom-charges/" class="md-nav__link">
         
   
   
@@ -892,7 +1027,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../clean-rerun/" class="md-nav__link">
+      <a href="../../how-to/clean-rerun/" class="md-nav__link">
         
   
   
@@ -920,7 +1055,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../choose-an-mlp/" class="md-nav__link">
+      <a href="../../how-to/choose-an-mlp/" class="md-nav__link">
         
   
   
@@ -948,7 +1083,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-ase-calculator/" class="md-nav__link">
+      <a href="../../how-to/use-ase-calculator/" class="md-nav__link">
         
   
   
@@ -976,7 +1111,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../speed-up-with-parallelism/" class="md-nav__link">
+      <a href="../../how-to/speed-up-with-parallelism/" class="md-nav__link">
         
   
   
@@ -1004,7 +1139,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../inspect-outputs/" class="md-nav__link">
+      <a href="../../how-to/inspect-outputs/" class="md-nav__link">
         
   
   
@@ -1032,7 +1167,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../run-from-python/" class="md-nav__link">
+      <a href="../../how-to/run-from-python/" class="md-nav__link">
         
   
   
@@ -2601,10 +2736,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#behaviour" class="md-nav__link">
+  <a href="#what-is-and-is-not-in-the-image" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Behaviour
+        What is and is not in the image
       
     </span>
   </a>
@@ -2612,10 +2747,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cli-form" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CLI form
+        Prerequisites
       
     </span>
   </a>
@@ -2623,10 +2758,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#yaml-form" class="md-nav__link">
+  <a href="#run-a-fit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        YAML form
+        Run a fit
       
     </span>
   </a>
@@ -2634,10 +2769,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#preparing-the-sdf" class="md-nav__link">
+  <a href="#the-cache-volume" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Preparing the SDF
+        The cache volume
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-the-image-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the image yourself
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apptainer-on-hpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Apptainer on HPC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#licensing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Licensing
       
     </span>
   </a>
@@ -2664,63 +2832,142 @@
   
 
 
-<h1 id="use-your-own-starting-conformers">Use your own starting conformers<a class="headerlink" href="#use-your-own-starting-conformers" title="Permanent link">#</a></h1>
-<p>By default each sampling stage generates its starting conformers with RDKit ETKDG. You can
-instead start from your own conformers (for example a curated ensemble, docked or crystal
-poses, or a torsion scan) by pointing a stage at an SDF file with <code>starting_conformers</code>.</p>
-<p>This is available <strong>per stage</strong>, so you can mix supplied conformers and ETKDG freely:</p>
+<h1 id="run-with-containers">Run with containers<a class="headerlink" href="#run-with-containers" title="Permanent link">#</a></h1>
+<p>A prebuilt GPU image is published to the GitHub Container Registry; this page covers Docker on a workstation and Apptainer on HPC.</p>
+<h2 id="what-is-and-is-not-in-the-image">What is and is not in the image<a class="headerlink" href="#what-is-and-is-not-in-the-image" title="Permanent link">#</a></h2>
+<p>The image contains the whole <code>default</code> pixi GPU environment: <code>presto</code>, OpenMM, PyTorch, and every supported MLP, but the host still needs a driver supporting <strong>CUDA &gt;= 12.9</strong>, exactly as the <a href="../installation/">pixi install</a> does.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <ul>
-<li><code>training_sampling_settings.starting_conformers</code> — training-data MD</li>
-<li><code>testing_sampling_settings.starting_conformers</code> — test-data MD</li>
-<li><code>param_settings.msm_settings.starting_conformers</code> — the MSM Hessian step that seeds the
-  initial bond/angle parameters</li>
+<li>An NVIDIA driver supporting CUDA &gt;= 12.9 (check with <code>nvidia-smi</code>)</li>
+<li>The <a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html">NVIDIA Container Toolkit</a></li>
+<li><a href="https://docs.docker.com/engine/install/">Docker Engine</a></li>
 </ul>
-<p>Any stage left unset keeps generating conformers with ETKDG.</p>
-<h2 id="behaviour">Behaviour<a class="headerlink" href="#behaviour" title="Permanent link">#</a></h2>
+<p>Verify the whole chain before going further:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>nvidia/cuda:12.9.1-base-ubuntu24.04<span class="w"> </span>nvidia-smi
+</span></code></pre></div>
+<p>and check that prints your GPU.</p>
+<h2 id="run-a-fit">Run a fit<a class="headerlink" href="#run-a-fit" title="Permanent link">#</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>--shm-size<span class="o">=</span>1g<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--user<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>id<span class="w"> </span>-u<span class="k">)</span><span class="s2">:</span><span class="k">$(</span>id<span class="w"> </span>-g<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/work&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>-v<span class="w"> </span>presto-cache:/cache<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>ghcr.io/cole-group/presto:latest<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>presto<span class="w"> </span>train<span class="w"> </span>--param-settings.molecules<span class="w"> </span><span class="s2">&quot;CCO&quot;</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--rm</code></td>
+<td>Delete the container when it exits. Anything not on a mount is discarded.</td>
+</tr>
+<tr>
+<td><code>--gpus all</code></td>
+<td>Hand the host GPUs and driver to the container.</td>
+</tr>
+<tr>
+<td><code>--shm-size=1g</code></td>
+<td>Docker caps <code>/dev/shm</code> at 64 MB, which may be too small for <code>n_sampling_processes &gt; 1</code>.</td>
+</tr>
+<tr>
+<td><code>--user "$(id -u):$(id -g)"</code></td>
+<td>Run as you, so output files are yours and not root-owned.</td>
+</tr>
+<tr>
+<td><code>-v "$PWD:/work"</code></td>
+<td>Expose the current directory as the container's working directory.</td>
+</tr>
+<tr>
+<td><code>-v presto-cache:/cache</code></td>
+<td>A persistent volume for downloaded MLP weights.</td>
+</tr>
+<tr>
+<td><code>ghcr.io/cole-group/presto:latest</code></td>
+<td>The image. Pin an exact version for real work.</td>
+</tr>
+<tr>
+<td><code>presto train ...</code></td>
+<td>Everything after the image name is the command run inside.</td>
+</tr>
+</tbody>
+</table>
+<p>Because <code>/work</code> is your current directory, output goes exactly where a native run would put it:
+<code>training_iteration_2/bespoke_ff.offxml</code> and the rest of the
+<a href="../../concepts/output-layout/">output layout</a>.</p>
+<p>Running from a YAML settings file works the same way, since the file is visible through the mount:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>--shm-size<span class="o">=</span>1g<span class="w"> </span>--user<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>id<span class="w"> </span>-u<span class="k">)</span><span class="s2">:</span><span class="k">$(</span>id<span class="w"> </span>-g<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/work&quot;</span><span class="w"> </span>-v<span class="w"> </span>presto-cache:/cache<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>ghcr.io/cole-group/presto:latest<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>presto<span class="w"> </span>train-from-yaml<span class="w"> </span>workflow_settings.yaml
+</span></code></pre></div>
+<p>For an interactive poke around, override the command with a shell:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>--shm-size<span class="o">=</span>1g<span class="w"> </span>--user<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>id<span class="w"> </span>-u<span class="k">)</span><span class="s2">:</span><span class="k">$(</span>id<span class="w"> </span>-g<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/work&quot;</span><span class="w"> </span>-v<span class="w"> </span>presto-cache:/cache<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>ghcr.io/cole-group/presto:latest<span class="w"> </span>bash
+</span></code></pre></div>
+<h2 id="the-cache-volume">The cache volume<a class="headerlink" href="#the-cache-volume" title="Permanent link">#</a></h2>
+<p><code>presto-cache</code> is a Docker-managed volume mounted at <code>/cache</code>. MACE-OFF, Orb-v3 and AceFF weights land there
+on first use, along with the HuggingFace, torch and matplotlib caches. Reusing it between runs avoids
+re-downloading several GB. Inspect or clear it with:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>volume<span class="w"> </span>inspect<span class="w"> </span>presto-cache
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>docker<span class="w"> </span>volume<span class="w"> </span>rm<span class="w"> </span>presto-cache
+</span></code></pre></div>
+<p>Some supported MLP backends load checkpoints with PyTorch's <code>weights_only=False</code>, so on shared systems
+the cache must be private to you and not writable by other users. AIMNet2 is the exception to the volume:
+its weights live inside the image already, so removing <code>presto-cache</code> does not remove them.</p>
+<h2 id="build-the-image-yourself">Build the image yourself<a class="headerlink" href="#build-the-image-yourself" title="Permanent link">#</a></h2>
+<p>From a clone of the repository:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pixi<span class="w"> </span>run<span class="w"> </span>container-build
+</span></code></pre></div>
+<p>Expect ~ 15 minutes for a cold build.</p>
+<p>Two more tasks wrap the run commands. <code>container-run</code> appends whatever you pass after it:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>pixi<span class="w"> </span>run<span class="w"> </span>container-run<span class="w"> </span>presto<span class="w"> </span>train<span class="w"> </span>--param-settings.molecules<span class="w"> </span><span class="s2">&quot;CCO&quot;</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>pixi<span class="w"> </span>run<span class="w"> </span>container-shell<span class="w">   </span><span class="c1"># interactive bash inside the image</span>
+</span></code></pre></div>
+<p>They build on <code>presto:local</code>, so run <code>container-build</code> first. Note that these won't work if you're not in the docker group (just copy the commands from <code>pyproject.toml</code> and add <code>sudo</code> in this case).</p>
+<h2 id="apptainer-on-hpc">Apptainer on HPC<a class="headerlink" href="#apptainer-on-hpc" title="Permanent link">#</a></h2>
+<p>Most clusters forbid Docker but provide <a href="https://apptainer.org/">Apptainer</a>, which converts the same image:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>apptainer<span class="w"> </span>pull<span class="w"> </span>presto.sif<span class="w"> </span>docker://ghcr.io/cole-group/presto:latest
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>:<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">SCRATCH</span><span class="p">:?Set SCRATCH to a writable scratch directory</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SCRATCH</span><span class="s2">/presto-cache&quot;</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>chmod<span class="w"> </span><span class="m">700</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SCRATCH</span><span class="s2">/presto-cache&quot;</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Preserve the GPUs assigned by Slurm; --cleanenv would otherwise discard this.</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="k">:-</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="nb">export</span><span class="w"> </span><span class="nv">APPTAINERENV_CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$CUDA_VISIBLE_DEVICES</span><span class="s2">&quot;</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="k">fi</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>apptainer<span class="w"> </span>run<span class="w"> </span>--nv<span class="w"> </span>--cleanenv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">  </span>--bind<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/work&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">  </span>--bind<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SCRATCH</span><span class="s2">/presto-cache:/cache&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">  </span>presto.sif<span class="w"> </span>presto<span class="w"> </span>train<span class="w"> </span>--param-settings.molecules<span class="w"> </span><span class="s2">&quot;CCO&quot;</span>
+</span></code></pre></div>
+<p>Three differences from Docker:</p>
 <ul>
-<li><strong>The SDF takes precedence.</strong> When <code>starting_conformers</code> is set for a stage, that stage
-  starts from <strong>every</strong> conformer in the file, and the stage's <code>n_conformers</code> is <strong>ignored</strong>
-  (a log line makes this explicit).</li>
-<li><strong>Conformers are matched by connectivity.</strong> Each record is matched to the molecule being
-  fitted by graph isomorphism, and its atom ordering is <strong>remapped automatically</strong> to match.
-  You do not need to worry about atom ordering, and a single SDF can hold conformers for
-  several molecules in a multi-molecule fit — each molecule picks up only its own records.</li>
-<li><strong>Missing molecules fail fast.</strong> If a configured SDF contains no conformer for a molecule
-  being fitted, the run stops during settings validation, before any expensive work.</li>
+<li><code>--nv</code> is Apptainer's <code>--gpus all</code>.</li>
+<li>Apptainer already runs as you, so there is no <code>--user</code> flag to pass.</li>
+<li><code>--cleanenv</code> matters. Apptainer inherits the host environment by default, and a stray <code>PYTHONPATH</code>,
+  <code>CONDA_PREFIX</code> or <code>LD_LIBRARY_PATH</code> from a <code>module load</code> will break the container.</li>
+<li>On Slurm, forward <code>CUDA_VISIBLE_DEVICES</code> as <code>APPTAINERENV_CUDA_VISIBLE_DEVICES</code> so that <code>--cleanenv</code>
+  does not discard the scheduler's GPU assignment. The conditional in the example avoids hiding all GPUs
+  when <code>CUDA_VISIBLE_DEVICES</code> is unset.</li>
 </ul>
-<h2 id="cli-form">CLI form<a class="headerlink" href="#cli-form" title="Permanent link">#</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>presto<span class="w"> </span>train<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span>--param-settings.molecules<span class="w"> </span><span class="s2">&quot;CCO&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span>--training-sampling-settings.starting-conformers<span class="w"> </span>my_conformers.sdf
-</span></code></pre></div>
-<h2 id="yaml-form">YAML form<a class="headerlink" href="#yaml-form" title="Permanent link">#</a></h2>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">param_settings</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="nt">molecule_input_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">smiles</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">molecules</span><span class="p">:</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CCO</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">msm_settings</span><span class="p">:</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="c1"># optional: also seed the MSM Hessian step from the same (or a different) SDF</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="nt">starting_conformers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_conformers.sdf</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="nt">training_sampling_settings</span><span class="p">:</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="nt">sampling_protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mm_md_metadynamics_torsion_minimisation</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="nt">starting_conformers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_conformers.sdf</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="nt">testing_sampling_settings</span><span class="p">:</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="nt">sampling_protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ml_md</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="c1"># left unset -&gt; ETKDG</span>
-</span></code></pre></div>
-<h2 id="preparing-the-sdf">Preparing the SDF<a class="headerlink" href="#preparing-the-sdf" title="Permanent link">#</a></h2>
-<p>The SDF should contain one record per conformer, all of the same molecule (multiple
-molecules are fine — group them however you like, they are matched by connectivity). For
-example, from an existing OpenFF molecule:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">rdkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chem</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">rdkit_molecule</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">to_rdkit</span><span class="p">()</span>  <span class="c1"># molecule with N conformers</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">with</span> <span class="n">Chem</span><span class="o">.</span><span class="n">SDWriter</span><span class="p">(</span><span class="s2">&quot;my_conformers.sdf&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">for</span> <span class="n">conformer_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rdkit_molecule</span><span class="o">.</span><span class="n">GetNumConformers</span><span class="p">()):</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rdkit_molecule</span><span class="p">,</span> <span class="n">confId</span><span class="o">=</span><span class="n">conformer_id</span><span class="p">)</span>
-</span></code></pre></div>
+<p>The <code>.sif</code> is a single file, which is easier on a shared filesystem than a 9 GB conda environment. Keep the
+cache bind on scratch rather than in the image.</p>
+<p>Podman users can substitute <code>podman</code> for <code>docker</code> throughout, replacing <code>--gpus all</code> with
+<code>--device nvidia.com/gpu=all</code>.</p>
+<h2 id="licensing">Licensing<a class="headerlink" href="#licensing" title="Permanent link">#</a></h2>
+<p>The image ships no MLP weights except the bundled Egret-1 model (MIT) and AIMNet2 (MIT). In particular it does
+<strong>not</strong> ship MACE-OFF weights, which are under the
+<a href="https://github.com/gabor1/ASL/blob/main/ASL.md">Academic Software License</a> and <strong>do not permit commercial
+use</strong>. Selecting a MACE-OFF model downloads those weights at run time, under that licence. See
+<a href="../../how-to/choose-an-mlp/">Choose an MLP</a>.</p>
 
 
 
@@ -2751,6 +2998,44 @@ example, from an existing OpenFF molecule:</p>
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Installation
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../quickstart/" class="md-footer__link md-footer__link--next" aria-label="Next: Quickstart">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Quickstart
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
     
   
   <div class="md-footer-meta md-typeset">

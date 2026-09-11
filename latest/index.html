@@ -596,6 +596,8 @@
       
         
       
+        
+      
     
     
     
@@ -665,6 +667,34 @@
     
   
     Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="get-started/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run with containers
   
 
     
@@ -2804,6 +2834,7 @@
 This will create an environment with CUDA 12.9. <strong>You'll need to update to CUDA &gt;= 12.9 (check with <code>nvidia-smi</code>) to use <code>presto</code></strong> (older versions are not usable as we require OpenMM 8.5 for the PythonForce class, and this requires CUDA 12.9).</p>
 <p>For more information on activating pixi environments, see <a href="https://pixi.sh/latest/advanced/pixi_shell/#traditional-conda-activate-like-activation">the documentation</a>.</p>
 <p><code>presto</code> is also available on <code>conda-forge</code> as <code>presto-fit</code>, but note that this comes without the MLP dependencies (install these separately, e.g. <code>pip install aimnet</code>). See the <a href="https://cole-group.github.io/presto/get-started/installation/">installation docs</a> for details.</p>
+<p>For Docker and Apptainer usage, see the <a href="https://cole-group.github.io/presto/latest/get-started/containers/">container docs</a>.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
 <p>Run with command line arguments:
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>presto<span class="w"> </span>train<span class="w"> </span>--param-settings.molecules<span class="w"> </span><span class="s2">&quot;CCC(CC)C(=O)Nc2cc(NC(=O)c1c(Cl)cccc1Cl)ccn2&quot;</span>

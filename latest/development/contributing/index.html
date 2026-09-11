@@ -489,6 +489,8 @@
       
         
       
+        
+      
     
     
     
@@ -558,6 +560,34 @@
     
   
     Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run with containers
   
 
     
@@ -2507,6 +2537,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-docker-image-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Docker image builds
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2703,6 +2750,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-docker-image-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Docker image builds
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2750,6 +2814,8 @@
 </span></code></pre></div>
 <h2 id="tests">Tests<a class="headerlink" href="#tests" title="Permanent link">#</a></h2>
 <p>Unit tests live under <code>presto/tests/unit/</code>; integration tests live under <code>presto/tests/integration/</code>. Slow tests are marked with <code>@pytest.mark.slow</code> and skipped from the default <code>test</code> task.</p>
+<h3 id="test-docker-image-builds">Test Docker image builds<a class="headerlink" href="#test-docker-image-builds" title="Permanent link">#</a></h3>
+<p>In GitHub, open <strong>Actions → Publish Docker Image → Run workflow</strong>, select the branch to build, and enter a tag suffix. The workflow builds and pushes the image to GHCR with the tag <code>test-&lt;suffix&gt;</code>.</p>
 <h2 id="style">Style<a class="headerlink" href="#style" title="Permanent link">#</a></h2>
 <p>Ruff is configured in <code>pyproject.toml</code> (<code>[tool.ruff.lint]</code> and <code>[tool.ruff.lint.pydocstyle]</code>). Mypy is run in strict mode (<code>pyproject.toml [tool.mypy]</code>). Both run in CI via <code>.github/workflows/ci.yaml</code>.</p>
 
