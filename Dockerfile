@@ -93,7 +93,9 @@ ENV XDG_CACHE_HOME=/cache \
     TORCH_HOME=/cache/torch \
     CACHED_PATH_CACHE_ROOT=/cache/cached_path \
     MPLCONFIGDIR=/cache/matplotlib \
-    HOME=/tmp
+    HOME=/tmp \
+    USER=presto \
+    LOGNAME=presto
 
 # Mode 1777 so that `--user $(id -u):$(id -g)` works for any host UID while
 # preventing users from deleting or renaming files owned by another UID.
