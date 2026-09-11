@@ -1,6 +1,5 @@
-# Deny everything, then allow only what the build needs. Written this way round
-# because .pixi/ holds ~10 GB of installed environments and is not gitignored, so
-# an allow-list is the only safe default.
+# Deny everything, then allow only what the build needs. This prevents large
+# local directories such as .pixi/ from entering the Docker build context.
 *
 !pyproject.toml
 !pixi.lock
