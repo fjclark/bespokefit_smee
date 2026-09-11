@@ -51,7 +51,7 @@ try:
 except ImportError as error:
     raise ImportError(
         "QUBEKit and its runtime dependencies are required; run this script "
-        "in the pinned QUBEKit 2.1.1 reference environment."
+        "in an environment with QUBEKit 2.1.1 installed."
     ) from error
 
 
