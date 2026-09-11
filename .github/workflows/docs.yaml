@@ -5,10 +5,6 @@ on:
     branches: ["main"]
     tags: ["*"]
 
-concurrency:
-  group: publish-documentation
-  cancel-in-progress: false
-
 jobs:
   deploy-docs:
 
@@ -16,20 +12,19 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v7
-      with:
-        fetch-depth: 0
 
     - name: Determine Version
       shell: bash
       run: |
-        if [ "$GITHUB_REF_TYPE" = "branch" ]; then
-          VERSION=latest
-        elif [[ "$GITHUB_REF_NAME" == *-* ]]; then
-          VERSION="$GITHUB_REF_NAME"
+        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          echo "VERSION=latest" >> $GITHUB_ENV
+        elif [ "${GITHUB_REF#refs/tags/}" != "$GITHUB_REF" ]; then
+          VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
+          echo "VERSION=$VERSION stable" >> $GITHUB_ENV
         else
-          VERSION="$GITHUB_REF_NAME stable"
+          echo "Invalid ref: $GITHUB_REF"
+          exit 1
         fi
-        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
     - uses: prefix-dev/setup-pixi@v0.10.2
       with:
