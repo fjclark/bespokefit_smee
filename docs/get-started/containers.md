@@ -20,6 +20,12 @@ docker run --rm --gpus all nvidia/cuda:12.9.1-base-ubuntu24.04 nvidia-smi
 
 and check that prints your GPU.
 
+## Get the image
+
+```bash
+docker pull ghcr.io/cole-group/presto:latest
+```
+
 ## Run a fit
 
 ```bash
