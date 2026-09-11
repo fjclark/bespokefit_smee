@@ -98,6 +98,7 @@ ENV XDG_CACHE_HOME=/cache \
 # Mode 0777 so that `--user $(id -u):$(id -g)` works for any host UID.
 RUN mkdir -p /cache /work && chmod 0777 /cache /work
 
+USER 1001:1001
 WORKDIR /work
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["presto", "--help"]

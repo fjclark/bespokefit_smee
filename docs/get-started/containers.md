@@ -21,14 +21,32 @@ download on first use into a cache volume (see [below](#the-cache-volume)).
 ## Prerequisites
 
 - [Docker Engine](https://docs.docker.com/engine/install/)
-- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - An NVIDIA driver supporting CUDA >= 12.9 (check with `nvidia-smi`)
+- The [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html), **registered with the Docker daemon**
 
-Verify all three at once:
+Installing the toolkit is not enough on its own. Docker also has to be told about the NVIDIA runtime, and
+without that `--gpus all` fails, on recent Docker with a misleading message about AMD. On Ubuntu:
+
+```bash
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
+  | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+  | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+  | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+
+# The step that is easy to miss:
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+```
+
+Verify the whole chain before going further:
 
 ```bash
 docker run --rm --gpus all nvidia/cuda:12.9.1-base-ubuntu24.04 nvidia-smi
 ```
+
+If that prints your GPU, you are ready. If it does not, see [Troubleshooting](#troubleshooting).
 
 ## Run a fit
 
@@ -68,8 +86,9 @@ docker run --rm --gpus all --shm-size=1g --user "$(id -u):$(id -g)" \
 For an interactive poke around, override the command with a shell:
 
 ```bash
-docker run --rm -it --gpus all -v "$PWD:/work" -v presto-cache:/cache \
-  --entrypoint bash ghcr.io/cole-group/presto:latest
+docker run --rm -it --gpus all --shm-size=1g --user "$(id -u):$(id -g)" \
+  -v "$PWD:/work" -v presto-cache:/cache \
+  ghcr.io/cole-group/presto:latest bash
 ```
 
 ## The cache volume
@@ -83,7 +102,9 @@ docker volume inspect presto-cache
 docker volume rm presto-cache
 ```
 
-AIMNet2 is the exception: its weights live inside the image already.
+Some supported MLP backends load checkpoints with PyTorch's `weights_only=False`, so on shared systems
+the cache must be private to you and not writable by other users. AIMNet2 is the exception to the volume:
+its weights live inside the image already, so removing `presto-cache` does not remove them.
 
 ## Build the image yourself
 
@@ -113,6 +134,10 @@ Most clusters forbid Docker but provide [Apptainer](https://apptainer.org/), whi
 ```bash
 apptainer pull presto.sif docker://ghcr.io/cole-group/presto:latest
 
+: "${SCRATCH:?Set SCRATCH to a writable scratch directory}"
+mkdir -p "$SCRATCH/presto-cache"
+chmod 700 "$SCRATCH/presto-cache"
+
 apptainer run --nv --cleanenv \
   --bind "$PWD:/work" \
   --bind "$SCRATCH/presto-cache:/cache" \
@@ -138,10 +163,11 @@ Podman users can substitute `podman` for `docker` throughout, replacing `--gpus 
 |---|---|
 | `CUDA is not available on this system.` | `--gpus all` was omitted, or the NVIDIA Container Toolkit is not installed. |
 | `could not select device driver "" with capabilities: [[gpu]]` | The NVIDIA Container Toolkit is missing or the Docker daemon was not restarted after installing it. |
+| `AMD CDI spec not found`, or `--gpus all` failing on Docker 28+ | Docker resolves `--gpus` through CDI and guesses the vendor when no NVIDIA runtime is registered. Either address the device directly with `--device nvidia.com/gpu=all` (check it exists with `nvidia-ctk cdi list`), or register the runtime once with `sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker`. |
 | `nvidia-smi` works inside the container but `torch.cuda.is_available()` is `False` | The container toolkit did not inject `libcuda.so.1`. Check `NVIDIA_DRIVER_CAPABILITIES` includes `compute`. |
 | CUDA errors mentioning the driver version | The host driver is older than CUDA 12.9. This is the same requirement as a native install; the container cannot work around it. |
-| Output files owned by `root` | Add `--user "$(id -u):$(id -g)"`. |
-| Bus errors or worker crashes with `n_sampling_processes > 1` | `/dev/shm` is too small. Raise `--shm-size`, or use `--ipc=host`. |
+| Output files owned by UID 1001 | The image defaults to UID/GID 1001. Add `--user "$(id -u):$(id -g)"` so outputs belong to you. |
+| Bus errors or worker crashes with `n_sampling_processes > 1` | `/dev/shm` is too small. Raise `--shm-size`, or use `--ipc=host` if sharing the host IPC namespace is acceptable. |
 | Odd import errors under Apptainer | Add `--cleanenv`. |
 | `no space left on device` while pulling | The image is several GB compressed and around 12 GB unpacked. Check the Docker data root. |
 
