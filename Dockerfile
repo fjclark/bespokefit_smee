@@ -74,7 +74,7 @@ MLPotential('aimnet2').createSystem(m.to_topology().to_openmm(), charge=0, devic
 # NVIDIA_DRIVER_CAPABILITIES=compute,utility. The container toolkit otherwise
 # defaults to `utility` alone, which injects nvidia-smi but not libcuda.so.1, and
 # torch.cuda.is_available() then returns False even though nvidia-smi works.
-FROM nvidia/cuda:12.9.1-base-ubuntu24.04 AS runtime
+FROM nvidia/cuda:13.3.1-base-ubuntu24.04 AS runtime
 
 ARG PRESTO_ENV
 ARG PRESTO_VERSION
