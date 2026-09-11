@@ -292,7 +292,7 @@ type-check = { cmd = "mypy --follow-imports=silent --ignore-missing-imports --st
 
 # Container tasks. These shell out to docker and so do not need a pixi environment
 # themselves, but keep the long incantations in one place.
-"container-build" = { cmd = "docker build --build-arg PRESTO_VERSION=$({ git describe --tags 2>/dev/null || printf '%s\\n' 0.0.0.dev0; } | sed -E 's/^(.+)-([0-9]+)-g([0-9a-f]+)$/\\1.post\\2+g\\3/') -t presto:local ." }
+"container-build" = { cmd = '''docker build --build-arg PRESTO_VERSION=$({ git describe --tags 2>/dev/null || printf '%s\n' 0.0.0.dev0; } | sed -E 's/^(.+)-([0-9]+)-g([0-9a-f]+)$/\1.post\2+g\3/') -t presto:local .''' }
 # Extra arguments are appended, e.g. `pixi run container-run presto train --help`.
 "container-run" = { cmd = "docker run --rm --gpus all --shm-size=1g --user \"$(id -u):$(id -g)\" -v \"$PWD:/work\" -v presto-cache:/cache presto:local" }
 "container-shell" = { cmd = "docker run --rm -it --gpus all --shm-size=1g --user \"$(id -u):$(id -g)\" -v \"$PWD:/work\" -v presto-cache:/cache presto:local bash" }
