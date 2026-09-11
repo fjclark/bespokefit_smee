@@ -346,7 +346,7 @@ def _calculate_linear_angle_force_constant(
 
     Returns:
         Tuple of (force_constant, equilibrium_angle). The force constant uses
-        the SMIRNOFF / OpenMM harmonic convention ``U = k * delta**2 / 2``.
+        the SMIRNOFF / OpenMM harmonic convention ``U = (k / 2) * delta**2``.
     """
     k_theta_array = np.zeros(n_samples)
 

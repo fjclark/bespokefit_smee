@@ -83,7 +83,7 @@ def _rotation_matrix(pair_index: int) -> np.ndarray:
     rotate_x = np.array([[1.0, 0.0, 0.0], [0.0, cos_a, -sin_a], [0.0, sin_a, cos_a]])
     rotate_y = np.array([[cos_b, 0.0, sin_b], [0.0, 1.0, 0.0], [-sin_b, 0.0, cos_b]])
     rotate_z = np.array([[cos_g, -sin_g, 0.0], [sin_g, cos_g, 0.0], [0.0, 0.0, 1.0]])
-    return rotate_z @ rotate_y @ rotate_x
+    return np.asarray(rotate_z @ rotate_y @ rotate_x, dtype=np.float64)
 
 
 def create_nondegenerate_hessian_angstrom(n_atoms: int) -> np.ndarray:
