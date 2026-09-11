@@ -59,8 +59,8 @@ jobs:
           # .git is excluded from the build context. Hand it in instead.
           build-args: |
             PRESTO_VERSION=${{ github.ref_type == 'tag' && github.ref_name || '0.0.0.dev0' }}
-          # No cache-from/cache-to: the Actions cache is capped at 10 GB per repo
-          # and this image alone would evict the pixi cache that ci.yaml relies on.
+          # Do not export a BuildKit cache to type=gha: its large Pixi layers would
+          # compete with ci.yaml's Pixi caches for the repo's Actions cache quota.
           provenance: false
 
       - name: Report disk usage
