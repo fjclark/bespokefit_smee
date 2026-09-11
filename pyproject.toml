@@ -290,6 +290,13 @@ type-check = { cmd = "mypy --follow-imports=silent --ignore-missing-imports --st
 "docs-deploy" = { cmd = "mike deploy --push --update-aliases $VERSION" }
 "rerun-notebooks" = { cmd = "jupyter nbconvert --to notebook --execute --inplace examples/*.ipynb" }
 
+# Container tasks. These shell out to docker and so do not need a pixi environment
+# themselves, but keep the long incantations in one place.
+"container-build" = { cmd = '''docker build --build-arg PRESTO_VERSION="$(pixi exec --with hatch-vcs hatch version)" -t presto:local .''' }
+# Extra arguments are appended, e.g. `pixi run container-run presto train --help`.
+"container-run" = { cmd = "docker run --rm --gpus all --shm-size=1g --user \"$(id -u):$(id -g)\" -v \"$PWD:/work\" -v presto-cache:/cache presto:local" }
+"container-shell" = { cmd = "docker run --rm -it --gpus all --shm-size=1g --user \"$(id -u):$(id -g)\" -v \"$PWD:/work\" -v presto-cache:/cache presto:local bash" }
+
 [tool.pytest.ini_options]
 markers = [
   "slow: marks tests as slow (excluded from default test tasks)",

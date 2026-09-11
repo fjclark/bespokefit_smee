@@ -25,6 +25,7 @@ nav:
 - Get started:
   - get-started/index.md
   - Installation: get-started/installation.md
+  - Run with containers: get-started/containers.md
   - Quickstart: get-started/quickstart.md
   - Walk-through (CLI): examples/basic-walk-through-cli.ipynb
   - Walk-through (Python API): examples/basic-walk-through-python-api.ipynb

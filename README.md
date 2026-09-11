@@ -42,6 +42,8 @@ For more information on activating pixi environments, see [the documentation](ht
 
 `presto` is also available on `conda-forge` as `presto-fit`, but note that this comes without the MLP dependencies (install these separately, e.g. `pip install aimnet`). See the [installation docs](https://cole-group.github.io/presto/get-started/installation/) for details.
 
+For Docker and Apptainer usage, see the [container docs](https://cole-group.github.io/presto/latest/get-started/containers/).
+
 ## Usage
 
 Run with command line arguments:

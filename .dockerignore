@@ -1,0 +1,12 @@
+# Deny everything, then allow only what the build needs. This prevents large
+# local directories such as .pixi/ from entering the Docker build context.
+*
+!pyproject.toml
+!pixi.lock
+!README.md
+!LICENSE
+!presto
+
+# ...but not the demo outputs shipped inside the package.
+presto/data/example_run_single
+**/__pycache__

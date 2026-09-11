@@ -1,0 +1,78 @@
+name: Publish Docker Image
+
+on:
+  push:
+    tags: ["*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag suffix (published as test-<suffix>)"
+        default: "test"
+        required: true
+
+concurrency:
+  group: publish-docker-image
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Pixi
+        uses: prefix-dev/setup-pixi@v0.10.2
+        with:
+          pixi-version: v0.67.2
+          run-install: false
+
+      - name: Determine package version
+        id: version
+        run: |
+          version="$(pixi exec --with hatch-vcs hatch version)"
+          printf 'value=%s\n' "$version" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=test-${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            PRESTO_VERSION=${{ steps.version.outputs.value }}
+          # Do not export a BuildKit cache to type=gha: its large Pixi layers would
+          # compete with ci.yaml's Pixi caches for the repo's Actions cache quota.
+          provenance: false
+
+      - name: Report disk usage
+        if: always()
+        run: df -h /
