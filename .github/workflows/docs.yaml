@@ -19,38 +19,25 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Classify release tag
-      id: release
-      if: github.ref_type == 'tag'
-      run: python .github/scripts/release_tags.py "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
-
     - name: Determine Version
       shell: bash
-      env:
-        IS_VERSION: ${{ steps.release.outputs.is_version }}
-        IS_LATEST: ${{ steps.release.outputs.is_latest }}
       run: |
-        if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-          echo "VERSION=latest" >> "$GITHUB_ENV"
-        elif [ "$IS_VERSION" = "true" ]; then
-          if [ "$IS_LATEST" = "true" ]; then
-            echo "VERSION=$GITHUB_REF_NAME stable" >> "$GITHUB_ENV"
-          else
-            echo "VERSION=$GITHUB_REF_NAME" >> "$GITHUB_ENV"
-          fi
+        if [ "$GITHUB_REF_TYPE" = "branch" ]; then
+          VERSION=latest
+        elif [[ "$GITHUB_REF_NAME" == *-* ]]; then
+          VERSION="$GITHUB_REF_NAME"
         else
-          echo "Skipping non-version tag: $GITHUB_REF_NAME"
+          VERSION="$GITHUB_REF_NAME stable"
         fi
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
     - uses: prefix-dev/setup-pixi@v0.10.2
-      if: github.ref_type != 'tag' || steps.release.outputs.is_version == 'true'
       with:
         pixi-version: v0.67.2
         cache: true
         environments: cpu-py312 # Use Python 3.12 for documentation deployment as 3.13 needs to build dm-tree from source
 
     - name: Build and Deploy Documentation
-      if: github.ref_type != 'tag' || steps.release.outputs.is_version == 'true'
       run: |
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'

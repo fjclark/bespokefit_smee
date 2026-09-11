@@ -18,9 +18,11 @@ ARG PRESTO_ENV=default
 FROM ghcr.io/prefix-dev/pixi:${PIXI_VERSION}-noble AS build
 
 ARG PRESTO_ENV
-ARG PRESTO_VERSION=0.0.0.dev0
+ARG PRESTO_VERSION
 
 WORKDIR /app
+
+RUN : "${PRESTO_VERSION:?PRESTO_VERSION build argument is required}"
 
 # The pixi image ships no git, but the `orb` feature pulls cached-path from a git
 # URL and uv shells out to the git binary to fetch it. Build stage only, so this
@@ -33,25 +35,29 @@ RUN apt-get update \
 # CUDA pytorch builds depend on is absent and pixi would refuse the cuda129
 # system-requirement. Assert it for the build only.
 ENV CONDA_OVERRIDE_CUDA=12.9
-# hatch-vcs reads the version from git, and .git is excluded from the build context.
-# This must be the global variable: hatch-vcs does not pass a dist name through to
-# setuptools-scm, so the scoped SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PRESTO is ignored
-# and the build fails with "setuptools-scm was unable to detect version".
+# .git is excluded from the build context, so pass in the version determined by
+# hatch-vcs before the build starts.
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PRESTO_VERSION}
 
 COPY pyproject.toml pixi.lock README.md LICENSE ./
 COPY presto ./presto
 
-# --locked fails loudly if pixi.lock is out of date with pyproject.toml.
+# Keep dependencies locked, but install presto separately so the stale project
+# version embedded in pixi.lock cannot become the installed version.
 RUN --mount=type=cache,target=/root/.cache/rattler \
-    pixi install --locked --environment "${PRESTO_ENV}"
+    pixi install --locked --environment "${PRESTO_ENV}" --skip presto
 
 # Render the environment into a standalone bash prologue so the runtime image
 # does not need pixi.
 RUN printf '#!/bin/bash\n' > /entrypoint.sh \
- && pixi shell-hook --environment "${PRESTO_ENV}" -s bash >> /entrypoint.sh \
+ && pixi shell-hook --as-is --environment "${PRESTO_ENV}" -s bash >> /entrypoint.sh \
  && printf '\nexec "$@"\n' >> /entrypoint.sh \
  && chmod 0755 /entrypoint.sh
+
+# Install the source last: later pixi commands must not restore the locked local
+# package metadata. Build isolation supplies the backend declared in pyproject.toml.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /app/.pixi/envs/${PRESTO_ENV}/bin/pip install --no-deps --editable .
 
 # Warm the default MLP. AIMNet2 writes its weights inside site-packages and has no
 # cache-directory override, so baking them here is what lets a non-root container
@@ -71,6 +77,7 @@ MLPotential('aimnet2').createSystem(m.to_topology().to_openmm(), charge=0, devic
 FROM nvidia/cuda:12.9.1-base-ubuntu24.04 AS runtime
 
 ARG PRESTO_ENV
+ARG PRESTO_VERSION
 
 LABEL org.opencontainers.image.source="https://github.com/cole-group/presto" \
       org.opencontainers.image.licenses="MIT" \
@@ -103,5 +110,9 @@ RUN mkdir -p /cache /work && chmod 1777 /cache /work
 
 USER 1001:1001
 WORKDIR /work
+
+# Check the installed metadata through the final image's actual entrypoint.
+RUN test "$(/usr/local/bin/entrypoint.sh presto version)" = "presto ${PRESTO_VERSION}"
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["presto", "--help"]
