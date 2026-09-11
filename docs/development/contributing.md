@@ -22,6 +22,10 @@ pixi run test-slow   # Run the slow tests as well
 
 Unit tests live under `presto/tests/unit/`; integration tests live under `presto/tests/integration/`. Slow tests are marked with `@pytest.mark.slow` and skipped from the default `test` task.
 
+### Test Docker image builds
+
+In GitHub, open **Actions → Publish Docker Image → Run workflow**, select the branch to build, and enter a tag suffix. The workflow builds and pushes the image to GHCR with the tag `test-<suffix>`.
+
 ## Style
 
 Ruff is configured in `pyproject.toml` (`[tool.ruff.lint]` and `[tool.ruff.lint.pydocstyle]`). Mypy is run in strict mode (`pyproject.toml [tool.mypy]`). Both run in CI via `.github/workflows/ci.yaml`.
