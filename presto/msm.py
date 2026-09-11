@@ -272,8 +272,7 @@ def calculate_angle_force_constant(
     eigenvecs_cb = eigenvecs[:3, :3, atom_c, atom_b]
 
     # Check for linear angle
-    diff_norm = abs(np.linalg.norm(u_cb - u_ab))
-    if diff_norm < 0.01 or (1.99 < diff_norm < 2.01):
+    if _is_linear_angle(u_ab, u_cb):
         return _calculate_linear_angle_force_constant(
             u_ab,
             u_cb,
@@ -316,6 +315,14 @@ def calculate_angle_force_constant(
     return k_theta, theta_0
 
 
+def _is_linear_angle(
+    u_ab: npt.NDArray[np.floating], u_cb: npt.NDArray[np.floating]
+) -> bool:
+    """Return whether two bond vectors use the MSM linear-angle treatment."""
+    diff_norm = abs(np.linalg.norm(u_cb - u_ab))
+    return bool(diff_norm < 0.01 or 1.99 < diff_norm < 2.01)
+
+
 def _calculate_linear_angle_force_constant(
     u_ab: npt.NDArray[np.floating],
     u_cb: npt.NDArray[np.floating],
@@ -338,7 +345,8 @@ def _calculate_linear_angle_force_constant(
         n_samples: Number of samples around the bond direction.
 
     Returns:
-        Tuple of (force_constant, equilibrium_angle).
+        Tuple of (force_constant, equilibrium_angle). The force constant uses
+        the SMIRNOFF / OpenMM harmonic convention ``U = (k / 2) * delta**2``.
     """
     k_theta_array = np.zeros(n_samples)
 
@@ -369,7 +377,11 @@ def _calculate_linear_angle_force_constant(
             (1 / ((bond_lens[0] ** 2) * sum_first))
             + (1 / ((bond_lens[1] ** 2) * sum_second))
         )
-        k_theta_array[theta_idx] = abs(float(np.real(k_theta_i)) * 0.5)
+        # QUBEKit multiplies this intermediate value by 0.5, then multiplies
+        # it by 2 when storing the OpenMM HarmonicAngleForce parameter. Presto
+        # returns the final SMIRNOFF / OpenMM force constant directly, so those
+        # factors cancel here, as they do in the non-linear angle path above.
+        k_theta_array[theta_idx] = abs(float(np.real(k_theta_i)))
 
     k_theta = float(np.mean(k_theta_array))
     theta_0 = np.degrees(np.arccos(np.clip(np.dot(u_ab, u_cb), -1.0, 1.0)))

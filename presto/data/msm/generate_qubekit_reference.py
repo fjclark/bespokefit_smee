@@ -5,16 +5,19 @@ the Modified Seminario Method, which can then be used as reference values
 for testing our implementation.
 
 Usage:
-    conda run -n qubekit python presto/data/msm/generate_qubekit_reference.py
+    conda create -n qubekit-2.1.1 -c conda-forge python=3.9 qubekit=2.1.1 \
+        pydantic=1.10 openff-toolkit-base=0.10.4 openmm
+    conda run -n qubekit-2.1.1 python \
+        presto/data/msm/generate_qubekit_reference.py
 
 Requirements:
-    - QUBEKit must be installed (available in the 'qubekit' conda environment)
+    - QUBEKit 2.1.1 and its contemporary Pydantic/OpenFF dependencies
 
 The script will:
-    1. Create an asymmetric halogenated molecule with QUBEKit
-    2. Generate a mock Hessian matrix
-    3. Run QUBEKit's ModSeminario method
-    4. Output the resulting bond and angle parameters
+    1. Generate the existing asymmetric-molecule reference
+    2. Create acetonitrile with its C-C#N angle bent to 175 degrees
+    3. Run QUBEKit's complete ModSeminario method for both molecules
+    4. Output the resulting final bond and angle parameters
 
 These values can be compared against our implementation to verify correctness.
 
@@ -28,12 +31,15 @@ Note on test molecule:
     We use fluorochlorobromomethanol (OC(F)(Cl)Br), a fully asymmetric molecule,
     to avoid QUBEKit's internal symmetry averaging when comparing against our
     implementation (in our workflow, symmetry averaging is handled by having
-    symmetric atoms share the same SMIRKS types).
+    symmetric atoms share the same SMIRKS types). A separate acetonitrile fixture
+    exercises QUBEKit's full near-linear-angle path.
 """
 
 import json
-import sys
+import os
+from importlib.metadata import version
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 
@@ -42,13 +48,79 @@ try:
     from qubekit.bonded import ModSeminario
     from qubekit.molecules import Ligand
     from qubekit.utils import constants
-except ImportError:
-    print("ERROR: QUBEKit is not installed in this environment.")
-    print("Please run this script using:")
-    print(
-        "    conda run -n qubekit python presto/data/msm/generate_qubekit_reference.py"
+except ImportError as error:
+    raise ImportError(
+        "QUBEKit and its runtime dependencies are required; run this script "
+        "in an environment with QUBEKit 2.1.1 installed."
+    ) from error
+
+
+_QUBEKIT_VERSION = "2.1.1"
+_NEAR_LINEAR_ANGLE_DEGREES = 175.0
+
+
+def _run_mod_seminario(molecule: Ligand) -> Ligand:
+    """Run QUBEKit without leaving its text reports in the source tree."""
+    previous_directory = os.getcwd()
+    with TemporaryDirectory() as temporary_directory:
+        try:
+            os.chdir(temporary_directory)
+            return ModSeminario(vibrational_scaling=1.0).run(molecule=molecule)
+        finally:
+            os.chdir(previous_directory)
+
+
+def create_nondegenerate_hessian_angstrom(n_atoms: int) -> np.ndarray:
+    """Create a deterministic Hessian in kcal/mol/Angstrom**2.
+
+    QUBEKit and presto both eigendecompose the 3x3 atom-pair blocks of the
+    Hessian with ``np.linalg.eig``, so a degenerate block would leave the
+    eigenvector basis arbitrary and the differential test meaningless. Every
+    block here is diagonal with three well-separated entries, which pins the
+    basis exactly. No other property of the matrix is read by either code.
+    """
+    hessian = np.zeros((3 * n_atoms, 3 * n_atoms))
+    for atom_i in range(n_atoms):
+        for atom_j in range(n_atoms):
+            hessian[3 * atom_i : 3 * atom_i + 3, 3 * atom_j : 3 * atom_j + 3] = np.diag(
+                [
+                    40.0 + atom_i + atom_j,
+                    70.0 + 2.0 * atom_i + 3.0 * atom_j,
+                    110.0 + 5.0 * atom_i + 7.0 * atom_j,
+                ]
+            )
+    return hessian
+
+
+def create_near_linear_acetonitrile() -> tuple[Ligand, tuple[int, int, int]]:
+    """Create acetonitrile with a deterministic 175-degree C-C-N angle."""
+    molecule = Ligand.from_smiles("CC#N", "near_linear_acetonitrile")
+    target_angle = (0, 1, 2)
+    methyl_carbon, nitrile_carbon, nitrogen = target_angle
+    assert [atom.atomic_symbol for atom in molecule.atoms] == list("CCNHHH")
+    assert target_angle in molecule.angles or target_angle[::-1] in molecule.angles
+
+    coords = np.array(molecule.coordinates, copy=True)
+    central_position = coords[nitrile_carbon]
+    substituent_vector = coords[methyl_carbon] - central_position
+    substituent_unit = substituent_vector / np.linalg.norm(substituent_vector)
+    reference_axis = np.eye(3)[np.argmin(np.abs(substituent_unit))]
+    perpendicular = (
+        reference_axis - np.dot(reference_axis, substituent_unit) * substituent_unit
     )
-    sys.exit(1)
+    perpendicular /= np.linalg.norm(perpendicular)
+    nitrile_length = np.linalg.norm(coords[nitrogen] - central_position)
+    target_radians = np.deg2rad(_NEAR_LINEAR_ANGLE_DEGREES)
+    coords[nitrogen] = central_position + nitrile_length * (
+        np.cos(target_radians) * substituent_unit
+        + np.sin(target_radians) * perpendicular
+    )
+    molecule.coordinates = coords
+
+    nitrogen_unit = (coords[nitrogen] - central_position) / nitrile_length
+    cosine = float(np.dot(substituent_unit, nitrogen_unit))
+    assert np.isclose(np.degrees(np.arccos(cosine)), _NEAR_LINEAR_ANGLE_DEGREES)
+    return molecule, target_angle
 
 
 def create_mock_hessian_angstrom(
@@ -122,6 +194,12 @@ def create_mock_hessian_atomic_units(
 
 def main() -> None:
     """Generate reference values using QUBEKit's ModSeminario."""
+    qubekit_version = version("qubekit")
+    if qubekit_version != _QUBEKIT_VERSION:
+        raise RuntimeError(
+            f"Reference data requires QUBEKit {_QUBEKIT_VERSION}, found {qubekit_version}."
+        )
+
     print("=" * 70)
     print("QUBEKit Modified Seminario Method - Reference Value Generator")
     print("=" * 70)
@@ -140,7 +218,9 @@ def main() -> None:
 
     # Print coordinates
     print("Coordinates (Angstroms):")
-    for i, (atom, coord) in enumerate(zip(mol.atoms, mol.coordinates, strict=True)):
+    # No zip(..., strict=True): this script runs under the Python 3.9 QUBEKit env.
+    for i, atom in enumerate(mol.atoms):
+        coord = mol.coordinates[i]
         print(
             f"  {i}: {atom.atomic_symbol:2s} [{coord[0]:10.6f}, {coord[1]:10.6f}, {coord[2]:10.6f}]"
         )
@@ -167,8 +247,7 @@ def main() -> None:
 
     # Run ModSeminario
     print("Running QUBEKit ModSeminario...")
-    mod_sem = ModSeminario(vibrational_scaling=1.0)
-    mol = mod_sem.run(molecule=mol)
+    mol = _run_mod_seminario(mol)
     print("  Done!")
     print()
 
@@ -212,6 +291,54 @@ def main() -> None:
         print(f"    k = {param.k:.2f} kJ/mol/rad²")
     print()
 
+    print("Generating full-pipeline near-linear acetonitrile reference...")
+    nitrile, nitrile_angle = create_near_linear_acetonitrile()
+    nitrile_coords = np.array(nitrile.coordinates, copy=True)
+    nitrile_hessian = create_nondegenerate_hessian_angstrom(nitrile.n_atoms)
+
+    atomic_unit_conversion = constants.HA_TO_KCAL_P_MOL / (constants.BOHR_TO_ANGS**2)
+    nitrile.hessian = nitrile_hessian / atomic_unit_conversion
+    nitrile = _run_mod_seminario(nitrile)
+    np.testing.assert_allclose(nitrile.coordinates, nitrile_coords, atol=0.0, rtol=0.0)
+    nitrile_parameter = nitrile.AngleForce[nitrile_angle]
+    near_linear_nitrile_reference = {
+        "molecule": {
+            "name": "near_linear_acetonitrile",
+            "smiles": "CC#N",
+            "atoms": [
+                {"index": index, "element": atom.atomic_symbol}
+                for index, atom in enumerate(nitrile.atoms)
+            ],
+            "bonds": [[bond.atom1_index, bond.atom2_index] for bond in nitrile.bonds],
+            "angles": [list(angle) for angle in nitrile.angles],
+            "target_angle": list(nitrile_angle),
+        },
+        "inputs": {
+            "coordinates_angstrom": nitrile_coords.tolist(),
+            "hessian_kcal_mol_angstrom2": nitrile_hessian.tolist(),
+            "target_angle_degrees": _NEAR_LINEAR_ANGLE_DEGREES,
+            "vibrational_scaling": 1.0,
+        },
+        "qubekit_output": {
+            "angle_radians": float(nitrile_parameter.angle),
+            "k_kj_mol_rad2": float(nitrile_parameter.k),
+            "potential": "U = k * (theta - theta0)**2 / 2",
+        },
+        "provenance": {
+            "qubekit_version": qubekit_version,
+            "qubekit_source": "https://github.com/qubekit/QUBEKit/blob/2.1.1/qubekit/bonded/mod_seminario.py",
+            "generation_command": "conda run -n qubekit-2.1.1 python presto/data/msm/generate_qubekit_reference.py",
+            "generation": "Full ModSeminario.run pipeline; final molecule.AngleForce parameter",
+            "hessian": "Stored deterministic Hessian with nondegenerate pair blocks",
+        },
+    }
+    print(
+        "  C-C#N angle: "
+        f"{np.degrees(nitrile_parameter.angle):.8f} degrees, "
+        f"k={nitrile_parameter.k:.8f} kJ/mol/rad^2"
+    )
+    print()
+
     # Print summary as Python dict for copy-paste
     print("=" * 70)
     print("PYTHON REFERENCE DATA (copy-paste into test file)")
@@ -219,24 +346,24 @@ def main() -> None:
     print()
 
     # Coordinates
-    print("# Ethanol coordinates in Angstroms (QUBEKit native format)")
-    print("ETHANOL_COORDS_ANGSTROM = np.array([")
+    print("# Fluorochlorobromomethanol coordinates in Angstroms")
+    print("REFERENCE_COORDS_ANGSTROM = np.array([")
     for coord in mol.coordinates:
         print(f"    [{coord[0]:12.8f}, {coord[1]:12.8f}, {coord[2]:12.8f}],")
     print("])")
     print()
 
     # Bonds
-    print("# Ethanol bonds (0-indexed atom pairs)")
-    print("ETHANOL_BONDS = [")
+    print("# Fluorochlorobromomethanol bonds (0-indexed atom pairs)")
+    print("REFERENCE_BONDS = [")
     for bond in mol.bonds:
         print(f"    ({bond.atom1_index}, {bond.atom2_index}),")
     print("]")
     print()
 
     # Angles
-    print("# Ethanol angles (central atom is middle index)")
-    print("ETHANOL_ANGLES = [")
+    print("# Fluorochlorobromomethanol angles (central atom is middle index)")
+    print("REFERENCE_ANGLES = [")
     for angle in mol.angles:
         print(f"    {angle},")
     print("]")
@@ -244,7 +371,7 @@ def main() -> None:
 
     # Bond reference values
     print("# QUBEKit bond parameters")
-    print("# Units: length in nm, k in kJ/mol/nm² (OpenMM convention: U = k*(r-r0)²)")
+    print("# Units: length in nm, k in kJ/mol/nm² (OpenMM convention: U = k*(r-r0)²/2)")
     print("QUBEKIT_BOND_PARAMS = {")
     for bond in mol.bonds:
         bond_key = (bond.atom1_index, bond.atom2_index)
@@ -256,7 +383,8 @@ def main() -> None:
     # Angle reference values
     print("# QUBEKit angle parameters")
     print(
-        "# Units: angle in degrees, k in kJ/mol/rad² (OpenMM convention: U = k*(theta-theta0)²)"
+        "# Units: angle in degrees, k in kJ/mol/rad² "
+        "(OpenMM convention: U = k*(theta-theta0)²/2)"
     )
     print("QUBEKIT_ANGLE_PARAMS = {")
     for angle in mol.angles:
@@ -274,15 +402,18 @@ def main() -> None:
         "angles": list(mol.angles),
         "bond_params": bond_results,
         "angle_params": angle_results,
+        "near_linear_nitrile_reference": near_linear_nitrile_reference,
         "notes": {
+            "qubekit_version": qubekit_version,
+            "qubekit_source": "https://github.com/qubekit/QUBEKit/blob/2.1.1/qubekit/bonded/mod_seminario.py",
             "hessian_type": "mock_diagonal_dominated",
             "hessian_k_diagonal_kcal_mol_A2": 500.0,
             "vibrational_scaling": 1.0,
             "units": {
                 "length": "nm",
-                "bond_k": "kJ/mol/nm² (OpenMM convention: U = k*(r-r0)²)",
+                "bond_k": "kJ/mol/nm² (OpenMM convention: U = k*(r-r0)²/2)",
                 "angle": "radians (also provided in degrees)",
-                "angle_k": "kJ/mol/rad² (OpenMM convention: U = k*(theta-theta0)²)",
+                "angle_k": "kJ/mol/rad² (OpenMM convention: U = k*(theta-theta0)²/2)",
             },
         },
     }
@@ -308,10 +439,10 @@ QUBEKit internal workflow:
    - Angles: kJ/mol/rad² using KCAL_TO_KJ * 2 (= 4.184 * 2 = 8.368)
      Factor of 2 is for potential convention
 
-OpenMM convention: U = k*(r-r0)² (no 1/2 factor)
-OpenFF/SMIRNOFF convention: U = (k/2)*(r-r0)² (has 1/2 factor)
-
-So QUBEKit k values are 2x larger than OpenFF k values for the same physical potential.
+QUBEKit's internal ``0.5`` factors and final ``2`` conversion factors cancel.
+Its final values use the same U = (k/2)*delta² convention as OpenMM and
+OpenFF/SMIRNOFF, so final force constants should be compared directly after
+unit conversion.
 """
     )
 
