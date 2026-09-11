@@ -2,7 +2,7 @@
 
 The easiest way to install `presto` is from the GitHub repo using [pixi](https://pixi.sh/), which is the recommended approach. This creates environments containing dependencies for several MLPs. Alternatively, `presto` is available on `conda-forge` as `presto-fit` — see [Install from conda-forge](#install-from-conda-forge) below, but comes without MLP dependencies.
 
-If you would rather not install anything, a prebuilt GPU container image is also published. See **[Run with containers](containers.md)** for Docker on a workstation and Apptainer on HPC.
+A prebuilt GPU container image is also published. See **[Run with containers](containers.md)** for Docker on a workstation and Apptainer on HPC.
 
 ## Prerequisites
 
@@ -72,5 +72,3 @@ For more, see **[Concepts → MLPs in presto](../concepts/mlps.md)** and **[How-
 ## Troubleshooting
 
 If anything went wrong during install or first run, see **[Reference → Troubleshooting](../reference/troubleshooting.md)**.
-
-For container-specific problems, see the troubleshooting table in **[Run with containers](containers.md#troubleshooting)**.
